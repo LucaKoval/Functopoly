@@ -1,0 +1,328 @@
+{
+  "go-score": 200,
+  "init-score": 0,
+  "properties": [
+    {
+      "name": "Mediterranean Avenue",
+      "location": 1,
+      "price": 60,
+      "rent": 2,
+      "color": "brown",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Baltic Avenue",
+      "location": 3,
+      "price": 60,
+      "rent": 4,
+      "color": "brown",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Reading Railroad",
+      "location": 5,
+      "price": 200,
+      "rent": 25,
+      "color": "magenta",
+      "type": "railroad"
+    },
+    {
+      "name": "Oriental Avenue",
+      "location": 6,
+      "price": 100,
+      "rent": 6,
+      "color": "light blue",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Vermont Avenue",
+      "location": 8,
+      "price": 100,
+      "rent": 6,
+      "color": "light blue",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Connecticut Avenue",
+      "location": 9,
+      "price": 120,
+      "rent": 8,
+      "color": "light blue",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "St. Charles Place",
+      "location": 11,
+      "price": 140,
+      "rent": 10,
+      "color": "magenta",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Electricity Company",
+      "location": 12,
+      "price": 150,
+      "type": "utility"
+    },
+    {
+      "name": "States Avenue",
+      "location": 13,
+      "price": 140,
+      "rent": 10,
+      "color": "magenta",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Virginia Avenue",
+      "location": 14,
+      "price": 160,
+      "rent": 12,
+      "color": "magenta",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Pennsylvania Railroad",
+      "location": 15,
+      "price": 200,
+      "rent": 25,
+      "type": "railroad"
+    },
+    {
+      "name": "St. James Place",
+      "location": 16,
+      "price": 180,
+      "rent": 14,
+      "color": "orange",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Tennessee Avenue",
+      "location": 18,
+      "price": 180,
+      "rent": 14,
+      "color": "orange",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "New York Avenue",
+      "location": 19,
+      "price": 200,
+      "rent": 16,
+      "color": "orange",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Kentucky Avenue",
+      "location": 21,
+      "price": 220,
+      "rent": 18,
+      "color": "red",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Indiana Avenue",
+      "location": 23,
+      "price": 220,
+      "rent": 18,
+      "color": "red",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Illinois Avenue",
+      "location": 24,
+      "price": 240,
+      "rent": 20,
+      "color": "red",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "B&0 Railroad",
+      "location": 25,
+      "price": 200,
+      "rent": 25,
+      "type": "railroad"
+    },
+    {
+      "name": "Atlantic Avenue",
+      "location": 26,
+      "price": 260,
+      "rent": 22,
+      "color": "yellow",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Ventnor Avenue",
+      "location": 27,
+      "price": 260,
+      "rent": 22,
+      "color": "yellow",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Water Works",
+      "location": 28,
+      "price": 150,
+      "type": "utility"
+    },
+    {
+      "name": "Marvin Gardens",
+      "location": 29,
+      "price": 280,
+      "rent": 24,
+      "color": "yellow",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Pacific Avenue",
+      "location": 31,
+      "price": 300,
+      "rent": 26,
+      "color": "green",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "North Carolina Avenue",
+      "location": 32,
+      "price": 300,
+      "rent": 26,
+      "color": "green",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Pennsylvania Avenue",
+      "location": 34,
+      "price": 320,
+      "rent": 28,
+      "color": "green",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Short Line",
+      "location": 35,
+      "price": 200,
+      "rent": 25,
+      "type": "railroad"
+    },
+    {
+      "name": "Park Place",
+      "location": 37,
+      "price": 350,
+      "rent": 35,
+      "color": "blue",
+      "level": 0,
+      "type": "property"
+    },
+    {
+      "name": "Boardwalk",
+      "location": 39,
+      "price": 400,
+      "rent": 50,
+      "color": "blue",
+      "level": 0,
+      "type": "property"
+    }
+  ],
+  "card_tiles": [
+    {
+      "name": "Community Chest",
+      "location": 2
+    },
+    {
+      "name": "Chance",
+      "location": 7
+    },
+    {
+      "name": "Community Chest",
+      "location": 17
+    },
+    {
+      "name": "Chance",
+      "location": 22
+    },
+    {
+      "name": "Community Chest",
+      "location": 33
+    },
+    {
+      "name": "Chance",
+      "location": 36
+    }
+  ],
+  "cards": [
+    {
+      "name": "Advance to \"Go\". (Collect $200)",
+      "types": [
+        {
+          "type": "Chance"
+        },
+        {
+          "type": "Community Chest"
+        }
+      ]
+    },
+    {
+      "name": "Hospital Fees. Pay $50.",
+      "types": [
+        {
+          "type": "Community Chest"
+        }
+      ]
+    },
+    {
+      "name": "Take a trip to Reading Railroad. If you pass Go, collect $200.",
+      "types": [
+        {
+          "type": "Chance"
+        }
+      ]
+    }
+  ],
+  "tax": [
+    {
+      "name": "Income Tax",
+      "location": 4
+    },
+    {
+      "name": "Luxury Tax",
+      "location": 38
+    }
+  ],
+  "corners": [
+    {
+      "name": "Go",
+      "location": 0
+    },
+    {
+      "name": "Jail/Just Visiting",
+      "location": 10
+    },
+    {
+      "name": "Free Parking",
+      "location": 20
+    },
+    {
+      "name": "Go To Jail",
+      "location": 30
+    }
+  ]
+}
