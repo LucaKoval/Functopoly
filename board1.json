@@ -297,7 +297,7 @@
       ]
     }
   ],
-  "tax": [
+  "taxes": [
     {
       "name": "Income Tax",
       "location": 4
