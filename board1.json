@@ -1,7 +1,7 @@
 {
-  "go-score": 200,
-  "init-score": 0,
-  "properties": [
+  "go_score": 200,
+  "init_score": 0,
+  "property_tiles": [
     {
       "name": "Mediterranean Avenue",
       "location": 1,
@@ -244,27 +244,27 @@
   ],
   "card_tiles": [
     {
-      "name": "Community Chest",
+      "name": "community_chest",
       "location": 2
     },
     {
-      "name": "Chance",
+      "name": "chance",
       "location": 7
     },
     {
-      "name": "Community Chest",
+      "name": "community_chest",
       "location": 17
     },
     {
-      "name": "Chance",
+      "name": "chance",
       "location": 22
     },
     {
-      "name": "Community Chest",
+      "name": "community_chest",
       "location": 33
     },
     {
-      "name": "Chance",
+      "name": "chance",
       "location": 36
     }
   ],
@@ -273,10 +273,10 @@
       "name": "Advance to \"Go\". (Collect $200)",
       "types": [
         {
-          "type": "Chance"
+          "type": "chance"
         },
         {
-          "type": "Community Chest"
+          "type": "community_chest"
         }
       ]
     },
@@ -284,7 +284,7 @@
       "name": "Hospital Fees. Pay $50.",
       "types": [
         {
-          "type": "Community Chest"
+          "type": "community_chest"
         }
       ]
     },
@@ -292,36 +292,36 @@
       "name": "Take a trip to Reading Railroad. If you pass Go, collect $200.",
       "types": [
         {
-          "type": "Chance"
+          "type": "chance"
         }
       ]
     }
   ],
-  "taxes": [
+  "tax_tiles": [
     {
-      "name": "Income Tax",
+      "name": "income_tax",
       "location": 4
     },
     {
-      "name": "Luxury Tax",
+      "name": "luxury_tax",
       "location": 38
     }
   ],
-  "corners": [
+  "corner_tiles": [
     {
-      "name": "Go",
+      "name": "go",
       "location": 0
     },
     {
-      "name": "Jail/Just Visiting",
+      "name": "jail_just_visiting",
       "location": 10
     },
     {
-      "name": "Free Parking",
+      "name": "free_parking",
       "location": 20
     },
     {
-      "name": "Go To Jail",
+      "name": "go_to_jail",
       "location": 30
     }
   ]
