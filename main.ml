@@ -1,3 +1,4 @@
+open Player
 
 type object_phrase = string list
 
@@ -20,6 +21,7 @@ type command =
    exits : exit_room list;
    }*)
 
+(** [get_num_players] is the number of players  *)
 let get_num_players = 
   ANSITerminal.(print_string [red]
                   "\n\nWelcome to the 3110 Text Monopoly Game engine.\n");
@@ -29,6 +31,7 @@ let get_num_players =
   | exception End_of_file -> 0
   | no_players -> int_of_string no_players
 
+(** [get_player_names n] is the list of player names entered by the user *)
 let rec get_player_names n = 
   match n with
   | 0 -> []
@@ -39,14 +42,17 @@ let rec get_player_names n =
     | exception End_of_file -> []
     | player_name -> player_name::(get_player_names (n - 1))
 
+(** [print_string_list lst] prints out a list of strings [lst]*)
 let rec print_string_list lst =
   match lst with
   | [] -> ()
   | h::t -> print_string h; print_string_list lst
 
+(** *)
 let play_game file_name = 
   let num_players = get_num_players in
-  let player_names = get_player_names num_players in ()
+  let player_names = get_player_names num_players in
+  Player.to_players num_players player_names
 (* print_string_list player_names; print_string (string_of_int num_players) *)
 
 let main () =
