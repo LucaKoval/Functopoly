@@ -15,19 +15,24 @@ type players = {
 }
 
 (** creates the original player data structure for each player *)
-let to_player empty_list = {
-  id = 0;
+let rec to_player numplayers acc= 
+match numplayers with
+|0-> acc
+|x-> to_player (numplayers-1) ({
+  id = x;
   score = 0;
   location = 0;
   properties = []
-}
+}::acc)
+
 
 (** creates the original players data structure using user input*)
-let to_players num_players player_names = (*{
-                                            player_list = List.map to_player;
-                                            current_player = 0;
-                                            number_of_players = user_input
-                                            }*)failwith "unimplemented"
+let to_players num_players input_names = {
+player_list = to_player num_players [];
+current_player = 0;
+number_of_players = num_players;
+player_names = input_names
+                                            }
 
 (** takes in a 0 just for shits and returns a number rolled by 2 dice*)
 let dice zero =
@@ -65,6 +70,7 @@ let update_players players =
 let new_player players = {
   player_list = update_players players;
   current_player = players.current_player +1;
-  number_of_players = players.number_of_players
+  number_of_players = players.number_of_players;
+  player_names = players.player_names
 }
 
