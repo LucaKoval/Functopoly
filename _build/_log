@@ -1,8 +1,23 @@
 ### Starting build.
-# Target: main.ml.depends, tags: { package(ANSITerminal), package(oUnit), package(yojson), extension:ml, file:main.ml, ocaml, ocamldep, quiet, traverse }
-ocamlfind ocamldep -package oUnit -package yojson -package ANSITerminal -modules main.ml > main.ml.depends # cached
-# Target: main.cmo, tags: { package(ANSITerminal), package(oUnit), package(yojson), byte, compile, extension:cmo, extension:ml, file:main.cmo, file:main.ml, implem, ocaml, quiet, traverse }
-ocamlfind ocamlc -c -package oUnit -package yojson -package ANSITerminal -o main.cmo main.ml # cached
-# Target: main.byte, tags: { package(ANSITerminal), package(oUnit), package(yojson), byte, dont_link_with, extension:byte, file:main.byte, link, ocaml, program, quiet, traverse }
-ocamlfind ocamlc -linkpkg -package oUnit -package yojson -package ANSITerminal main.cmo -o main.byte # cached
-# Compilation successful.
+# Target: board.ml.depends, tags: { package(ANSITerminal), package(oUnit), package(yojson), extension:ml, file:board.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit -package yojson -package ANSITerminal -modules board.ml > board.ml.depends # cached
+# Target: board.cmo, tags: { package(ANSITerminal), package(oUnit), package(yojson), byte, compile, extension:cmo, extension:ml, file:board.cmo, file:board.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package oUnit -package yojson -package ANSITerminal -o board.cmo board.ml # cached
+# Target: indices.ml.depends, tags: { package(ANSITerminal), package(oUnit), package(yojson), extension:ml, file:indices.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit -package yojson -package ANSITerminal -modules indices.ml > indices.ml.depends
+# Target: indices.cmo, tags: { package(ANSITerminal), package(oUnit), package(yojson), byte, compile, extension:cmo, extension:ml, file:indices.cmo, file:indices.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package oUnit -package yojson -package ANSITerminal -o indices.cmo indices.ml
+# Target: player.ml.depends, tags: { package(ANSITerminal), package(oUnit), package(yojson), extension:ml, file:player.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit -package yojson -package ANSITerminal -modules player.ml > player.ml.depends
+# Target: player.cmo, tags: { package(ANSITerminal), package(oUnit), package(yojson), byte, compile, extension:cmo, extension:ml, file:player.cmo, file:player.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package oUnit -package yojson -package ANSITerminal -o player.cmo player.ml
++ ocamlfind ocamlc -c -package oUnit -package yojson -package ANSITerminal -o player.cmo player.ml
+File "player.ml", line 65, characters 25-162:
+65 | .........................{
+66 |   player_list = update_players players;
+67 |   current_player = players.current_player +1;
+68 |   number_of_players = players.number_of_players
+69 | }
+Error: Some record fields are undefined: player_names
+Command exited with code 2.
+# Compilation unsuccessful.
