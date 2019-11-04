@@ -5,21 +5,11 @@ type object_phrase = string list
 type command = 
   | Help
   | Roll
+  | Inventory
   | Go of object_phrase
   | Buy
   | Sell 
   | Quit
-
-(* type exit_room = {
-   name : exit_name;
-   id : room_id;
-   }
-
-   type each_room = {
-   id : room_id;
-   description: string;
-   exits : exit_room list;
-   }*)
 
 (** [get_num_players] is the number of players  *)
 let get_num_players = 
@@ -30,6 +20,10 @@ let get_num_players =
   match read_line () with
   | exception End_of_file -> 0
   | no_players -> int_of_string no_players
+
+(** takes in a 0 just for shits and returns a number rolled by 2 dice*)
+let dice zero =
+  (Random.int 6) + (Random.int 6) + 2 + zero
 
 (** [get_player_names n] is the list of player names entered by the user *)
 let rec get_player_names n = 
@@ -48,11 +42,31 @@ let rec print_string_list lst =
   | [] -> ()
   | h::t -> print_string h; print_string_list lst
 
+(** [play_game_recursively ]*)
+let rec play_game_recursively player_info current_location board = ()
+
+
 (** *)
-let play_game file_name = 
+let start_game file_name = 
   let num_players = get_num_players in
   let player_names = get_player_names num_players in
-  Player.to_players num_players player_names
+
+  let initial_player_info = print_endline "\nGreat! Now let's begin the game. \n\
+                                           \nHere's the list of commands you can \
+                                           run:";
+    print_endline "Roll: Rolls the dice.\n\
+                   Help: Prints the list of commands you can run.\n\
+                   Inventory: Prints the inventory for the player whose turn it is.\n\
+                   Buy: Buys a property if you landed on one.\n\
+                   Sell <property_name>: Sells the <property_name> property you own.\n\
+                   Quit: Quits the game and displays the winner.\n";
+    Player.to_players num_players player_names in
+  print_string "Player 1 goes first: ";
+  print_string  "> ";
+  match read_line () with
+  | exception End_of_file -> ()
+  | str -> play_game_recursively initial_player_info "" ""
+
 (* print_string_list player_names; print_string (string_of_int num_players) *)
 
 let main () =
@@ -60,7 +74,7 @@ let main () =
   print_string  "> ";
   match read_line () with
   | exception End_of_file -> ()
-  | file_name -> play_game file_name
+  | file_name -> start_game file_name
 
 (* Execute the game engine. *)
 let () = main ()
