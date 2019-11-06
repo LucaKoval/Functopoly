@@ -1,11 +1,10 @@
-type object_phrase = string list
 
 type command = 
   | Help
   | Roll
-  | Inventory
+  | Inventory of string
   | Buy
-  | Sell 
+  | Sell of string
   | Quit
 
 exception Empty
@@ -25,17 +24,21 @@ let map_help = function
   | [] -> Help
   | _ -> raise Malformed
 
-let map_inventory = function
-  | []-> Inventory
-  |_ -> raise Malformed
+let map_inventory player_name =
+  match player_name with
+  | "" -> raise Malformed
+  | _ -> Inventory player_name
+
 
 let map_buy = function
   | [] -> Buy
   | _ -> raise Malformed
 
-let map_sell = function
-  | [] -> Sell
-  | _ -> raise Malformed
+let map_sell property = 
+  match property with
+  | "" -> raise Malformed
+  | _ -> Sell property
+
 
 let parse_helper entire_str =
   (** [empties_removed] is the list of strings without the empty strings. It
@@ -51,11 +54,11 @@ let parse str =
       the list of strings parsed by [parse_helper] *)
   let loop_over_list = function
     | [] -> raise Empty
-    |"help"::t-> map_help t
-    |"inventory"::t-> map_inventory t
-    |"buy"::t-> map_buy t
-    |"sell"::t-> map_sell t
-    | h::t -> if h = "quit" then map_quit t 
+    |"help"::t -> map_help t
+    |"inventory"::t -> map_inventory (String.concat "" t)
+    |"buy"::t -> map_buy t
+    |"sell"::t -> map_sell (String.concat "" t)
+    | h::t -> if h = "quit" then map_quit t
       else if h = "roll" then map_roll t
       else raise Malformed
   in loop_over_list (parse_helper str)
