@@ -14,27 +14,11 @@ exception Malformed
 
 let map_roll rest_of_list = 
   match rest_of_list with
-  | [] -> Roll
-  | _ -> raise Malformed
+  | [] -> raise Malformed
+  | _ -> Roll
 
 let map_quit = function
   | [] -> Quit
-  | _ -> raise Malformed
-
-let map_help = function
-  | [] -> Help
-  | _ -> raise Malformed
-
-let map_inventory = function
-  | []-> Inventory
-  |_ -> raise Malformed
-
-let map_buy = function
-  | [] -> Buy
-  | _ -> raise Malformed
-
-let map_sell = function
-  | [] -> Sell
   | _ -> raise Malformed
 
 let parse_helper entire_str =
@@ -51,10 +35,6 @@ let parse str =
       the list of strings parsed by [parse_helper] *)
   let loop_over_list = function
     | [] -> raise Empty
-    |"help"::t-> map_help t
-    |"inventory"::t-> map_inventory t
-    |"buy"::t-> map_buy t
-    |"sell"::t-> map_sell t
     | h::t -> if h = "quit" then map_quit t 
       else if h = "roll" then map_roll t
       else raise Malformed
