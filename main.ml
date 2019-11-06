@@ -1,15 +1,5 @@
 open Player
-
-type object_phrase = string list
-
-type command = 
-  | Help
-  | Roll
-  | Inventory
-  | Go of object_phrase
-  | Buy
-  | Sell 
-  | Quit
+open Command 
 
 (** [get_num_players] is the number of players  *)
 let get_num_players = 
