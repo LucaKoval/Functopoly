@@ -33,29 +33,52 @@ let rec print_string_list lst =
   | h::t -> print_string h; print_string_list lst
 
 (** [play_game_recursively ]*)
-let rec play_game_recursively player_info current_location board = ()
-
+let rec play_game_recursively str_command player_info current_player board = 
+  let parsed_command = try Command.parse str_command with 
+    | Malformed -> (print_endline "The command you entered was Malformed :( \
+                                   Please try again.";
+                    print_string  "> ";
+                    match read_line () with
+                    | exception End_of_file -> exit 0
+                    | str -> play_game_recursively str_command player_info current_player board)
+    | Empty -> (print_endline "The command you entered was Empty.\
+                               Please try again."; 
+                print_string  "> ";
+                match read_line () with
+                | exception End_of_file -> exit 0
+                | str -> play_game_recursively str_command player_info current_player board) in
+  match parsed_command with
+  | Quit -> print_endline "Sad to see you go. Exiting game now. The winner of
+  the game is "; exit 0
+  | Roll -> exit 0 (** TODO: Call roll function, 
+                       update uplayer info, 
+                       update current_player,
+                       ask for next command and update str_command,
+                       call play_game_recursively
+                   *)
+  | _ -> exit 0
 
 (** *)
 let start_game file_name = 
   let num_players = get_num_players in
   let player_names = get_player_names num_players in
 
-  let initial_player_info = print_endline "\nGreat! Now let's begin the game. \n\
-                                           \nHere's the list of commands you can \
-                                           run:";
-    print_endline "Roll: Rolls the dice.\n\
-                   Help: Prints the list of commands you can run.\n\
-                   Inventory: Prints the inventory for the player whose turn it is.\n\
-                   Buy: Buys a property if you landed on one.\n\
-                   Sell <property_name>: Sells the <property_name> property you own.\n\
-                   Quit: Quits the game and displays the winner.\n";
+  let initial_player_info = ANSITerminal.(print_string [red]
+                                            "\nGreat! Now let's begin the game. \n\
+                                             \nHere's the list of commands you can \
+                                             run:\n\
+                                             Roll: Rolls the dice.\n\
+                                             Help: Prints the list of commands you can run.\n\
+                                             Inventory: Prints the inventory for the player whose turn it is.\n\
+                                             Buy: Buys a property if you landed on one.\n\
+                                             Sell <property_name>: Sells the <property_name> property you own.\n\
+                                             Quit: Quits the game and displays the winner.\n");
     Player.to_players num_players player_names in
   print_string "Player 1 goes first: ";
   print_string  "> ";
   match read_line () with
   | exception End_of_file -> ()
-  | str -> play_game_recursively initial_player_info "" ""
+  | str -> play_game_recursively str initial_player_info "" ""
 
 (* print_string_list player_names; print_string (string_of_int num_players) *)
 
