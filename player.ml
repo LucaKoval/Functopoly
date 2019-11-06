@@ -17,14 +17,25 @@ type players = {
 (** creates the original player data structure for each player *)
 let rec to_player numplayers acc= 
   match numplayers with
-  |0-> acc
+  |(0)-> acc
   |x-> to_player (numplayers-1) ({
-      id = x;
+      id = (x-1);
       score = 0;
       location = 0;
       properties = []
     }::acc)
 
+(** print list of ints*)
+let rec print_int_list lst =
+match lst with
+|h::t -> print_int h; print_string " "; print_int_list t
+|[] -> print_string " "
+
+(** print list of strings*)
+let rec print_string_list lst =
+match lst with
+|h::t -> print_string h; print_string " "; print_string_list t
+|[] -> print_string " "
 
 (** creates the original players data structure using user input*)
 let to_players num_players input_names = {
@@ -55,23 +66,23 @@ let new_property player =
 
 (** updates the current player's state if its their turn (ex: location, score, potential property changes) and changes to the next player*)
 let update_current_player player current_player_id =
-  if player.id = current_player_id then {
+  if player.id = current_player_id then ({
     id= player.id;
     score = player.score;
-    location = player.location + (dice 0);
-    properties = ((new_property player)::(player.properties)) }
-  else {
+    location = (player.location + (dice 0))mod 40;
+    properties = ((new_property player)::(player.properties)) })
+  else ( {
     id = player.id;
     score = player.score;
     location= player.location;
     properties = player.properties
-  }
+  })
 
 (** makes a list of the current_player id to pass into mapping function in update_players*)
 let rec make_current_id_list players acc =
   if (players.number_of_players =(List.length acc))
-  then acc
-  else make_current_id_list players ((players.number_of_players )::acc)
+  then ( acc)
+  else (make_current_id_list players ((players.current_player )::acc))
 
 (** updates the players state based on their turn (ex: location, score, potential property changes) and changes to the next player*)
 let update_players players =
