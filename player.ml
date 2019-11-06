@@ -34,9 +34,19 @@ number_of_players = num_players;
 player_names = input_names
                                             }
 
+let rec get_current_location_helper player_list current_id =
+match player_list with
+|h::t when h.id = current_id -> h.location
+|h::t -> get_current_location_helper t current_id
+|_-> failwith "no current player error"
+
+let get_current_location players =
+get_current_location_helper players.player_list players.current_player
+
 (** takes in a 0 just for shits and returns a number rolled by 2 dice*)
 let dice zero =
-  (Random.int 6) + (Random.int 6) +2 +zero
+  let x = (Random.int 6) + (Random.int 6) +2 +zero in
+  print_endline "You rolled a"; print_int x; x
 
 (** [new_property player] is Some property that the current player obtains if any, otherwise None*)
 let new_property player =
