@@ -51,22 +51,21 @@ let rec play_game_recursively str_command player_info current_player board =
   | Quit -> print_endline "Sad to see you go. Exiting game now. The winner of
   the game is "; exit 0;
   | Roll -> play_game_recursively str_command (Player.new_player player_info) current_player board(** TODO: Call roll function, 
-                        update uplayer info, 
-                        update current_player,
-                        ask for next command and update str_command,
-                        call play_game_recursively *)
-| Help -> print_string "\nHere's the list of commands you can \
-                        run:\n\
-                        roll: Rolls the dice for the next player.\n\
-                        help: Prints the list of commands you can run.\n\
-                        inventory: Prints the inventory for the player whose turn it is.\n\
-                        buy: Buys a property if you landed on one.\n\
-                        sell <property_name>: Sells the <property_name> property you own.\n\
-                        quit: Quits the game and displays the winner.\n"; play_game_recursively str_command player_info current_player board
+                                                                                                      update uplayer info, 
+                                                                                                      update current_player,
+                                                                                                      ask for next command and update str_command,
+                                                                                                      call play_game_recursively *)
+  | Help -> print_string "\nHere's the list of commands you can \
+                          run:\n\
+                          roll: Rolls the dice for the next player.\n\
+                          help: Prints the list of commands you can run.\n\
+                          inventory: Prints the inventory for the player whose turn it is.\n\
+                          buy: Buys a property if you landed on one.\n\
+                          sell <property_name>: Sells the <property_name> property you own.\n\
+                          quit: Quits the game and displays the winner.\n"; play_game_recursively str_command player_info current_player board
   | Inventory -> print_endline "Current player inventory here"; play_game_recursively str_command player_info current_player board
   | Buy -> print_endline "You cannot buy properties yet"; play_game_recursively str_command player_info current_player board
   | Sell -> print_endline "You cannot sell properties yet"; play_game_recursively str_command player_info current_player board
-  | _ -> exit 0
 
 (** *)
 let start_game file_name = 

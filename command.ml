@@ -14,7 +14,7 @@ exception Malformed
 
 let map_roll rest_of_list = 
   match rest_of_list with
-  | [] -> Quit
+  | [] -> Roll
   | _ -> raise Malformed
 
 let map_quit = function
@@ -26,16 +26,16 @@ let map_help = function
   | _ -> raise Malformed
 
 let map_inventory = function
-| []-> Inventory
-|_ -> raise Malformed
+  | []-> Inventory
+  |_ -> raise Malformed
 
 let map_buy = function
-| [] -> Buy
-| _ -> raise Malformed
+  | [] -> Buy
+  | _ -> raise Malformed
 
 let map_sell = function
-| [] -> Sell
-| _ -> raise Malformed
+  | [] -> Sell
+  | _ -> raise Malformed
 
 let parse_helper entire_str =
   (** [empties_removed] is the list of strings without the empty strings. It
