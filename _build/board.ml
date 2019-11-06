@@ -1,6 +1,5 @@
 open Yojson.Basic.Util
 
-
 type color = Brown | LightBlue | Magenta | Orange | Red | Yellow | Green | Blue
 type tile_type = Property | Railroad | Utility
 type card_type = Chance | CommunityChest

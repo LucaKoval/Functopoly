@@ -46,7 +46,7 @@ let get_current_location players =
 (** takes in a 0 just for shits and returns a number rolled by 2 dice*)
 let dice zero =
   let x = (Random.int 6) + (Random.int 6) +2 +zero in
-  print_endline "You rolled a"; print_int x; x
+  print_string "You rolled a "; print_int x; print_endline ""; x 
 
 (** [new_property player] is Some property that the current player obtains if any, otherwise None*)
 let new_property player =

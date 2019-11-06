@@ -33,14 +33,14 @@ let rec print_string_list lst =
   | h::t -> print_string h; print_string_list lst
 
 (** [play_game_recursively ]*)
-let rec play_game_recursively str_command player_info current_player board = 
+let rec play_game_recursively str_command player_info current_player board =
   let parsed_command = (try Command.parse str_command with 
       | Malformed -> (print_endline "The command you entered was Malformed :( \
                                      Please try again.";
                       print_string  "> ";
                       match read_line () with
                       | exception End_of_file -> exit 0
-                      | str -> play_game_recursively str_command player_info current_player board)
+                      | str -> play_game_recursively str player_info current_player board)
       | Empty -> (print_endline "The command you entered was Empty.\
                                  Please try again."; 
                   print_string  "> ";
@@ -50,22 +50,45 @@ let rec play_game_recursively str_command player_info current_player board =
   match parsed_command with
   | Quit -> print_endline "Sad to see you go. Exiting game now. The winner of
   the game is "; exit 0;
-  | Roll -> play_game_recursively str_command (Player.new_player player_info) current_player board(** TODO: Call roll function, 
+  | Roll -> 
+    let new_player_info = (Player.new_player player_info) in
+    (print_endline "Next player goes now!"; 
+     print_string  "> ";
+     match read_line () with
+     | exception End_of_file -> exit 0;
+     | str -> play_game_recursively str new_player_info current_player board)
+  (** TODO: Call roll function, 
                                                                                                       update uplayer info, 
                                                                                                       update current_player,
                                                                                                       ask for next command and update str_command,
                                                                                                       call play_game_recursively *)
-  | Help -> print_string "\nHere's the list of commands you can \
+  | Help -> (print_endline "\nHere's the list of commands you can \
                           run:\n\
                           roll: Rolls the dice for the next player.\n\
                           help: Prints the list of commands you can run.\n\
                           inventory: Prints the inventory for the player whose turn it is.\n\
                           buy: Buys a property if you landed on one.\n\
                           sell <property_name>: Sells the <property_name> property you own.\n\
-                          quit: Quits the game and displays the winner.\n"; play_game_recursively str_command player_info current_player board
-  | Inventory -> print_endline "Current player inventory here"; play_game_recursively str_command player_info current_player board
-  | Buy -> print_endline "You cannot buy properties yet"; play_game_recursively str_command player_info current_player board
-  | Sell -> print_endline "You cannot sell properties yet"; play_game_recursively str_command player_info current_player board
+                          quit: Quits the game and displays the winner.\n";
+                      print_string  "> ";
+                      match read_line () with
+                      | exception End_of_file -> exit 0
+                      | str -> play_game_recursively str player_info current_player board)
+  | Inventory -> (print_endline "This would be your inventory";
+                      print_string  "> ";
+                      match read_line () with
+                      | exception End_of_file -> exit 0
+                      | str -> play_game_recursively str player_info current_player board)
+  | Buy -> (print_endline "You cannot buy properties yet";
+                      print_string  "> ";
+                      match read_line () with
+                      | exception End_of_file -> exit 0
+                      | str -> play_game_recursively str player_info current_player board)
+  | Sell -> (print_endline "You cannot sell properties yet";
+                      print_string  "> ";
+                      match read_line () with
+                      | exception End_of_file -> exit 0
+                      | str -> play_game_recursively str player_info current_player board)
 
 (** *)
 let start_game file_name = 
