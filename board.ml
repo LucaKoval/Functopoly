@@ -63,15 +63,41 @@ let to_tile tile_type =
   else if (tile_type = "utility") then Utility
   else failwith ("Improper tile type: " ^ tile_type)
 
-let property_tile_of_json j = {
-  name = j |> member "name" |> to_string;
-  location = j |> member "location" |> to_int;
-  price = j |> member "price" |> to_int;
-  rent = j |> member "rent" |> to_int;
-  color = j |> member "color" |> to_string |> to_color;
-  level = j |> member "rent" |> to_int;
-  tile_type = j |> member "type" |> to_string |> to_tile;
-}
+let property_tile_of_json j = 
+  let tile_type = j |> member "type" |> to_string |> to_tile in
+  if tile_type = Property then
+    {
+      name = j |> member "name" |> to_string;
+      location = j |> member "location" |> to_int;
+      price = j |> member "price" |> to_int;
+      rent = j |> member "rent" |> to_int;
+      color = j |> member "color" |> to_string |> to_color;
+      level = j |> member "rent" |> to_int;
+      tile_type = tile_type;
+    }
+  else if tile_type = Railroad then
+    {
+      name = j |> member "name" |> to_string;
+      location = j |> member "location" |> to_int;
+      price = j |> member "price" |> to_int;
+      rent = j |> member "rent" |> to_int;
+      (* TODO: CHANGE *)
+      color = Blue;
+      level = -1;
+      tile_type = tile_type
+    }
+  else if tile_type = Utility then
+    {
+      name = j |> member "name" |> to_string;
+      location = j |> member "location" |> to_int;
+      price = j |> member "price" |> to_int;
+      rent = -1;
+      (* TODO: CHANGE *)
+      color = Blue;
+      level = -1;
+      tile_type = tile_type
+    }
+  else failwith ("Improper tile type") 
 
 let card_tile_of_json j = {
   card_tile_name = j |> member "name" |> to_string;
@@ -84,9 +110,9 @@ let to_card_type card_type =
   else failwith ("Improper card type: " ^ card_type)
 
 let card_of_json j = {
-  name = j |> member "name" |> to_string;
+  name = "";
   types = j |> member "types" |> to_list |> List.map
-            (fun x -> to_string x |> to_card_type);
+            (fun x -> x |> member "type" |> to_string |> to_card_type);
 }
 
 let to_tax_tile_type tax_tile_type = 
