@@ -15,27 +15,43 @@ type players = {
 }
 
 (** creates the original player data structure for each player *)
-let to_player empty_list = {
-  id = 0;
-  score = 0;
-  location = 0;
-  properties = []
-}
+let rec to_player numplayers acc= 
+  match numplayers with
+  |0-> acc
+  |x-> to_player (numplayers-1) ({
+      id = x;
+      score = 0;
+      location = 0;
+      properties = []
+    }::acc)
+
 
 (** creates the original players data structure using user input*)
-let to_players num_players player_names = (*{
-                                            player_list = List.map to_player;
-                                            current_player = 0;
-                                            number_of_players = user_input
-                                            }*)failwith "unimplemented"
+let to_players num_players input_names = {
+  player_list = to_player num_players [];
+  current_player = 0;
+  number_of_players = num_players;
+  player_names = input_names
+}
+
+let rec get_current_location_helper player_list current_id =
+  match player_list with
+  |h::t when h.id = current_id -> h.location
+  |h::t -> get_current_location_helper t current_id
+  |_-> failwith "no current player error"
+
+let get_current_location players =
+  get_current_location_helper players.player_list players.current_player
 
 (** takes in a 0 just for shits and returns a number rolled by 2 dice*)
 let dice zero =
-  (Random.int 6) + (Random.int 6) +2 +zero
+  let x = (Random.int 6) + (Random.int 6) +2 +zero in
+  print_endline "You rolled a"; print_int x; x
 
 (** [new_property player] is Some property that the current player obtains if any, otherwise None*)
 let new_property player =
-  failwith "unimplemented"
+  if List.length player.properties = 0 then ""
+  else List.nth player.properties 0
 
 (** updates the current player's state if its their turn (ex: location, score, potential property changes) and changes to the next player*)
 let update_current_player player current_player_id =
@@ -65,6 +81,7 @@ let update_players players =
 let new_player players = {
   player_list = update_players players;
   current_player = players.current_player +1;
-  number_of_players = players.number_of_players
+  number_of_players = players.number_of_players;
+  player_names = players.player_names
 }
 
