@@ -65,7 +65,6 @@ let to_tile tile_type =
 
 let property_tile_of_json j = 
   let tile_type = j |> member "type" |> to_string |> to_tile in
-
   if tile_type = Property then
     {
       name = j |> member "name" |> to_string;
