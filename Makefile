@@ -26,7 +26,7 @@ finalcheck: check
 	bash finalcheck.sh
 
 zip:
-	zip monopoly.zip *.ml* *.json _tags Makefile
+	zip functopoly.zip *.ml* *.json _tags Makefile
 	
 docs: docs-public docs-private
 	
@@ -43,4 +43,4 @@ docs-private: build
 
 clean:
 	ocamlbuild -clean
-	rm -rf doc.public doc.private monopoly.zip
+	rm -rf doc.public doc.private functopoly.zip
