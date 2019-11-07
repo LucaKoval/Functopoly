@@ -1,5 +1,7 @@
 open Player
 open Command 
+open Board
+open Yojson
 
 (** [get_num_players] is the number of players  *)
 let get_num_players = 
@@ -93,7 +95,7 @@ let rec play_game_recursively str_command player_info current_player board =
                           | str -> play_game_recursively str player_info current_player board)
 
 (** *)
-let start_game file_name = 
+let start_game board = 
   let num_players = get_num_players in
   let player_names = get_player_names num_players in
 
@@ -104,16 +106,27 @@ let start_game file_name =
   print_string  "> ";
   match read_line () with
   | exception End_of_file -> exit 0
-  | str -> play_game_recursively str initial_player_info "" ""
+  | str -> play_game_recursively str initial_player_info "" board
 
 (* print_string_list player_names; print_string (string_of_int num_players) *)
 
-let main () =
+let rec main_helper file_name =
+  try from_json (Basic.from_file file_name)
+  with _ -> print_endline "Looks like something is \
+                           wrong with the file \
+                           name :( Please try again."; 
+    print_string  "> ";
+    match read_line () with
+    | exception End_of_file -> exit 0
+    | file_name -> main_helper file_name
+
+
+let rec main () =
   print_endline "Please enter the name of the game file you want to load.\n";
   print_string  "> ";
   match read_line () with
   | exception End_of_file -> exit 0
-  | file_name -> start_game file_name
+  | file_name -> start_game (main_helper file_name)
 
 (* Execute the game engine. *)
 let x = main ()
