@@ -28,7 +28,6 @@ let print_tile prop =
   match prop with
   | None -> "None"
   | Some tile_type -> match tile_type with
-    (* TODO: Make this output a string for ~printer argument *)
     | Indices.PropertyTile prop -> "{\n" ^ 
                                    "name : " ^ prop.name ^ "\n" ^
                                    "location : " ^ (string_of_int prop.location) ^ "\n" ^
