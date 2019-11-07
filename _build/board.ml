@@ -65,8 +65,6 @@ let to_tile tile_type =
 
 let property_tile_of_json j = 
   let tile_type = j |> member "type" |> to_string |> to_tile in
-  (* print_endline (Yojson.Basic.pretty_to_string (member "type" j)); *)
-
   if tile_type = Property then
     {
       name = j |> member "name" |> to_string;
@@ -74,7 +72,7 @@ let property_tile_of_json j =
       price = j |> member "price" |> to_int;
       rent = j |> member "rent" |> to_int;
       color = j |> member "color" |> to_string |> to_color;
-      level = j |> member "rent" |> to_int;
+      level = j |> member "level" |> to_int;
       tile_type = tile_type;
     }
   else if tile_type = Railroad then
@@ -122,10 +120,11 @@ let to_tax_tile_type tax_tile_type =
   else if (tax_tile_type = "luxury_tax") then LuxuryTax
   else failwith ("Improper tax tile type: " ^ tax_tile_type)
 
-let tax_tile_of_json j = {
-  tax_tile_type = j |> member "name" |> to_string |> to_tax_tile_type;
-  location = j |> member "location" |> to_int;
-}
+let tax_tile_of_json j = 
+  {
+    tax_tile_type = j |> member "name" |> to_string |> to_tax_tile_type;
+    location = j |> member "location" |> to_int;
+  }
 
 let to_corner_tile_type corner_tile_type =
   if (corner_tile_type = "go") then Go

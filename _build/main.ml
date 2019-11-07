@@ -15,6 +15,9 @@ let get_num_players =
 let dice zero =
   (Random.int 6) + (Random.int 6) + 2 + zero
 
+  let get_current_player_name players =
+  List.nth players.player_names (players.current_player)
+
 (** [get_player_names n] is the list of player names entered by the user *)
 let rec get_player_names n = 
   match n with
@@ -51,8 +54,10 @@ let rec play_game_recursively str_command player_info current_player board =
   | Quit -> print_endline "Sad to see you go. Exiting game now. The winner of
   the game is "; exit 0;
   | Roll -> 
-    let new_player_info = (Player.new_player player_info) in
-    (print_endline "Next player goes now!"; 
+    let new_player_info = (Player.new_player player_info) in 
+    let current_name = (get_current_player_name new_player_info) in
+    print_string current_name;
+    (print_string ", it's your turn now!"; 
      print_string  "> ";
      match read_line () with
      | exception End_of_file -> exit 0;

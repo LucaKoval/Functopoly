@@ -18,6 +18,7 @@ let rec find_card_tile i (lst:Board.card_tile list) =
     else find_card_tile i t
 
 let rec find_tax_tile i (lst:Board.tax_tile list) =
+  (* print_endline (string_of_int i); *)
   match lst with
   | [] -> None
   | h::t -> if h.location = i then Some (TaxTile h)
@@ -38,7 +39,7 @@ let return_tile i (board:Board.t) =
     if card_found <> None then card_found else
       let taxes = board.tax_tiles in
       let tax_found = find_tax_tile i taxes in
-      if card_found <> None then tax_found else
+      if tax_found <> None then tax_found else
         let corners = board.corner_tiles in
         let corner_found = find_corner_tile i corners in
         if corner_found <> None then corner_found else None

@@ -80,7 +80,7 @@ let update_players players =
 (** updates the players state based on their turn (ex: location, score, potential property changes) and changes to the next player*)
 let new_player players = {
   player_list = update_players players;
-  current_player = players.current_player +1;
+  current_player = (players.current_player +1) mod (List.length players.player_names) ;
   number_of_players = players.number_of_players;
   player_names = players.player_names
 }
