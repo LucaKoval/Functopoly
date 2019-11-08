@@ -67,7 +67,8 @@ let rec play_game_recursively str_command player_info current_player board =
     let new_player_info = (Player.new_player player_info) in 
     let current_name = (get_current_player_name new_player_info) in
     print_string current_name;
-    (print_string ", it's your turn now!"; 
+    (print_string ", it's your turn now! Your current location is "; 
+    print_int (Player.get_current_location new_player_info);
      print_string  "> ";
      match read_line () with
      | exception End_of_file -> exit 0;
