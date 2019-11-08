@@ -27,15 +27,15 @@ let rec to_player numplayers acc=
 
 (** print list of ints*)
 let rec print_int_list lst =
-match lst with
-|h::t -> print_int h; print_string " "; print_int_list t
-|[] -> print_string " "
+  match lst with
+  |h::t -> print_int h; print_string " "; print_int_list t
+  |[] -> print_string " "
 
 (** print list of strings*)
 let rec print_string_list lst =
-match lst with
-|h::t -> print_string h; print_string " "; print_string_list t
-|[] -> print_string " "
+  match lst with
+  |h::t -> print_string h; print_string " "; print_string_list t
+  |[] -> print_string " "
 
 (** creates the original players data structure using user input*)
 let to_players num_players input_names = {
@@ -59,39 +59,46 @@ let dice zero =
   let x = (Random.int 6) + (Random.int 6) +2 +zero in
   print_string "You rolled a "; print_int x; print_endline ""; x 
 
-(** [new_property player] is Some property that the current player obtains if any, otherwise None*)
+(** [new_property player] is Some property that the current player obtains if
+    any, otherwise None*)
 let new_property player =
   if List.length player.properties = 0 then ""
   else List.nth player.properties 0
 
-(** updates the current player's state if its their turn (ex: location, score, potential property changes) and changes to the next player*)
+(** updates the current player's state if its their turn (ex: location, score,
+    potential property changes) and changes to the next player*)
 let update_current_player player current_player_id =
   if player.id = current_player_id then ({
-    id= player.id;
-    score = player.score;
-    location = (player.location + (dice 0))mod 40;
-    properties = ((new_property player)::(player.properties)) })
+      id= player.id;
+      score = player.score;
+      location = (player.location + (dice 0))mod 40;
+      properties = ((new_property player)::(player.properties)) })
   else ( {
-    id = player.id;
-    score = player.score;
-    location= player.location;
-    properties = player.properties
-  })
+      id = player.id;
+      score = player.score;
+      location= player.location;
+      properties = player.properties
+    })
 
-(** makes a list of the current_player id to pass into mapping function in update_players*)
+(** makes a list of the current_player id to pass into mapping function in
+    update_players*)
 let rec make_current_id_list players acc =
   if (players.number_of_players =(List.length acc))
   then ( acc)
   else (make_current_id_list players ((players.current_player )::acc))
 
-(** updates the players state based on their turn (ex: location, score, potential property changes) and changes to the next player*)
+(** updates the players state based on their turn (ex: location, score,
+    potential property changes) and changes to the next player*)
 let update_players players =
-  List.map2 update_current_player (players.player_list) (make_current_id_list players [])
+  List.map2 update_current_player (players.player_list)
+    (make_current_id_list players [])
 
-(** updates the players state based on their turn (ex: location, score, potential property changes) and changes to the next player*)
+(** updates the players state based on their turn (ex: location, score,
+    potential property changes) and changes to the next player*)
 let new_player players = {
   player_list = update_players players;
-  current_player = (players.current_player +1) mod (List.length players.player_names) ;
+  current_player = (players.current_player +1) mod
+                   (List.length players.player_names);
   number_of_players = players.number_of_players;
   player_names = players.player_names
 }

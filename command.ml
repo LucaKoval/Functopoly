@@ -50,8 +50,8 @@ let parse_helper entire_str =
 
 let parse str =
   (** [loop_over_list] is the function responsible for handling the quit and
-      go cases. It calls [map_quit] and [map_go] depending on the first string in 
-      the list of strings parsed by [parse_helper] *)
+      go cases. It calls [map_quit] and [map_go] depending on the first string
+      in the list of strings parsed by [parse_helper] *)
   let loop_over_list = function
     | [] -> raise Empty
     |"help"::t -> map_help t

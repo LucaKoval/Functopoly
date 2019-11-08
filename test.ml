@@ -28,27 +28,31 @@ let print_tile prop =
   match prop with
   | None -> "None"
   | Some tile_type -> match tile_type with
-    | Indices.PropertyTile prop -> "{\n" ^ 
-                                   "name : " ^ prop.name ^ "\n" ^
-                                   "location : " ^ (string_of_int prop.location) ^ "\n" ^
-                                   "price : " ^ (string_of_int prop.price) ^ "\n" ^
-                                   "rent : " ^ (string_of_int prop.rent) ^ "\n" ^
-                                   "color : " ^ (string_color prop.color) ^ "\n" ^
-                                   "level : " ^ (string_of_int prop.level) ^ "\n" ^
-                                   "type : property" ^ 
-                                   "\n}"
-    | Indices.CardTile card -> "{\n" ^ 
-                               "card_tile_name : " ^ card.card_tile_name ^ "\n" ^
-                               "location : " ^ (string_of_int card.location) ^ 
-                               "\n}"
-    | Indices.TaxTile tax -> "{\n" ^ 
-                             "tax_tile_type : " ^ (string_of_tax tax.tax_tile_type) ^ "\n" ^
-                             "location : " ^ (string_of_int tax.location) ^ 
-                             "\n}"
-    | Indices.CornerTile corner -> "{\n" ^
-                                   "name : " ^ (string_of_corner corner.corner_tile_type) ^ "\n" ^
-                                   "location : " ^ (string_of_int corner.location) ^ 
-                                   "\n}"
+    | Indices.PropertyTile prop ->
+      "{\n" ^ 
+      "name : " ^ prop.name ^ "\n" ^
+      "location : " ^ (string_of_int prop.location) ^ "\n" ^
+      "price : " ^ (string_of_int prop.price) ^ "\n" ^
+      "rent : " ^ (string_of_int prop.rent) ^ "\n" ^
+      "color : " ^ (string_color prop.color) ^ "\n" ^
+      "level : " ^ (string_of_int prop.level) ^ "\n" ^
+      "type : property" ^ 
+      "\n}"
+    | Indices.CardTile card ->
+      "{\n" ^ 
+      "card_tile_name : " ^ card.card_tile_name ^ "\n" ^
+      "location : " ^ (string_of_int card.location) ^ 
+      "\n}"
+    | Indices.TaxTile tax ->
+      "{\n" ^ 
+      "tax_tile_type : " ^ (string_of_tax tax.tax_tile_type) ^ "\n" ^
+      "location : " ^ (string_of_int tax.location) ^ 
+      "\n}"
+    | Indices.CornerTile corner ->
+      "{\n" ^
+      "name : " ^ (string_of_corner corner.corner_tile_type) ^ "\n" ^
+      "location : " ^ (string_of_int corner.location) ^ 
+      "\n}"
 
 let make_indices_test
     (name : string)
