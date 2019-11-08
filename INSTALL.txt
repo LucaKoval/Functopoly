@@ -1,0 +1,4 @@
+Once you have downloaded the zip file from CMS, unzip it somewhere on your
+computer. Once you have done this, cd to the unzipped foler in a terminal of
+your choice. Then, run `make build` to build the project and `make play` to play
+our version of Monopoly, heartfully called Functopoly. Enjoy!!
