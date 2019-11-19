@@ -4,7 +4,8 @@ type player = {
   id: int;
   score: int;
   location: int;
-  properties: string list
+  properties: string list;
+  money: int;
 }
 
 type players = {
@@ -22,7 +23,8 @@ let rec to_player numplayers acc=
       id = (x-1);
       score = 0;
       location = 0;
-      properties = []
+      properties = [];
+      money = 1500
     }::acc)
 
 (** print list of ints*)
@@ -68,16 +70,20 @@ let new_property player =
 (** updates the current player's state if its their turn (ex: location, score,
     potential property changes) and changes to the next player*)
 let update_current_player player current_player_id =
+  let new_loc = player.location + (dice 0) in
   if player.id = current_player_id then ({
       id= player.id;
-      score = player.score;
-      location = (player.location + (dice 0))mod 40;
-      properties = ((new_property player)::(player.properties)) })
+      score = if new_loc >= 40 then player.score + 200 else player.score;
+      location = new_loc mod 40;
+      properties = ((new_property player)::(player.properties));
+      money = if new_loc >= 40 then player.money + 200 else player.money
+    })
   else ( {
       id = player.id;
       score = player.score;
       location= player.location;
-      properties = player.properties
+      properties = player.properties;
+      money = player.money
     })
 
 (** makes a list of the current_player id to pass into mapping function in
