@@ -79,6 +79,7 @@ let indices_tests = [
         color = Board.Brown;
         level = 0;
         tile_type = Board.Property;
+        owner = -1;
       }))
   );
   make_indices_test "should parse a card tile correctly" 2 board1 (
@@ -102,6 +103,7 @@ let indices_tests = [
         color = Board.Blue;
         level = -1;
         tile_type = Board.Railroad;
+        owner = -1;
       }))
   );
   make_indices_test "should parse a utility correctly" 28 board1 (
@@ -113,6 +115,7 @@ let indices_tests = [
         color = Board.Blue;
         level = -1;
         tile_type = Board.Utility;
+        owner = -1;
       }))
   );
 ]
