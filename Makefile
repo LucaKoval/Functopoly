@@ -26,7 +26,7 @@ finalcheck: check
 	bash finalcheck.sh
 
 zip:
-	zip functopoly.zip *.ml* *.json _tags Makefile
+	zip functopoly.zip *.ml* *.json _tags INSTALL.txt Makefile
 	
 docs: docs-public docs-private
 	
