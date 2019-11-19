@@ -14,6 +14,7 @@ type property_tile = {
   color : color;
   level : int;
   tile_type : tile_type;
+  owner : int;
 }
 
 type card_tile = {
@@ -74,6 +75,7 @@ let property_tile_of_json j =
       color = j |> member "color" |> to_string |> to_color;
       level = j |> member "level" |> to_int;
       tile_type = tile_type;
+      owner = -1;
     }
   else if tile_type = Railroad then
     {
@@ -84,7 +86,8 @@ let property_tile_of_json j =
       (* TODO: CHANGE *)
       color = Blue;
       level = -1;
-      tile_type = tile_type
+      tile_type = tile_type;
+      owner = -1;
     }
   else if tile_type = Utility then
     {
@@ -95,7 +98,8 @@ let property_tile_of_json j =
       (* TODO: CHANGE *)
       color = Blue;
       level = -1;
-      tile_type = tile_type
+      tile_type = tile_type;
+      owner = -1;
     }
   else failwith ("Improper tile type") 
 
