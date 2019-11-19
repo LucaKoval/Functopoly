@@ -70,8 +70,8 @@ let new_property player =
 (** updates the current player's state if its their turn (ex: location, score,
     potential property changes) and changes to the next player*)
 let update_current_player player current_player_id =
-  let new_loc = player.location + (dice 0) in
-  if player.id = current_player_id then ({
+
+  if player.id = current_player_id then let new_loc = player.location + (dice 0) in ({
       id= player.id;
       score = if new_loc > 40 then player.score + 200 else if new_loc = 40 then player.score + 400 else player.score;
       location = new_loc mod 40;
@@ -98,6 +98,12 @@ let rec make_current_id_list players acc =
 let update_players players =
   List.map2 update_current_player (players.player_list)
     (make_current_id_list players [])
+
+(*let get_owner_id = properties current_loc =
+
+
+let get_rent properties current_loc =
+if get_owner_id*)
 
 (** updates the players state based on their turn (ex: location, score,
     potential property changes) and changes to the next player*)
