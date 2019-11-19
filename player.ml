@@ -73,10 +73,10 @@ let update_current_player player current_player_id =
   let new_loc = player.location + (dice 0) in
   if player.id = current_player_id then ({
       id= player.id;
-      score = if new_loc >= 40 then player.score + 200 else player.score;
+      score = if new_loc > 40 then player.score + 200 else if new_loc = 40 then player.score + 400 else player.score;
       location = new_loc mod 40;
       properties = ((new_property player)::(player.properties));
-      money = if new_loc >= 40 then player.money + 200 else player.money
+      money = if new_loc > 40 then player.money + 200 else if new_loc = 40 then player.money + 400 else player.money
     })
   else ( {
       id = player.id;
