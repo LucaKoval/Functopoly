@@ -6,6 +6,7 @@ type command =
   | Buy
   | Upgrade
   | Quit
+  | Trade
 
 exception Empty
 
@@ -29,11 +30,17 @@ let map_inventory player_name =
   | "" -> raise Malformed
   | _ -> Inventory player_name
 
-
 let map_buy = function
   | [] -> Buy
   | _ -> raise Malformed
 
+let map_trade = function
+  | [] -> Trade
+  | _ -> raise Malformed
+
+let map_upgrade = function
+  | [] -> Upgrade
+  | _ -> raise Malformed
 
 let parse_helper entire_str =
   (** [empties_removed] is the list of strings without the empty strings. It
@@ -54,6 +61,8 @@ let parse str =
     |"buy"::t -> map_buy t
     | h::t -> if h = "quit" then map_quit t
       else if h = "roll" then map_roll t
+      else if h = "trade" then map_trade t
+      else if h = "upgrade" then map_upgrade t
       else raise Malformed
   in loop_over_list (parse_helper str)
 

@@ -101,12 +101,29 @@ let rec play_game_recursively str_command player_info current_player board =
      Then chooses property and upgrade "amount"
      Finish
   *)
-  | Upgrade -> (print_endline "You cannot sell properties yet";
+  | Upgrade -> (print_endline "You cannot upgrade properties yet";
                 print_string  "> ";
                 match read_line () with
                 | exception End_of_file -> exit 0
                 | str -> play_game_recursively str player_info
                            current_player board)
+  (*
+  display player-property menu
+   who do you wanna trade with?
+   player x
+   which property do you wanna trade?
+   property y
+   what price do you want to sell for? (syntax: <cash>, <property>)
+   player x, do you accept that price? (<accept>/<reject>)
+  *)
+  | Trade -> (print_endline "You cannot trade properties yet";
+              print_string  "> ";
+              match read_line () with
+              | exception End_of_file -> exit 0
+              | str -> play_game_recursively str player_info
+                         current_player board)
+
+
 
 (** *)
 let start_game board = 
