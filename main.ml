@@ -94,12 +94,19 @@ let rec play_game_recursively str_command player_info current_player board =
             match read_line () with
             | exception End_of_file -> exit 0
             | str -> play_game_recursively str player_info current_player board)
-  | Sell property_name-> (print_endline "You cannot sell properties yet";
-                          print_string  "> ";
-                          match read_line () with
-                          | exception End_of_file -> exit 0
-                          | str -> play_game_recursively str player_info
-                                     current_player board)
+
+  (* Player enters 'upgrade'
+     Displays list of upgradeable properties (will need to somehow check what
+     groups of properties the players owns completely)
+     Then chooses property and upgrade "amount"
+     Finish
+  *)
+  | Upgrade -> (print_endline "You cannot sell properties yet";
+                print_string  "> ";
+                match read_line () with
+                | exception End_of_file -> exit 0
+                | str -> play_game_recursively str player_info
+                           current_player board)
 
 (** *)
 let start_game board = 

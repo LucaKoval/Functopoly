@@ -4,7 +4,7 @@ type command =
   | Roll
   | Inventory of string
   | Buy
-  | Sell of string
+  | Upgrade
   | Quit
 
 exception Empty
@@ -34,11 +34,6 @@ let map_buy = function
   | [] -> Buy
   | _ -> raise Malformed
 
-let map_sell property = 
-  match property with
-  | "" -> raise Malformed
-  | _ -> Sell property
-
 
 let parse_helper entire_str =
   (** [empties_removed] is the list of strings without the empty strings. It
@@ -57,7 +52,6 @@ let parse str =
     |"help"::t -> map_help t
     |"inventory"::t -> map_inventory (String.concat "" t)
     |"buy"::t -> map_buy t
-    |"sell"::t -> map_sell (String.concat "" t)
     | h::t -> if h = "quit" then map_quit t
       else if h = "roll" then map_roll t
       else raise Malformed
