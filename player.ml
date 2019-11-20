@@ -88,19 +88,19 @@ match tile with
 let get_owner_id tile = 
 match tile with
 |PropertyTile a -> a.owner
-|_-> failwith "not a property tile"
+|_-> failwith "get_owner_id: not a property tile"
 
 (**assuming current location is a property, gets the name of the current location's property*)
 let get_property_name tile = 
 match tile with
 |PropertyTile a -> a.name
-|_-> failwith "not a property tile"
+|_-> failwith "get_property_name: not a property tile"
 
 (**assuming current tile is a property, gets the rent of the current location's property*)
 let tile_rent tile = 
 match tile with
 |PropertyTile a -> a.rent
-|_-> failwith "not a property tile"
+|_-> failwith "tile_rent: not a property tile"
 
 (** gets player name of the corresponding owner id number*)
 let get_owner_name tile player_names =
@@ -124,7 +124,7 @@ let update_current_player player current_player_id =
       id= player.id;
       score = if new_loc > 40 then player.score + 200 else if new_loc = 40 then player.score + 400 else player.score;
       location = new_loc mod 40;
-      properties = ((new_property player)::(player.properties));
+      properties = player.properties;
       money = if new_loc > 40 then player.money + 200 else if new_loc = 40 then player.money + 400 else player.money
     })
   else ( {
@@ -135,21 +135,27 @@ let update_current_player player current_player_id =
       money = player.money
     })
 
-
+(** if the new location is a unowned property, the price of the new property is returned, 
+else if the property is owned, the property price is returned 
+else if the location is not a property at all, 0 is returned*)
 let roll_change_score playerscore new_loc board player_names =
 if (get_rent board (new_loc mod 40))<>0 then
-let prop= get_property_name (get_property new_loc board) in
-let owner= get_owner_name (get_property new_loc board) player_names in 
-let rent = get_rent board new_loc in
+let prop= get_property_name (get_property (new_loc mod 40) board) in
+let owner= get_owner_name (get_property (new_loc mod 40) board) player_names in 
+let rent = get_rent board (new_loc mod 40) in
 print_string prop; print_string " is owned by "; print_string owner; 
 print_string " Rent paid: "; print_int rent;
 print_endline "";
 (if new_loc > 40 then (playerscore + 200-(get_rent board (new_loc mod 40))) 
 else if new_loc = 40 then (playerscore + 400-(get_rent board (new_loc mod 40)))
 else playerscore- (get_rent board (new_loc mod 40)))
-else 
+else if (is_property (get_property (new_loc mod 40) board)) then (
+let prop= get_property_name (get_property (new_loc mod 40) board) in
+print_string prop;
+print_string " is available for purchase! Would you like to buy?";
 (if new_loc > 40 then playerscore + 200 else if new_loc = 40 then playerscore + 400
-else playerscore)
+else playerscore) )
+else (print_string "this is not a property, other card types are currently not implemented at this time, please treat this as a blank space for now"; 0) (* ToDo: tiles that aren't properties?*)
 
 
  (** updates the current player's state if its their turn based on roll*)
@@ -162,10 +168,43 @@ begin
       id= player.id;
       score = roll_change_score player.score new_loc board player_names;
       location = new_loc mod 40;
-      properties = ((new_property player)::(player.properties));
+      properties = player.properties;
       money = if new_loc > 40 then player.money + 200 else if new_loc = 40 then player.money + 400 else player.money
     }::acc)
-  else ( {
+  else roll_update_current_player t player_names current_player_id board ( {
+      id = player.id;
+      score = player.score;
+      location= player.location;
+      properties = player.properties;
+      money = player.money
+    }::acc)
+    end
+
+(** gets price of property to buy or 0 if not a property*)
+let get_price current_loc board=
+match (get_property current_loc board) with
+|PropertyTile a -> a.price
+|_-> failwith "get_price: not a property at location"
+
+(** updates owner_id of property in board to be current player_id*)
+
+ (** updates the current player's state if its their turn based on buy*)
+let rec buy_update_current_player players_list player_names current_player_id board acc=
+match players_list with
+|[]-> acc
+|player::t ->
+begin
+  if (player.id = current_player_id) then (
+  print_endline "Congrats you now own ";
+  print_string (get_property_name (get_property player.location board)); 
+  buy_update_current_player t player_names current_player_id board ({
+      id= player.id;
+      score = (player.score - (get_price player.location board));
+      location = player.location;
+      properties = ((get_property_name (get_property player.location board))::(player.properties));
+      money = player.money-(get_price player.location board)
+    }::acc))
+  else buy_update_current_player t player_names current_player_id board (  {
       id = player.id;
       score = player.score;
       location= player.location;
@@ -191,10 +230,23 @@ let update_players players =
 let roll_update_players players board=
   roll_update_current_player players.player_list players.player_names players.current_player board []
 
-(** updates the players state based on their turn (ex: location, score,
+let buy_update_players players board =
+  buy_update_current_player players.player_list players.player_names players.current_player board []
+
+(** updates the players state based on roll (ex: location, score,
     potential property changes) and changes to the next player*)
 let roll_new_player players board = {
     player_list = roll_update_players players board;
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names
+}
+
+
+(** updates the players state based on buy (ex: location, score,
+    potential property changes) and changes to the next player*)
+let buy_new_player players board = {
+    player_list = buy_update_players players board;
   current_player = players.current_player;
   number_of_players = players.number_of_players;
   player_names = players.player_names
