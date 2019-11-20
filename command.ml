@@ -7,6 +7,7 @@ type command =
   | Upgrade
   | Quit
   | Trade
+  | EndTurn
 
 exception Empty
 
@@ -42,6 +43,10 @@ let map_upgrade = function
   | [] -> Upgrade
   | _ -> raise Malformed
 
+let map_endturn = function
+  | [] -> EndTurn
+  | _ -> raise Malformed
+
 let parse_helper entire_str =
   (** [empties_removed] is the list of strings without the empty strings. It
       takes in the list of all strings and removes the empty ones. *)
@@ -63,6 +68,7 @@ let parse str =
       else if h = "roll" then map_roll t
       else if h = "trade" then map_trade t
       else if h = "upgrade" then map_upgrade t
+      else if h = "endturn" then map_endturn t
       else raise Malformed
   in loop_over_list (parse_helper str)
 
