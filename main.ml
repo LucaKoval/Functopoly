@@ -131,14 +131,25 @@ let get_upgradeable_properties id board color_groups =
 let rec properties_to_string lst =
   let rec helper acc = function
     | [] -> acc
-    | h::t -> if (List.length t) = 0 then
-        helper (acc ^ h) t
+    | (name,_)::t -> if (List.length t) = 0 then
+        helper (acc ^ name) t
       else if (List.length t) = 1 then
-        helper (acc ^ h ^ ", and ") t
+        helper (acc ^ name ^ ", and ") t
       else
-        helper (acc ^ h ^ ", ") t
+        helper (acc ^ name ^ ", ") t
   in
   helper "" lst
+
+let update_level index props =
+  let rec helper acc (props:Board.property_tile list) = 
+    match props with
+    | [] -> acc
+    | h::t -> if h.location = index then
+        helper ({h with level=h.level+1}::acc) t
+      else
+        helper (h::acc) t
+  in
+  helper [] props
 
 let command_list =
   "\nHere's the list of commands you can \
@@ -151,7 +162,7 @@ let command_list =
    quit: Quits the game and displays the winner.\n"
 
 (** [play_game_recursively ]*)
-let rec play_game_recursively str_command player_info current_player board =
+let rec play_game_recursively str_command player_info (current_player:string) board =
   let parsed_command = (try Command.parse str_command with 
       | Malformed -> (print_endline "The command you entered was Malformed :( \
                                      Please try again.";
@@ -204,8 +215,9 @@ let rec play_game_recursively str_command player_info current_player board =
      Then chooses property and upgrade "amount"
      Finish
   *)
-  | Upgrade -> let color_groups = get_color_groups current_player board in
-    let upgradeable_properties = get_upgradeable_properties current_player board color_groups in
+  | Upgrade -> let current_player_id = (player_info.current_player) in
+    let color_groups = get_color_groups current_player_id board in
+    let upgradeable_properties = get_upgradeable_properties current_player_id board color_groups in
     let prop_string = properties_to_string upgradeable_properties in
     if (List.length upgradeable_properties = 0) then
       begin
@@ -219,15 +231,12 @@ let rec play_game_recursively str_command player_info current_player board =
         print_endline ("You can upgrade the following properties: " ^ prop_string);
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> if List.mem str upgradeable_properties then
-            play_game_recursively str player_info current_player board
+        | name -> if List.mem_assoc name upgradeable_properties then
+            let id = List.assoc name upgradeable_properties in
+            let new_board = {board with property_tiles = (update_level id board.property_tiles)} in
+            play_game_recursively name player_info current_player new_board
           else
-            play_game_recursively str player_info current_player board
-            (* begin
-               match read_line () with
-               | exception End_of_file -> exit 0
-               | str -> play_game_recursively str player_info current_player board
-               end *)
+            play_game_recursively name player_info current_player board
       end
 
 
