@@ -346,6 +346,7 @@ let rec play_game_recursively str_command player_info current_player board =
     if (List.length upgradeable_properties = 0) then
       begin
         print_endline "You do not have any upgradeable properties at this moment.";
+        print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
         | str -> play_game_recursively str player_info current_player board
@@ -353,6 +354,7 @@ let rec play_game_recursively str_command player_info current_player board =
     else
       begin
         print_endline ("You can upgrade the following properties: " ^ prop_string);
+        print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
         | name -> if List.mem_assoc name upgradeable_properties then
