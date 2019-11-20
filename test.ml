@@ -13,6 +13,7 @@ let string_color = function
   | Yellow -> "yellow"
   | Green -> "green"
   | Blue -> "blue"
+  | _ -> "no_color"
 
 let string_of_tax = function
   | IncomeTax -> "income_tax"
@@ -120,9 +121,46 @@ let indices_tests = [
   );
 ]
 
+
+let buy_all id board =
+  let props = board.property_tiles in
+  let rec helper acc = function
+    | [] -> acc
+    | h::t -> helper ({h with owner=id}::acc) t
+  in
+  {board with property_tiles=(helper [] props)}
+
+let bought_props1 = buy_all 0 board1;;
+
+(* 
+type color_groups = {brown:int; light_blue:int; magenta:int; orange:int;
+                     red:int; yellow:int; green:int; blue:int} *)
+let print_color_groups (cg:Main.color_groups) = 
+  "{brown="^(string_of_int cg.brown)^"light_blue="^(string_of_int cg.light_blue)^"magenta="
+  ^(string_of_int cg.magenta)^"orange="^(string_of_int cg.orange)^"red="^
+  (string_of_int cg.red)^"yellow="^(string_of_int cg.yellow)^"green="^
+  (string_of_int cg.green)^"blue="^(string_of_int cg.blue)^"}"
+
+let make_get_color_groups_test
+    (name : string)
+    (id : int) 
+    (board : Board.t) 
+    (expected_output : Main.color_groups) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output 
+        (Main.get_color_groups id board) ~printer:print_color_groups)
+
+let upgrade_tests = [
+  make_get_color_groups_test "should be all properties" 0 bought_props1 {
+    brown=2; light_blue=3; magenta=3; orange=3;
+    red=3; yellow=3; green=3; blue=2
+  }
+]
+
 let suite =
   "test suite for final project"  >::: List.flatten [
     indices_tests;
+    upgrade_tests;
   ]
 
 let _ = run_test_tt_main suite
