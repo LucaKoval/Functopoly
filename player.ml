@@ -243,6 +243,17 @@ let roll_new_player players board = {
 }
 
 
+let rec list_printer lst =
+match lst with
+|[]-> ()
+|h::t -> print_endline h; list_printer t
+ 
+let rec inventory_helper players_list acc current_player_id =
+ match players_list with
+ |[]-> acc
+ |h::t when h.id = current_player_id -> h.properties
+ |h::t -> inventory_helper t acc current_player_id
+
 (** updates the players state based on buy (ex: location, score,
     potential property changes) and changes to the next player*)
 let buy_new_player players board = {
