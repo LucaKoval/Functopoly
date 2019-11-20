@@ -1,4 +1,6 @@
 open Yojson.Basic.Util
+open Board
+open Indices
 
 type player = {
   id: int;
@@ -67,6 +69,53 @@ let new_property player =
   if List.length player.properties = 0 then ""
   else List.nth player.properties 0
 
+(** gets the tile from the current location on the board*)
+let get_property current_loc board =
+match (Indices.return_tile current_loc board) with 
+| None -> failwith "no tile at this location"
+| Some v -> v
+
+(** returns true if current tile is a property tile*)
+let is_property tile =
+match tile with
+| PropertyTile a -> true
+| CardTile a -> false
+| TaxTile a -> false
+| CornerTile a -> false
+
+
+(**assuming current location is a property, gets the owner id of the current location's property*)
+let get_owner_id tile = 
+match tile with
+|PropertyTile a -> a.owner
+|_-> failwith "not a property tile"
+
+(**assuming current location is a property, gets the name of the current location's property*)
+let get_property_name tile = 
+match tile with
+|PropertyTile a -> a.name
+|_-> failwith "not a property tile"
+
+(**assuming current tile is a property, gets the rent of the current location's property*)
+let tile_rent tile = 
+match tile with
+|PropertyTile a -> a.rent
+|_-> failwith "not a property tile"
+
+(** gets player name of the corresponding owner id number*)
+let get_owner_name tile player_names =
+List.nth player_names (get_owner_id tile)
+
+
+(** returns the rent if the current location is a property with NO owner, else 0 *)
+let get_rent board current_loc =
+let current_tile = (get_property current_loc board) in
+if (is_property current_tile) then ( 
+  if ((get_owner_id current_tile) >  -1) then tile_rent current_tile
+  else 0
+  )
+  else 0
+
 (** updates the current player's state if its their turn (ex: location, score,
     potential property changes) and changes to the next player*)
 let update_current_player player current_player_id =
@@ -86,6 +135,45 @@ let update_current_player player current_player_id =
       money = player.money
     })
 
+
+let roll_change_score playerscore new_loc board player_names =
+if (get_rent board (new_loc mod 40))<>0 then
+let prop= get_property_name (get_property new_loc board) in
+let owner= get_owner_name (get_property new_loc board) player_names in 
+let rent = get_rent board new_loc in
+print_string prop; print_string " is owned by "; print_string owner; 
+print_string " Rent paid: "; print_int rent;
+print_endline "";
+(if new_loc > 40 then (playerscore + 200-(get_rent board (new_loc mod 40))) 
+else if new_loc = 40 then (playerscore + 400-(get_rent board (new_loc mod 40)))
+else playerscore- (get_rent board (new_loc mod 40)))
+else 
+(if new_loc > 40 then playerscore + 200 else if new_loc = 40 then playerscore + 400
+else playerscore)
+
+
+ (** updates the current player's state if its their turn based on roll*)
+let rec roll_update_current_player players_list player_names current_player_id board acc=
+match players_list with
+|[]-> acc
+|player::t -> 
+begin
+  if (player.id = current_player_id) then let new_loc = player.location + (dice 0) in roll_update_current_player t player_names current_player_id board ({
+      id= player.id;
+      score = roll_change_score player.score new_loc board player_names;
+      location = new_loc mod 40;
+      properties = ((new_property player)::(player.properties));
+      money = if new_loc > 40 then player.money + 200 else if new_loc = 40 then player.money + 400 else player.money
+    }::acc)
+  else ( {
+      id = player.id;
+      score = player.score;
+      location= player.location;
+      properties = player.properties;
+      money = player.money
+    }::acc)
+    end
+
 (** makes a list of the current_player id to pass into mapping function in
     update_players*)
 let rec make_current_id_list players acc =
@@ -99,16 +187,23 @@ let update_players players =
   List.map2 update_current_player (players.player_list)
     (make_current_id_list players [])
 
-(*let get_owner_id = properties current_loc =
+(** updates the players rent based on roll *)
+let roll_update_players players board=
+  roll_update_current_player players.player_list players.player_names players.current_player board []
 
-
-let get_rent properties current_loc =
-if get_owner_id*)
+(** updates the players state based on their turn (ex: location, score,
+    potential property changes) and changes to the next player*)
+let roll_new_player players board = {
+    player_list = roll_update_players players board;
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names
+}
 
 (** updates the players state based on their turn (ex: location, score,
     potential property changes) and changes to the next player*)
 let new_player players = {
-  player_list = update_players players;
+  player_list = (*update_players*) players.player_list;
   current_player = (players.current_player +1) mod
                    (List.length players.player_names);
   number_of_players = players.number_of_players;
