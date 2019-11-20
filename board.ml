@@ -160,3 +160,29 @@ let board_of_json j = {
 let from_json j =
   try board_of_json j
   with Type_error (s, _) -> failwith ("Parsing error: " ^ s)
+
+  let rec buy_update_properties (board_property_tiles:property_tile list) current_player_id property_name acc=
+match board_property_tiles with 
+| []-> List.rev acc
+| h::t when (h.name = property_name) -> 
+buy_update_properties t current_player_id property_name ({
+  name = h.name;
+  location = h.location;
+  price = h.price;
+  rent = h.rent;
+  color = h.color;
+  level = h.level;
+  tile_type = h.tile_type;
+  owner = current_player_id;
+}::acc)
+| h::t -> buy_update_properties t current_player_id property_name (h::acc)
+
+let buy_update_board board current_player_id property_name= {
+ go_score = board.go_score;
+  init_score = board.init_score;
+  property_tiles = buy_update_properties board.property_tiles current_player_id property_name [];
+  card_tiles = board.card_tiles;
+  cards = board.cards;
+  tax_tiles = board.tax_tiles;
+  corner_tiles = board.corner_tiles
+}
