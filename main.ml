@@ -44,7 +44,8 @@ let command_list =
    help: Prints the list of commands you can run.\n\
    inventory <player_name>: Prints the inventory for <player_name>.\n\
    buy: Buys a property if you landed on one.\n\
-   sell <property_name>: Sells the <property_name> property you own.\n\
+   trade: Initiates a trade sequence.\n\
+   upgrade: Displays upgradeable properties and then allows you to upgrade them. \n\
    quit: Quits the game and displays the winner.\n"
 
 
@@ -159,8 +160,8 @@ let rec execute_trade trader1 trader2 =
     | str -> bargaining str trader1 trader2 property_to_trade
 
 (** gets property name*)
- let buy_helper player_info board=
-Player.get_property_name (get_property (Player.get_current_location player_info) board)
+let buy_helper player_info board=
+  Player.get_property_name (get_property (Player.get_current_location player_info) board)
 
 
 (** [play_game_recursively ]*)
@@ -182,11 +183,11 @@ let rec play_game_recursively str_command player_info current_player board =
                              board)) in
   match parsed_command with
   | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
- | Roll -> let update_player_roll = (roll_new_player player_info board) in (print_endline "";
-             print_string  "> ";
-             match read_line () with
-             | exception End_of_file -> exit 0;
-             | str -> play_game_recursively str update_player_roll current_player board)
+  | Roll -> let update_player_roll = (roll_new_player player_info board) in (print_endline "";
+                                                                             print_string  "> ";
+                                                                             match read_line () with
+                                                                             | exception End_of_file -> exit 0;
+                                                                             | str -> play_game_recursively str update_player_roll current_player board)
   | EndTurn ->
     let new_player_info = (Player.new_player player_info) in 
     let current_name = (get_current_player_name new_player_info) in
@@ -211,11 +212,11 @@ let rec play_game_recursively str_command player_info current_player board =
                               | str -> play_game_recursively str player_info
                                          current_player board)
   | Buy -> let update_player_buy = (Player.buy_new_player player_info board) in 
-  let prop_name = buy_helper player_info board in (print_endline "";
-            print_string  "> ";
-            match read_line () with
-            | exception End_of_file -> exit 0
-            | str -> play_game_recursively str update_player_buy current_player (Board.buy_update_board board update_player_buy.current_player prop_name))
+    let prop_name = buy_helper player_info board in (print_endline "";
+                                                     print_string  "> ";
+                                                     match read_line () with
+                                                     | exception End_of_file -> exit 0
+                                                     | str -> play_game_recursively str update_player_buy current_player (Board.buy_update_board board update_player_buy.current_player prop_name))
   (* Player enters 'upgrade'
      Displays list of upgradeable properties (will need to somehow check what
      groups of properties the players owns completely)
