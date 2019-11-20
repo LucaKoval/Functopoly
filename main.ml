@@ -165,10 +165,10 @@ let buy_helper player_info board=
 
 
 let rec get_player_id_from_name player_names name acc=
-match player_names with
-|[]-> acc
-|h::t when h = name -> acc
-|h::t -> get_player_id_from_name t name (acc+1)
+  match player_names with
+  |[]-> acc
+  |h::t when h = name -> acc
+  |h::t -> get_player_id_from_name t name (acc+1)
 
 let get_properties id (board:Board.t) =
   let rec helper acc = function
@@ -240,8 +240,7 @@ let rec play_game_recursively str_command player_info current_player board =
              | exception End_of_file -> exit 0
              | str -> play_game_recursively str player_info current_player board
             )
- | Inventory player_name -> print_string player_name; print_endline "'s inventory:";let list = (Player.inventory_helper player_info.player_list [] (get_player_id_from_name player_info.player_names player_name 0)) in (Player.list_printer list); (
-
+  | Inventory player_name -> (print_string player_name; print_endline "'s inventory:";let list = (Player.inventory_helper player_info.player_list [] (get_player_id_from_name player_info.player_names player_name 0)) in (Player.list_printer list);
                               print_string  "> ";
                               match read_line () with
                               | exception End_of_file -> exit 0
