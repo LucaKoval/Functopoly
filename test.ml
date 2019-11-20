@@ -132,14 +132,28 @@ let buy_all id board =
 
 let bought_props1 = buy_all 0 board1;;
 
+let buy_first_set id board =
+  let props = board.property_tiles in
+  let rec helper acc (props:Board.property_tile list) =
+    match props with
+    | [] -> acc
+    | h::t -> if h.location = 1 || h.location = 3 then
+        helper ({h with owner=id}::acc) t
+      else
+        helper acc t
+  in
+  {board with property_tiles=(helper [] props)}
+
+let bought_props1 = buy_all 0 board1;;
+let bought_first_set = buy_first_set 0 board1;;
 
 type color_groups = {brown:int; light_blue:int; magenta:int; orange:int;
                      red:int; yellow:int; green:int; blue:int}
 let print_color_groups (cg:Upgrade.color_groups) = 
-  "{brown="^(string_of_int cg.brown)^"light_blue="^(string_of_int cg.light_blue)^"magenta="
-  ^(string_of_int cg.magenta)^"orange="^(string_of_int cg.orange)^"red="^
-  (string_of_int cg.red)^"yellow="^(string_of_int cg.yellow)^"green="^
-  (string_of_int cg.green)^"blue="^(string_of_int cg.blue)^"}"
+  "{brown="^(string_of_int cg.brown)^"; light_blue="^(string_of_int cg.light_blue)^"; magenta="
+  ^(string_of_int cg.magenta)^"; orange="^(string_of_int cg.orange)^"; red="^
+  (string_of_int cg.red)^"; yellow="^(string_of_int cg.yellow)^"; green="^
+  (string_of_int cg.green)^"; blue="^(string_of_int cg.blue)^"}"
 
 let make_get_color_groups_test
     (name : string)
@@ -150,11 +164,49 @@ let make_get_color_groups_test
       assert_equal expected_output 
         (Upgrade.get_color_groups id board) ~printer:print_color_groups)
 
+let rec print_upgradeable_properties (lst:(string*int) list) =
+  let rec helper acc = function
+    | [] -> acc
+    | (name,id)::t -> if (List.length t) = 0 then
+        helper (acc ^ name ^ ":" ^ (string_of_int id)) t
+      else if (List.length t) = 1 then
+        helper (acc ^ name ^ ":" ^ (string_of_int id) ^ ", and ") t
+      else
+        helper (acc ^ name ^ ":" ^ (string_of_int id) ^ ", ") t
+  in
+  helper "" lst
+
+let make_get_upgradeable_properties_test
+    (name : string)
+    (id : int) 
+    (board : Board.t)
+    (cg : Upgrade.color_groups)
+    (expected_output : (string * int) list) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output 
+        (Upgrade.get_upgradeable_properties id board cg) ~printer:print_upgradeable_properties)
+
 let upgrade_tests = [
   make_get_color_groups_test "should be all properties" 0 bought_props1 {
     brown=2; light_blue=3; magenta=3; orange=3;
     red=3; yellow=3; green=3; blue=2
-  }
+  };
+  make_get_color_groups_test "should be the first set of properties" 0 bought_first_set {
+    brown=2; light_blue=0; magenta=0; orange=0;
+    red=0; yellow=0; green=0; blue=0
+  };
+  make_get_color_groups_test "should be none of the properties" 0 board1 {
+    brown=0; light_blue=0; magenta=0; orange=0;
+    red=0; yellow=0; green=0; blue=0
+  };
+  make_get_upgradeable_properties_test "should be the first set of properties" 0 bought_first_set {
+    brown=2; light_blue=0; magenta=0; orange=0;
+    red=0; yellow=0; green=0; blue=0
+  } (List.rev [("Mediterranean Avenue",0);("Baltic Avenue",0)]);
+  make_get_upgradeable_properties_test "should be none of the properties" 0 board1 {
+    brown=0; light_blue=0; magenta=0; orange=0;
+    red=0; yellow=0; green=0; blue=0
+  } [];
 ]
 
 let suite =
