@@ -206,6 +206,7 @@ let get_color_groups id (board:Board.t) =
                   | Board.Yellow -> helper {tracker with yellow=tracker.yellow+1} (index+1)
                   | Board.Green -> helper {tracker with green=tracker.green+1} (index+1)
                   | Board.Blue -> helper {tracker with blue=tracker.blue+1} (index+1)
+                  | _ -> helper tracker (index+1)
                 else
                   helper tracker (index+1)
               | _ -> helper tracker (index+1)
@@ -249,6 +250,7 @@ let get_upgradeable_properties id board color_groups =
                   | Board.Blue -> if color_groups.blue = 2 then
                       helper (name_index::acc) (index+1)
                     else helper acc (index+1)
+                  | _ -> helper acc (index+1)
                 else
                   helper acc (index+1)
               | _ -> helper acc (index+1)

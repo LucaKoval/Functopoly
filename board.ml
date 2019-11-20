@@ -1,6 +1,6 @@
 open Yojson.Basic.Util
 
-type color = Brown | LightBlue | Magenta | Orange | Red | Yellow | Green | Blue
+type color = Brown | LightBlue | Magenta | Orange | Red | Yellow | Green | Blue | NoColor
 type tile_type = Property | Railroad | Utility
 type card_type = Chance | CommunityChest
 type tax_tile_type = IncomeTax | LuxuryTax
@@ -83,8 +83,7 @@ let property_tile_of_json j =
       location = j |> member "location" |> to_int;
       price = j |> member "price" |> to_int;
       rent = j |> member "rent" |> to_int;
-      (* TODO: CHANGE *)
-      color = Blue;
+      color = NoColor;
       level = -1;
       tile_type = tile_type;
       owner = -1;
@@ -95,8 +94,7 @@ let property_tile_of_json j =
       location = j |> member "location" |> to_int;
       price = j |> member "price" |> to_int;
       rent = -1;
-      (* TODO: CHANGE *)
-      color = Blue;
+      color = NoColor;
       level = -1;
       tile_type = tile_type;
       owner = -1;
@@ -161,24 +159,24 @@ let from_json j =
   try board_of_json j
   with Type_error (s, _) -> failwith ("Parsing error: " ^ s)
 
-  let rec buy_update_properties (board_property_tiles:property_tile list) current_player_id property_name acc=
-match board_property_tiles with 
-| []-> List.rev acc
-| h::t when (h.name = property_name) -> 
-buy_update_properties t current_player_id property_name ({
-  name = h.name;
-  location = h.location;
-  price = h.price;
-  rent = h.rent;
-  color = h.color;
-  level = h.level;
-  tile_type = h.tile_type;
-  owner = current_player_id;
-}::acc)
-| h::t -> buy_update_properties t current_player_id property_name (h::acc)
+let rec buy_update_properties (board_property_tiles:property_tile list) current_player_id property_name acc=
+  match board_property_tiles with 
+  | []-> List.rev acc
+  | h::t when (h.name = property_name) -> 
+    buy_update_properties t current_player_id property_name ({
+        name = h.name;
+        location = h.location;
+        price = h.price;
+        rent = h.rent;
+        color = h.color;
+        level = h.level;
+        tile_type = h.tile_type;
+        owner = current_player_id;
+      }::acc)
+  | h::t -> buy_update_properties t current_player_id property_name (h::acc)
 
 let buy_update_board board current_player_id property_name= {
- go_score = board.go_score;
+  go_score = board.go_score;
   init_score = board.init_score;
   property_tiles = buy_update_properties board.property_tiles current_player_id property_name [];
   card_tiles = board.card_tiles;
