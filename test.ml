@@ -101,7 +101,7 @@ let indices_tests = [
         location = 5;
         price = 200;
         rent = 25;
-        color = Board.Blue;
+        color = Board.NoColor;
         level = -1;
         tile_type = Board.Railroad;
         owner = -1;
@@ -113,7 +113,7 @@ let indices_tests = [
         location = 28;
         price = 150;
         rent = -1;
-        color = Board.Blue;
+        color = Board.NoColor;
         level = -1;
         tile_type = Board.Utility;
         owner = -1;
@@ -132,10 +132,10 @@ let buy_all id board =
 
 let bought_props1 = buy_all 0 board1;;
 
-(* 
+
 type color_groups = {brown:int; light_blue:int; magenta:int; orange:int;
-                     red:int; yellow:int; green:int; blue:int} *)
-let print_color_groups (cg:Main.color_groups) = 
+                     red:int; yellow:int; green:int; blue:int}
+let print_color_groups (cg:Upgrade.color_groups) = 
   "{brown="^(string_of_int cg.brown)^"light_blue="^(string_of_int cg.light_blue)^"magenta="
   ^(string_of_int cg.magenta)^"orange="^(string_of_int cg.orange)^"red="^
   (string_of_int cg.red)^"yellow="^(string_of_int cg.yellow)^"green="^
@@ -145,10 +145,10 @@ let make_get_color_groups_test
     (name : string)
     (id : int) 
     (board : Board.t) 
-    (expected_output : Main.color_groups) : test = 
+    (expected_output : Upgrade.color_groups) : test = 
   name >:: (fun _ -> 
       assert_equal expected_output 
-        (Main.get_color_groups id board) ~printer:print_color_groups)
+        (Upgrade.get_color_groups id board) ~printer:print_color_groups)
 
 let upgrade_tests = [
   make_get_color_groups_test "should be all properties" 0 bought_props1 {
@@ -158,7 +158,6 @@ let upgrade_tests = [
 ]
 
 let suite =
-  print_endline "asdfasdf";
   "test suite for final project"  >::: List.flatten [
     indices_tests;
     upgrade_tests;
