@@ -186,6 +186,45 @@ let make_get_upgradeable_properties_test
       assert_equal expected_output 
         (Upgrade.get_upgradeable_properties id board cg) ~printer:print_upgradeable_properties)
 
+let get_properties id (board:Board.t) =
+  let rec helper acc = function
+    | index -> if index = 40 then acc else
+        begin
+          match Indices.return_tile index board with
+          | None -> helper acc (index+1)
+          | Some tile -> begin
+              match tile with
+              | Indices.PropertyTile propTile -> if propTile.owner == id then
+                  helper (propTile::acc) (index+1)
+                else
+                  helper acc (index+1)
+              | _ -> helper acc (index+1)
+            end
+        end
+  in
+  helper [] 1
+
+let print_properties (props:Board.property_tile list) = 
+  let rec helper acc = function
+    | [] -> acc
+    | h::t -> if (List.length t) = 0 then
+        helper (acc ^ (print_tile (Some (Indices.PropertyTile h)))) t
+      else if (List.length t) = 1 then
+        helper (acc ^ (print_tile (Some (Indices.PropertyTile h))) ^ ", and ") t
+      else
+        helper (acc ^ (print_tile (Some (Indices.PropertyTile h))) ^ ", ") t
+  in
+  helper "" props
+
+let make_update_level_tests
+    (name : string)
+    (index : int) 
+    (props : Board.property_tile list)
+    (expected_output : Board.property_tile list) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output 
+        (Upgrade.update_level index props) ~printer:print_properties)
+
 let upgrade_tests = [
   make_get_color_groups_test "should be all properties" 0 bought_props1 {
     brown=2; light_blue=3; magenta=3; orange=3;
@@ -207,6 +246,15 @@ let upgrade_tests = [
     brown=0; light_blue=0; magenta=0; orange=0;
     red=0; yellow=0; green=0; blue=0
   } [];
+  make_update_level_tests "should be none of the properties" 0 (get_properties 0 board1) [];
+  make_update_level_tests "Nothing should be upgraded" 0 (get_properties 0 bought_first_set) (List.rev [
+      {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;level=0;tile_type=Board.Property;owner=0};
+      {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;level=0;tile_type=Board.Property;owner=0}
+    ]);
+  make_update_level_tests "Mediterranean Avenue should be upgraded once" 1 (get_properties 0 bought_first_set) (List.rev [
+      {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;level=0;tile_type=Board.Property;owner=0};
+      {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;level=1;tile_type=Board.Property;owner=0}
+    ]);
 ]
 
 let suite =

@@ -170,24 +170,6 @@ let rec get_player_id_from_name player_names name acc=
   |h::t when h = name -> acc
   |h::t -> get_player_id_from_name t name (acc+1)
 
-let get_properties id (board:Board.t) =
-  let rec helper acc = function
-    | index -> if index = 40 then acc else
-        begin
-          match Indices.return_tile index board with
-          | None -> helper acc (index+1)
-          | Some tile -> begin
-              match tile with
-              | Indices.PropertyTile propTile -> if propTile.owner == id then
-                  helper ((propTile.name)::acc) (index+1)
-                else
-                  helper acc (index+1)
-              | _ -> helper acc (index+1)
-            end
-        end
-  in
-  helper [] 1
-
 let rec properties_to_string lst =
   let rec helper acc = function
     | [] -> acc
@@ -277,9 +259,9 @@ let rec play_game_recursively str_command player_info current_player board =
         match read_line () with
         | exception End_of_file -> exit 0
         | name -> if List.mem_assoc name upgradeable_properties then
-            let id = List.assoc name upgradeable_properties in
+            let index = List.assoc name upgradeable_properties in
             print_endline name;
-            let new_board = {board with property_tiles = (Upgrade.update_level id board.property_tiles)} in
+            let new_board = {board with property_tiles = (Upgrade.update_level index board.property_tiles)} in
             print_endline ("You have upgraded " ^ name);
             print_string  "> ";
             match read_line () with
