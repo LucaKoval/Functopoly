@@ -94,30 +94,31 @@ let get_upgradeable_properties id board color_groups =
           | Some tile -> begin
               match tile with
               | Indices.PropertyTile propTile -> if propTile.tile_type == Board.Property then
+                  let name_index = (propTile.name, id) in
                   match propTile.color with
                   | Board.Brown -> if color_groups.brown = 2 then
-                      helper ((propTile.name)::acc) (index+1)
+                      helper (name_index::acc) (index+1)
                     else helper acc (index+1)
                   | Board.LightBlue -> if color_groups.light_blue = 3 then
-                      helper ((propTile.name)::acc) (index+1)
+                      helper (name_index::acc) (index+1)
                     else helper acc (index+1)
                   | Board.Magenta -> if color_groups.magenta = 3 then
-                      helper ((propTile.name)::acc) (index+1)
+                      helper (name_index::acc) (index+1)
                     else helper acc (index+1)
                   | Board.Orange -> if color_groups.orange = 3 then
-                      helper ((propTile.name)::acc) (index+1)
+                      helper (name_index::acc) (index+1)
                     else helper acc (index+1)
                   | Board.Red -> if color_groups.light_blue = 3 then
-                      helper ((propTile.name)::acc) (index+1)
+                      helper (name_index::acc) (index+1)
                     else helper acc (index+1)
                   | Board.Yellow -> if color_groups.yellow = 3 then
-                      helper ((propTile.name)::acc) (index+1)
+                      helper (name_index::acc) (index+1)
                     else helper acc (index+1)
                   | Board.Green -> if color_groups.green = 3 then
-                      helper ((propTile.name)::acc) (index+1)
+                      helper (name_index::acc) (index+1)
                     else helper acc (index+1)
                   | Board.Blue -> if color_groups.blue = 2 then
-                      helper ((propTile.name)::acc) (index+1)
+                      helper (name_index::acc) (index+1)
                     else helper acc (index+1)
                 else
                   helper acc (index+1)
@@ -218,12 +219,15 @@ let rec play_game_recursively str_command player_info current_player board =
         print_endline ("You can upgrade the following properties: " ^ prop_string);
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> play_game_recursively str player_info current_player board
-        (* begin
-           match read_line () with
-           | exception End_of_file -> exit 0
-           | str -> play_game_recursively str player_info current_player board
-           end *)
+        | str -> if List.mem str upgradeable_properties then
+            play_game_recursively str player_info current_player board
+          else
+            play_game_recursively str player_info current_player board
+            (* begin
+               match read_line () with
+               | exception End_of_file -> exit 0
+               | str -> play_game_recursively str player_info current_player board
+               end *)
       end
 
 
