@@ -158,6 +158,7 @@ let upgrade_tests = [
 ]
 
 let suite =
+  print_endline "asdfasdf";
   "test suite for final project"  >::: List.flatten [
     indices_tests;
     upgrade_tests;

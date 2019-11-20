@@ -361,11 +361,23 @@ let rec play_game_recursively str_command player_info current_player board =
         | exception End_of_file -> exit 0
         | name -> if List.mem_assoc name upgradeable_properties then
             let id = List.assoc name upgradeable_properties in
+            print_endline name;
             let new_board = {board with property_tiles = (update_level id board.property_tiles)} in
-            play_game_recursively "" player_info current_player new_board
+            print_endline ("You have upgraded " ^ name);
+            print_string  "> ";
+            match read_line () with
+            | exception End_of_file -> exit 0
+            | str -> play_game_recursively str player_info current_player new_board
           else
-            play_game_recursively name player_info current_player board
+            begin
+              print_endline "That is not a property you can upgrade.";
+              print_string  "> ";
+              match read_line () with
+              | exception End_of_file -> exit 0
+              | str -> play_game_recursively str player_info current_player board
+            end
       end
+
   (*
    display player-property menu
    who do you wanna trade with?
