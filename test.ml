@@ -255,6 +255,10 @@ let upgrade_tests = [
       {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;level=0;tile_type=Board.Property;owner=0};
       {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;level=1;tile_type=Board.Property;owner=0}
     ]);
+  make_update_level_tests "Baltic Avenue should be upgraded once" 3 (get_properties 0 bought_first_set) (List.rev [
+      {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;level=1;tile_type=Board.Property;owner=0};
+      {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;level=0;tile_type=Board.Property;owner=0}
+    ]);
 ]
 
 let suite =
