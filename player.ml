@@ -213,6 +213,13 @@ begin
     }::acc)
     end
 
+    (** get's the property price from a string*)
+let rec get_property_price prop_name (board_properties:(Board.property_tile list)) =
+match board_properties with
+|[] -> failwith "get_property_price: not a property in board"
+| h::t when h.name =prop_name -> h.price
+|h::t ->  get_property_price prop_name t
+
 (** makes a list of the current_player id to pass into mapping function in
     update_players*)
 let rec make_current_id_list players acc =
@@ -288,7 +295,7 @@ begin
   if (player.id = p2) then (
   trade_update_player2 t p1 p2 px_prop py_prop board cash ({
       id = player.id;
-      score = player.score - cash;
+      score = player.score - cash -(get_property_price py_prop board)+ (get_property_price px_prop board);
       location= player.location;
       properties =  px_prop::(remove_helper player.properties py_prop []);
       money = player.money-cash
@@ -311,7 +318,7 @@ begin
   if (player.id = p1) then (
   trade_update_player t p1 p2 px_prop py_prop board cash ({
       id = player.id;
-      score = player.score + cash;
+      score = player.score + cash+ (get_property_price py_prop board)- (get_property_price px_prop board) ;
       location= player.location;
       properties =  py_prop::(remove_helper player.properties px_prop []);
       money = player.money+cash
@@ -334,5 +341,4 @@ let trade_new_player players p1 p2 px_prop py_prop board cash=
   number_of_players = players.number_of_players;
   player_names = players.player_names
 }
-
 
