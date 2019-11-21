@@ -273,3 +273,66 @@ let new_player players = {
   player_names = players.player_names
 }
 
+let rec remove_helper lst el acc=
+match lst with
+|[]-> acc
+|h::t when h = el -> remove_helper lst el acc
+|h::t -> remove_helper lst el (h::acc)
+
+(** updates the player two 2 stuff and then passes that new players list into trade_update_player for the final updates*)
+let rec trade_update_player2 players_list p1 p2 px_prop py_prop board cash acc=
+match players_list with
+|[]-> trade_update_player2 players_list p1 p2 px_prop py_prop board cash acc
+|player::t->
+begin
+  if (player.id = p2) then (
+  trade_update_player2 t p1 p2 px_prop py_prop board cash ({
+      id = player.id;
+      score = player.score - cash;
+      location= player.location;
+      properties =  px_prop::(remove_helper player.properties py_prop []);
+      money = player.money-cash
+    }::acc))
+  else trade_update_player2 t p1 p2 px_prop py_prop board cash ({
+      id = player.id;
+      score = player.score;
+      location= player.location;
+      properties = player.properties;
+      money = player.money
+    }::acc)
+    end
+
+(** updates the player one 1 stuff and then passes that new players list into trade_update_player2 for the final updates*)
+let rec trade_update_player players_list p1 p2 px_prop py_prop board cash acc=
+match players_list with
+|[]-> trade_update_player2 acc p1 p2 px_prop py_prop board cash []
+|player::t->
+begin
+  if (player.id = p1) then (
+  trade_update_player t p1 p2 px_prop py_prop board cash ({
+      id = player.id;
+      score = player.score + cash;
+      location= player.location;
+      properties =  py_prop::(remove_helper player.properties px_prop []);
+      money = player.money+cash
+    }::acc))
+  else trade_update_player t p1 p2 px_prop py_prop board cash ({
+      id = player.id;
+      score = player.score;
+      location= player.location;
+      properties = player.properties;
+      money = player.money
+    }::acc)
+    end
+
+
+(** takes in players: players p1: int, p2: int, p1_prop: string, p2_prop: string, cash: int *)
+let trade_new_player players p1 p2 px_prop py_prop board cash=
+{
+  player_list = trade_update_player players.player_list p1 p2 px_prop py_prop board cash [];
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names
+}
+
+
