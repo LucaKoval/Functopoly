@@ -2,6 +2,7 @@ open Player
 open Command 
 open Board
 open Yojson
+open Indices
 
 (** [get_num_players] is the number of players  *)
 let get_num_players = 
@@ -82,14 +83,14 @@ let rec remove_empties = function
   | [] -> ""
   | h::t -> if h <> "" then h else (remove_empties t)
 
-let parse_price str =
+let parse_price str property_to_trade =
   if (String.contains str ',') then (let comma_split = String.split_on_char ',' str in
                                      let spaces_removed = remove_spaces comma_split in
                                      let cash = remove_zeroes (parse_cash spaces_removed) in
                                      let property = parse_property spaces_removed in 
-                                     (cash, property)
-                                    ) else (try ((int_of_string (String.trim str)), "")
-                                            with Failure e -> (0, (String.trim str)) 
+                                     (cash, property, property_to_trade)
+                                    ) else (try ((int_of_string (String.trim str)), "", property_to_trade)
+                                            with Failure e -> (0, (String.trim str), property_to_trade) 
                                            )
 
 let print_price cash property trader2 = 
@@ -102,7 +103,7 @@ let print_price cash property trader2 =
 
 (** Let the bargaining begin! *)
 let rec bargaining trader1_price trader1 trader2 property_to_trade =
-  let (cash, property) =  parse_price trader1_price in
+  let (cash, property, property_to_trade) =  parse_price trader1_price property_to_trade in
   let () = print_price cash property trader2 in
   print_endline ", do you accept or reject this price?";
   print_string  "> ";
@@ -110,7 +111,7 @@ let rec bargaining trader1_price trader1 trader2 property_to_trade =
   | exception End_of_file -> exit 0
   | accept_or_reject -> 
     if (String.trim accept_or_reject) = "accept" then 
-      (cash, property) (** TODO: update the player and property info *)
+      (cash, property, property_to_trade) (** TODO: update the player and property info *)
     else if ((String.trim accept_or_reject) = "reject") then (
       print_string (get_current_player_name trader1);
       print_endline ", your price was rejected. Please propose a better price
@@ -123,7 +124,7 @@ let rec bargaining trader1_price trader1 trader2 property_to_trade =
       print_string  "> ";
       match read_line () with
       | exception End_of_file -> exit 0
-      | better_price -> if (String.trim accept_or_reject) = "endbargain" then (0, "")
+      | better_price -> if (String.trim accept_or_reject) = "endbargain" then (0, "", property_to_trade)
         else bargaining better_price trader1 trader2 property_to_trade
     )
     else (print_endline "Invalid response. Please re-enter your decision";
@@ -148,12 +149,12 @@ let rec execute_trade trader1 trader2 =
                                                | exception End_of_file -> exit 0
                                                | trade_partner -> execute_trade trader1 trade_partner)
   else let property_to_trade = property_trade trader1 in
-    print_endline "What price do you want to trade at? \
-                   (Please enter the price in one of the following ways:\
-                   1. An int cash value. Example: 10 \
-                   2. The name of a property belonging to the player you're trading with. Example: x \
-                   3. Int cash value followed by a comma and the desired property name. Example: 10, x
-    )";
+    print_endline "What price do you want to trade at? \n\
+                   (Please enter the price in one of the following ways:\n\
+                   1. An int cash value. Example: 10 \n\
+                   2. The name of a property belonging to the player you're trading with. Example: x \n\
+                   3. Int cash value followed by a comma and the desired property name. Example: 10, x \n\
+                   )";
     print_string  "> ";
     match read_line () with
     | exception End_of_file -> exit 0
@@ -182,100 +183,146 @@ let rec properties_to_string lst =
   in
   helper "" lst
 
+
+let validate_command_order cmd1 cmd2 =
+  ((String.trim cmd1 = "roll" && String.trim cmd2 = "roll")
+   || (String.trim cmd1 = "endturn" && String.trim cmd2 = "endturn")
+   || (String.trim cmd1 = "buy" && String.trim cmd2 = "roll")
+  )
+
+let is_property tile = 
+  match tile with
+  | PropertyTile a -> true
+  | _ -> false 
+
 (** [play_game_recursively ]*)
-let rec play_game_recursively str_command player_info current_player board =
-  let parsed_command = (try Command.parse str_command with 
-      | Malformed -> (print_endline "The command you entered was Malformed :( \
-                                     Please try again.";
-                      print_string  "> ";
-                      match read_line () with
-                      | exception End_of_file -> exit 0
-                      | str -> play_game_recursively str
-                                 player_info current_player board)
-      | Empty -> (print_endline "The command you entered was Empty.\
-                                 Please try again."; 
-                  print_string  "> ";
-                  match read_line () with
-                  | exception End_of_file -> exit 0;
-                  | str -> play_game_recursively str player_info current_player
-                             board)) in
-  match parsed_command with
-  | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
-  | Roll -> let update_player_roll = (roll_new_player player_info board) in (print_endline "";
-                                                                             print_string  "> ";
-                                                                             match read_line () with
-                                                                             | exception End_of_file -> exit 0;
-                                                                             | str -> play_game_recursively str update_player_roll current_player board)
-  | EndTurn ->
-    let new_player_info = (Player.new_player player_info) in 
-    let current_name = (get_current_player_name new_player_info) in
-    print_string current_name;
-    (print_string ", it's your turn now! Your current location is "; 
-     print_int (Player.get_current_location new_player_info);
-     print_string  "> ";
-     match read_line () with
-     | exception End_of_file -> exit 0;
-     | str -> play_game_recursively str new_player_info current_player board)
-  | Help -> (print_endline command_list;
-             print_string  "> ";
-             match read_line () with
-             | exception End_of_file -> exit 0
-             | str -> play_game_recursively str player_info current_player board
-            )
-  | Inventory player_name -> (print_string player_name; print_endline "'s inventory:";let list = (Player.inventory_helper player_info.player_list [] (get_player_id_from_name player_info.player_names player_name 0)) in (Player.list_printer list);
-                              print_string  "> ";
-                              match read_line () with
-                              | exception End_of_file -> exit 0
-                              | str -> play_game_recursively str player_info
-                                         current_player board)
-  | Buy -> let update_player_buy = (Player.buy_new_player player_info board) in 
-    let prop_name = buy_helper player_info board in (print_endline "";
-                                                     print_string  "> ";
-                                                     match read_line () with
-                                                     | exception End_of_file -> exit 0
-                                                     | str -> play_game_recursively str update_player_buy current_player (Board.buy_update_board board update_player_buy.current_player prop_name))
-  (* Player enters 'upgrade'
-     Displays list of upgradeable properties (will need to somehow check what
-     groups of properties the players owns completely)
-     Then chooses property and upgrade "amount"
-     Finish
-  *)
-  | Upgrade -> let current_player_id = (player_info.current_player) in
-    let color_groups = Upgrade.get_color_groups current_player_id board in
-    let upgradeable_properties = Upgrade.get_upgradeable_properties current_player_id board color_groups in
-    let prop_string = properties_to_string upgradeable_properties in
-    if (List.length upgradeable_properties = 0) then
-      begin
-        print_endline "You do not have any upgradeable properties at this moment.";
+let rec play_game_recursively prev_cmd str_command player_info board =
+  if ( (String.trim str_command = "roll" || String.trim str_command = "endturn") 
+       && validate_command_order prev_cmd str_command)
+  then (
+    print_string "You cannot enter a ";
+    print_string str_command;
+    print_string " after ";
+    print_string prev_cmd;
+    print_endline ". Please re-enter your next command.";
+    print_string  "> ";
+    match read_line () with
+    | exception End_of_file -> exit 0
+    | str -> play_game_recursively prev_cmd str player_info board
+  )
+  else
+    let parsed_command = (try Command.parse str_command with
+        | Malformed -> (print_endline "The command you entered was Malformed :( \
+                                       Please try again.";
+                        print_string  "> ";
+                        match read_line () with
+                        | exception End_of_file -> exit 0
+                        | str -> play_game_recursively prev_cmd str
+                                   player_info board)
+        | Empty -> (print_endline "The command you entered was Empty.\
+                                   Please try again."; 
+                    print_string  "> ";
+                    match read_line () with
+                    | exception End_of_file -> exit 0;
+                    | str -> play_game_recursively prev_cmd str player_info
+                               board)) in
+    match parsed_command with
+    | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
+    | Roll -> let update_player_roll = (roll_new_player player_info board) in (print_endline "";
+                                                                               print_string  "> ";
+                                                                               match read_line () with
+                                                                               | exception End_of_file -> exit 0;
+                                                                               | str -> play_game_recursively str_command str update_player_roll board)
+    | EndTurn ->
+      let new_player_info = (Player.new_player player_info) in 
+      let current_name = (get_current_player_name new_player_info) in
+      print_string current_name;
+      (print_string ", it's your turn now! Your current location is "; 
+       print_int (Player.get_current_location new_player_info);
+       print_string  "> ";
+       match read_line () with
+       | exception End_of_file -> exit 0;
+       | str -> play_game_recursively str_command str new_player_info board
+      )
+    | Help -> (
+        print_endline command_list;
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> play_game_recursively str player_info current_player board
-      end
-    else
-      begin
-        print_endline ("You can upgrade the following properties: " ^ prop_string);
+        | str -> play_game_recursively prev_cmd str player_info board
+      )
+    | Inventory player_name -> (
+        print_string player_name; print_endline "'s inventory:";let list = (Player.inventory_helper player_info.player_list [] (get_player_id_from_name player_info.player_names player_name 0)) in (Player.list_printer list);
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | name -> if List.mem_assoc name upgradeable_properties then
-            let index = List.assoc name upgradeable_properties in
-            print_endline name;
-            let new_board = {board with property_tiles = (Upgrade.update_level index board.property_tiles)} in
-            print_endline ("You have upgraded " ^ name);
-            print_string  "> ";
-            match read_line () with
-            | exception End_of_file -> exit 0
-            | str -> play_game_recursively str player_info current_player new_board
-          else
-            begin
-              print_endline "That is not a property you can upgrade.";
+        | str -> play_game_recursively prev_cmd str player_info board)
+    | Buy -> let update_player_buy = (Player.buy_new_player player_info board) in
+      let curr_location = get_current_location player_info in
+      let property = get_property curr_location board in
+      let owner_id = get_owner_id property in
+      if (not(is_property property)) then (
+        print_endline "You cannot buy on a tile that isn't a property! Please enter a valid command.";
+        print_string  "> ";
+        match read_line () with
+        | exception End_of_file -> exit 0
+        | str -> play_game_recursively prev_cmd str player_info board)
+      else if (owner_id <> -1) then (
+        print_endline "You cannot buy a property that is already owned by someone! 
+        However, you can trade if you'd like. Please enter a valid command.";
+        print_string  "> ";
+        match read_line () with
+        | exception End_of_file -> exit 0
+        | str -> play_game_recursively prev_cmd str player_info board)
+      else
+        let prop_name = buy_helper player_info board in (
+          print_endline "";
+          print_string  "> ";
+          match read_line () with
+          | exception End_of_file -> exit 0
+          | str -> play_game_recursively str_command str update_player_buy (Board.buy_update_board board update_player_buy.current_player prop_name))
+    (* Player enters 'upgrade'
+       Displays list of upgradeable properties (will need to somehow check what
+       groups of properties the players owns completely)
+       Then chooses property and upgrade "amount"
+       Finish
+    *)
+    | Upgrade -> let current_player_id = (player_info.current_player) in
+      let color_groups = Upgrade.get_color_groups current_player_id board in
+      let upgradeable_properties = Upgrade.get_upgradeable_properties current_player_id board color_groups in
+      let prop_string = properties_to_string upgradeable_properties in
+      if (List.length upgradeable_properties = 0) then
+        begin
+          print_endline "You do not have any upgradeable properties at this moment.";
+          print_string  "> ";
+          match read_line () with
+          | exception End_of_file -> exit 0
+          | str -> play_game_recursively prev_cmd str player_info board
+        end
+      else
+        begin
+          print_endline ("You can upgrade the following properties: " ^ prop_string);
+          print_string  "> ";
+          match read_line () with
+          | exception End_of_file -> exit 0
+          | name -> if List.mem_assoc name upgradeable_properties then
+              let index = List.assoc name upgradeable_properties in
+              print_endline name;
+              let new_board = {board with property_tiles = (Upgrade.update_level index board.property_tiles)} in
+              print_endline ("You have upgraded " ^ name);
               print_string  "> ";
               match read_line () with
               | exception End_of_file -> exit 0
-              | str -> play_game_recursively str player_info current_player board
-            end
-      end
+              | str -> play_game_recursively prev_cmd str player_info new_board
+            else
+              begin
+                print_endline "That is not a property you can upgrade.";
+                print_string  "> ";
+                match read_line () with
+                | exception End_of_file -> exit 0
+                | str -> play_game_recursively prev_cmd str player_info board
+              end
+        end
 
   (*
    display player-property menu
@@ -286,18 +333,22 @@ let rec play_game_recursively str_command player_info current_player board =
    what price do you want to sell for? (syntax: <cash>, <property>)
    player x, do you accept that price? (<accept>/<reject>)
   *)
-  | Trade -> (
-      print_endline "print player property menu here";
-      print_endline "Who do you want to trade with?";
-      print_string  "> ";
-      match read_line () with
-      | exception End_of_file -> exit 0
-      | trader2 -> let (cash, property) = execute_trade player_info trader2 in
-        print_endline "Trade complete.";
+    | Trade -> (
+        print_endline "print player property menu here";
+        (* Get property tile and then owner from *)
+        print_endline "Who do you want to trade with?";
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> play_game_recursively str player_info "" board)
+        | trader2 -> let (cash, property, property_to_trade) = execute_trade player_info trader2 in
+          let player1 = (get_player_id_from_name player_info.player_names (get_current_player_name player_info) 0) in
+          let player2 = (get_player_id_from_name player_info.player_names trader2 0) in
+          trade_new_player player_info player1 player2 property_to_trade property (board.property_tiles) cash;
+          print_endline "Trade complete.";
+          print_string  "> ";
+          match read_line () with
+          | exception End_of_file -> exit 0
+          | str -> play_game_recursively prev_cmd str player_info board)
 
 
 
@@ -313,7 +364,7 @@ let start_game board =
   print_string  "> ";
   match read_line () with
   | exception End_of_file -> exit 0
-  | str -> play_game_recursively str initial_player_info "" board
+  | str -> play_game_recursively "" str initial_player_info board
 
 (* print_string_list player_names; print_string (string_of_int num_players) *)
 
