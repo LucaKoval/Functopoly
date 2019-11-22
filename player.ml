@@ -23,7 +23,7 @@ let rec to_player numplayers acc=
   |(0)-> acc
   |x-> to_player (numplayers-1) ({
       id = (x-1);
-      score = 0;
+      score = 1500;
       location = 0;
       properties = [];
       money = 1500
@@ -116,8 +116,7 @@ if (is_property current_tile) then (
   )
   else 0
 
-(** updates the current player's state if its their turn (ex: location, score,
-    potential property changes) and changes to the next player*)
+(** updates the current player's state if its their turn (ex: location and changes to the next player*)
 let update_current_player player current_player_id =
 
   if player.id = current_player_id then let new_loc = player.location + (dice 0) in ({
@@ -159,9 +158,32 @@ else (print_string "this is not a property, other card types are currently not i
 
 
  (** updates the current player's state if its their turn based on roll*)
-let rec roll_update_current_player players_list player_names current_player_id board acc=
+let rec roll_update_owner players_list player_names current_player_id board rent owner_id new_acc=
 match players_list with
-|[]-> acc
+|[]-> new_acc
+|player::t -> 
+begin
+  if (player.id = (List.nth owner_id 0)) then roll_update_owner t player_names current_player_id board rent owner_id ({
+      id= player.id;
+      score = player.score + (List.nth rent 0);
+      location = player.location;
+      properties = player.properties;
+      money = player.money + (List.nth rent 0);
+    }::new_acc) 
+  else roll_update_owner t player_names current_player_id board rent owner_id ( {
+      id = player.id;
+      score = player.score;
+      location= player.location;
+      properties = player.properties;
+      money = player.money
+    }::new_acc)
+    end
+
+
+ (** updates the current player's state if its their turn based on roll*)
+let rec roll_update_current_player players_list player_names current_player_id board acc rent_acc owner_id_acc=
+match players_list with
+|[]-> roll_update_owner acc player_names current_player_id board rent_acc owner_id_acc []
 |player::t -> 
 begin
   if (player.id = current_player_id) then let new_loc = player.location + (dice 0) in roll_update_current_player t player_names current_player_id board ({
@@ -169,15 +191,15 @@ begin
       score = roll_change_score player.score new_loc board player_names;
       location = new_loc mod 40;
       properties = player.properties;
-      money = if new_loc > 40 then player.money + 200 else if new_loc = 40 then player.money + 400 else player.money
-    }::acc)
+      money = roll_change_score player.money new_loc board player_names
+    }::acc) ((player.score-(roll_change_score player.score new_loc board player_names))::rent_acc) ((get_owner_id( get_property (new_loc mod 40) board) )::owner_id_acc)
   else roll_update_current_player t player_names current_player_id board ( {
       id = player.id;
       score = player.score;
       location= player.location;
       properties = player.properties;
       money = player.money
-    }::acc)
+    }::acc) rent_acc owner_id_acc
     end
 
 (** gets price of property to buy or 0 if not a property*)
@@ -199,7 +221,7 @@ begin
   print_string (get_property_name (get_property player.location board)); 
   buy_update_current_player t player_names current_player_id board ({
       id= player.id;
-      score = (player.score - (get_price player.location board));
+      score = player.score;
       location = player.location;
       properties = ((get_property_name (get_property player.location board))::(player.properties));
       money = player.money-(get_price player.location board)
@@ -235,7 +257,7 @@ let update_players players =
 
 (** updates the players rent based on roll *)
 let roll_update_players players board=
-  roll_update_current_player players.player_list players.player_names players.current_player board []
+  roll_update_current_player players.player_list players.player_names players.current_player board [] [] []
 
 let buy_update_players players board =
   buy_update_current_player players.player_list players.player_names players.current_player board []
@@ -341,4 +363,5 @@ let trade_new_player players p1 p2 px_prop py_prop board cash=
   number_of_players = players.number_of_players;
   player_names = players.player_names
 }
+
 
