@@ -88,7 +88,7 @@ match tile with
 let get_owner_id tile = 
 match tile with
 |PropertyTile a -> a.owner
-|_-> failwith "get_owner_id: not a property tile"
+|_-> (-2)
 
 (**assuming current location is a property, gets the name of the current location's property*)
 let get_property_name tile = 
