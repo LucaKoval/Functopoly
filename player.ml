@@ -186,13 +186,13 @@ match players_list with
 |[]-> roll_update_owner acc player_names current_player_id board rent_acc owner_id_acc []
 |player::t -> 
 begin
-  if (player.id = current_player_id) then let new_loc = player.location + (dice 0) in roll_update_current_player t player_names current_player_id board ({
+  if (player.id = current_player_id) then let new_loc = player.location + (dice 0) in let new_score = (roll_change_score player.score new_loc board player_names) in roll_update_current_player t player_names current_player_id board ({
       id= player.id;
-      score = roll_change_score player.score new_loc board player_names;
+      score = new_score;
       location = new_loc mod 40;
       properties = player.properties;
-      money = roll_change_score player.money new_loc board player_names
-    }::acc) ((player.score-(roll_change_score player.score new_loc board player_names))::rent_acc) ((get_owner_id( get_property (new_loc mod 40) board) )::owner_id_acc)
+      money = new_score
+    }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (new_loc mod 40) board) )::owner_id_acc)
   else roll_update_current_player t player_names current_player_id board ( {
       id = player.id;
       score = player.score;
