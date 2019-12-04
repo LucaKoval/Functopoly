@@ -338,7 +338,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
               print_string  "> ";
               match read_line () with
               | exception End_of_file -> exit 0
-              | str -> play_game_recursively prev_cmd str player_info new_board
+              | str -> play_game_recursively prev_cmd str update_player_upgrade new_board
             else
               begin
                 print_endline "That is not a property you can upgrade.";
