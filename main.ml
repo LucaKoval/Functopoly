@@ -42,6 +42,7 @@ let command_list =
   "\nHere's the list of commands you can \
    run:\n\
    roll: Rolls the dice for the next player.\n\
+   endturn: Ends the current player's turn and moves the dice to the next player.\n\
    help: Prints the list of commands you can run.\n\
    inventory <player_name>: Prints the inventory for <player_name>.\n\
    buy: Buys a property if you landed on one.\n\
@@ -49,6 +50,8 @@ let command_list =
    upgrade: Displays upgradeable properties and then allows you to upgrade them. \n\
    quit: Quits the game and displays the winner.\n"
 
+
+(* ====== START TRADE HELPERS ======= *)
 
 let valid_property player property = true (* TODO *)
 
@@ -160,6 +163,8 @@ let rec execute_trade trader1 trader2 =
     | exception End_of_file -> exit 0
     | str -> bargaining str trader1 trader2 property_to_trade
 
+(* ======= END TRADE HELPERS ======= *)
+
 (** gets property name*)
 let buy_helper player_info board=
   Player.get_property_name (get_property (Player.get_current_location player_info) board)
@@ -188,6 +193,8 @@ let validate_command_order cmd1 cmd2 =
   ((String.trim cmd1 = "roll" && String.trim cmd2 = "roll")
    || (String.trim cmd1 = "endturn" && String.trim cmd2 = "endturn")
    || (String.trim cmd1 = "buy" && String.trim cmd2 = "roll")
+   || (String.trim cmd1 = "buy" && String.trim cmd2 = "buy")
+   || (String.trim cmd1 = "endturn" && String.trim cmd2 = "buy")
   )
 
 let is_property tile = 
@@ -197,8 +204,7 @@ let is_property tile =
 
 (** [play_game_recursively ]*)
 let rec play_game_recursively prev_cmd str_command player_info board =
-  if ( (String.trim str_command = "roll" || String.trim str_command = "endturn") 
-       && validate_command_order prev_cmd str_command)
+  if validate_command_order prev_cmd str_command
   then (
     print_string "You cannot enter a ";
     print_string str_command;
@@ -260,23 +266,24 @@ let rec play_game_recursively prev_cmd str_command player_info board =
     | Buy -> let update_player_buy = (Player.buy_new_player player_info board) in
       let curr_location = get_current_location player_info in
       let property = get_property curr_location board in
-      let owner_id = get_owner_id property in
       if (not(is_property property)) then (
         print_endline "You cannot buy on a tile that isn't a property! Please enter a valid command.";
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> play_game_recursively prev_cmd str player_info board)
-      else if (owner_id <> -1) then (
+        | str -> play_game_recursively str_command str player_info board)
+
+      else if ((get_owner_id property) <> -1) then (
         print_endline "You cannot buy a property that is already owned by someone! 
         However, you can trade if you'd like. Please enter a valid command.";
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> play_game_recursively prev_cmd str player_info board)
+        | str -> play_game_recursively str_command str player_info board)
       else
         let prop_name = buy_helper player_info board in (
-          print_endline "";
+          print_string "Congrats you now own ";
+          print_endline (get_property_name (get_property (get_current_location player_info) board));
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
