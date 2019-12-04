@@ -307,6 +307,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           | exception End_of_file -> exit 0
           | name -> if List.mem_assoc name upgradeable_properties then
               let index = List.assoc name upgradeable_properties in
+              let update_player_upgrade = (Player.upgrade_new_player player_info board index) in
               print_endline name;
               let new_board = {board with property_tiles = (Upgrade.update_level index board.property_tiles)} in
               print_endline ("You have upgraded " ^ name);
