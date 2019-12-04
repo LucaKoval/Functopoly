@@ -400,7 +400,10 @@ let upgrade_new_player players board prop_loc= {
 }
 
 let forfeit_player (curr_player:player) (players:players) =
-  {players with player_list=(remove_helper players.player_list curr_player [])}
+  {players with player_list=(remove_helper players.player_list curr_player []);
+                number_of_players=players.number_of_players-1;
+                player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) []);
+  }
 
 (* type players = {
    player_list : player list;
