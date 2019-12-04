@@ -365,6 +365,40 @@ let trade_new_player players p1 p2 px_prop py_prop board cash=
     player_names = players.player_names
   }
 
+(** updates the current player's state if its their turn based on buy*)
+let rec upgrade_update_current_player players_list player_names current_player_id board acc prop_loc=
+  match players_list with
+  |[]-> acc
+  |player::t ->
+    begin
+      if (player.id = current_player_id) then (
+        upgrade_update_current_player t player_names current_player_id board ({
+            id= player.id;
+            score = player.score;
+            location = player.location;
+            properties = ((get_property_name (get_property player.location board))::(player.properties));
+            money = player.money-((get_price prop_loc board)/2)
+          }::acc) prop_loc)
+      else upgrade_update_current_player t player_names current_player_id board (  {
+          id = player.id;
+          score = player.score;
+          location= player.location;
+          properties = player.properties;
+          money = player.money
+        }::acc) prop_loc
+    end
+
+let upgrade_update_players players board prop_loc=
+  upgrade_update_current_player players.player_list players.player_names players.current_player board [] prop_loc
+
+(** updates the players state based on upgrade (ex: the money changes*)
+let upgrade_new_player players board prop_loc= {
+  player_list = upgrade_update_players players board prop_loc;
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names
+}
+
 let forfeit_player (curr_player:player) (players:players) =
   {players with player_list=(remove_helper players.player_list curr_player [])}
 
@@ -374,7 +408,6 @@ let forfeit_player (curr_player:player) (players:players) =
    number_of_players : int;
    player_names : string list
    } *)
-
 
 (* type player = {
    id: int;
