@@ -49,6 +49,9 @@ let to_players num_players input_names = {
   player_names = input_names
 }
 
+let get_current_player (players:players) =
+  List.nth players.player_list players.current_player
+
 let rec get_current_location_helper player_list current_id =
   match player_list with
   |h::t when h.id = current_id -> h.location
@@ -362,4 +365,21 @@ let trade_new_player players p1 p2 px_prop py_prop board cash=
     player_names = players.player_names
   }
 
+let forfeit_player (curr_player:player) (players:players) =
+  {players with player_list=(remove_helper players.player_list curr_player [])}
 
+(* type players = {
+   player_list : player list;
+   current_player : int;
+   number_of_players : int;
+   player_names : string list
+   } *)
+
+
+(* type player = {
+   id: int;
+   score: int;
+   location: int;
+   properties: string list;
+   money: int;
+   } *)

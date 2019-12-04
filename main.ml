@@ -240,16 +240,33 @@ let rec play_game_recursively prev_cmd str_command player_info board =
                                                                                | exception End_of_file -> exit 0;
                                                                                | str -> play_game_recursively str_command str update_player_roll board)
     | EndTurn ->
-      let new_player_info = (Player.new_player player_info) in 
-      let current_name = (get_current_player_name new_player_info) in
-      print_string current_name;
-      (print_string ", it's your turn now! Your current location is "; 
-       print_int (Player.get_current_location new_player_info);
-       print_string  "> ";
-       match read_line () with
-       | exception End_of_file -> exit 0;
-       | str -> play_game_recursively str_command str new_player_info board
-      )
+      let current_player = Player.get_current_player player_info in
+      if current_player.money < 0 then
+        begin
+          Auction.auction current_player player_info;
+          let post_forfeit_player_info = Player.forfeit_player current_player player_info in
+          let new_player_info = (Player.new_player post_forfeit_player_info) in 
+          let current_name = (get_current_player_name new_player_info) in
+          print_string current_name;
+          (print_string ", it's your turn now! Your current location is "; 
+           print_int (Player.get_current_location new_player_info);
+           print_string  "> ";
+           match read_line () with
+           | exception End_of_file -> exit 0;
+           | str -> play_game_recursively str_command str new_player_info board
+          )
+        end
+      else
+        let new_player_info = (Player.new_player player_info) in 
+        let current_name = (get_current_player_name new_player_info) in
+        print_string current_name;
+        (print_string ", it's your turn now! Your current location is "; 
+         print_int (Player.get_current_location new_player_info);
+         print_string  "> ";
+         match read_line () with
+         | exception End_of_file -> exit 0;
+         | str -> play_game_recursively str_command str new_player_info board
+        )
     | Help -> (
         print_endline command_list;
         print_string  "> ";
