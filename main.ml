@@ -372,12 +372,14 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         | trader2 -> let (cash, property, property_to_trade) = execute_trade player_info trader2 in
           let player1 = (get_player_id_from_name player_info.player_names (get_current_player_name player_info) 0) in
           let player2 = (get_player_id_from_name player_info.player_names trader2 0) in
-          trade_new_player player_info player1 player2 property_to_trade property (board.property_tiles) cash;
           print_endline "Trade complete.";
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
-          | str -> play_game_recursively prev_cmd str player_info board)
+          | str -> (
+              let updated_player_info = trade_new_player player_info player1 player2 property_to_trade property (board.property_tiles) cash in
+              play_game_recursively prev_cmd str updated_player_info board)
+      )
 
 
 
