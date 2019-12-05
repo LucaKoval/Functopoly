@@ -245,7 +245,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         begin
           Auction.auction current_player player_info;
           let post_forfeit_player_info = Player.forfeit_player current_player player_info in
-          let new_player_info = (Player.new_player post_forfeit_player_info) in 
+          let new_player_info = (Player.new_player post_forfeit_player_info board) in 
           let current_name = (get_current_player_name new_player_info) in
           print_string current_name;
           (print_string ", it's your turn now! Your current location is "; 
@@ -257,7 +257,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           )
         end
       else
-        let new_player_info = (Player.new_player player_info) in 
+        let new_player_info = (Player.new_player player_info board) in 
         let current_name = (get_current_player_name new_player_info) in
         print_string current_name;
         (print_string ", it's your turn now! Your current location is "; 
