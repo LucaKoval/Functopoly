@@ -48,4 +48,3 @@ let auction (forfeit_player:Player.player) (players:Player.players) =
     print_endline ("Player " ^ (List.nth players.player_names 0) ^  "will bid first.");
   print_string  "> ";
   loop forfeit_player players [forfeit_player.id] [] (0, 0) 0;
-  (* player that wins (id), list of properties, and price they paid *)
