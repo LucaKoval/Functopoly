@@ -52,7 +52,7 @@ let to_players num_players input_names = {
 }
 
 let get_current_player (players:players) =
-print_endline "get_current_player";
+  print_endline "get_current_player";
   List.nth players.player_list players.current_player
 
 let rec get_current_location_helper player_list current_id =
@@ -72,7 +72,7 @@ let dice zero =
 (** [new_property player] is Some property that the current player obtains if
     any, otherwise None*)
 let new_property player =
-print_endline "new_property";
+  print_endline "new_property";
   if List.length player.properties = 0 then ""
   else List.nth player.properties 0
 
@@ -111,7 +111,7 @@ let tile_rent tile =
 
 (** gets player name of the corresponding owner id number*)
 let get_owner_name tile player_names =
-print_endline "get_owner_name";
+  print_endline "get_owner_name";
   List.nth player_names (get_owner_id tile)
 
 
@@ -171,7 +171,7 @@ let rec roll_update_owner players_list player_names current_player_id board rent
   |[]-> new_acc
   |player::t -> 
     begin
-    print_endline "roll_update_owner";
+      print_endline "roll_update_owner";
       if (player.id = (List.nth owner_id 0)) then roll_update_owner t player_names current_player_id board rent owner_id ({
           id= player.id;
           score = player.score + (List.nth rent 0);
@@ -190,18 +190,18 @@ let rec roll_update_owner players_list player_names current_player_id board rent
 
 
 
-  (** check if current_location is of type gotojail *)
+(** check if current_location is of type gotojail *)
 let check_jail_type curr_loc board=
-match (get_property curr_loc board) with
+  match (get_property curr_loc board) with
   | PropertyTile a -> false
   | CardTile a -> false
   | TaxTile a -> false
   | CornerTile a when (a.corner_tile_type = GoToJail) -> (print_endline "You landed on go to jail. You are now being moved to the location of jail"; true)
   | CornerTile a -> false
 
-  (** check if current_location is of type actual jail *)
+(** check if current_location is of type actual jail *)
 let check_in_jail curr_loc board curr_id jail_list=
-match (get_property curr_loc board) with
+  match (get_property curr_loc board) with
   | PropertyTile a -> false
   | CardTile a -> false
   | TaxTile a -> false
@@ -211,28 +211,28 @@ match (get_property curr_loc board) with
 
 (** takes in players_list and curr_player_id and checks if current_player loc is go to jail*)
 let rec check_add_jail_list players_list curr_player_id board=
-match players_list with
-| h::t when h.id= curr_player_id -> (check_jail_type h.location board)
-| h::t -> check_add_jail_list t curr_player_id board
-| [] -> false
+  match players_list with
+  | h::t when h.id= curr_player_id -> (check_jail_type h.location board)
+  | h::t -> check_add_jail_list t curr_player_id board
+  | [] -> false
 
 (** get jail_roll_counter for current player id *)
 let get_jail_roll_counter jail_list curr_id =
-List.assoc curr_id jail_list
+  List.assoc curr_id jail_list
 
 (** returns true if no change to player state and they stay in jail, otherwise false and regular roll process
-check if in jail_list and counter is good*)
+    check if in jail_list and counter is good*)
 let check_jail_list jail_list curr_id dice_tuple =
-if (List.mem_assoc curr_id jail_list) 
-then (if ((get_jail_roll_counter jail_list curr_id)<2 ) 
-      then (if (fst(dice_tuple))<>(snd(dice_tuple)) then (print_endline "You did not roll doubles, you are stuck in jail still"; true) else (print_endline "You rolled doubles! You are free from jail!"; false)) 
-      else (print_endline "This is your third roll in jail. You are free now!"; false))
-else false
+  if (List.mem_assoc curr_id jail_list) 
+  then (if ((get_jail_roll_counter jail_list curr_id)<2 ) 
+        then (if (fst(dice_tuple))<>(snd(dice_tuple)) then (print_endline "You did not roll doubles, you are stuck in jail still"; true) else (print_endline "You rolled doubles! You are free from jail!"; false)) 
+        else (print_endline "This is your third roll in jail. You are free now!"; false))
+  else false
 
 
 
-  (** jail_roll_counter called if current property jail roll counter passes jail conditons otherwise regular roll *)
-  
+(** jail_roll_counter called if current property jail roll counter passes jail conditons otherwise regular roll *)
+
 (** gets location of jail*)
 let rec get_jail_location (board_tiles:(Board.corner_tile list)) =
   match board_tiles with
@@ -240,19 +240,19 @@ let rec get_jail_location (board_tiles:(Board.corner_tile list)) =
   | h::t when h.corner_tile_type = JailJustVisiting -> h.location
   |h::t -> get_jail_location t
 
-  (** gets location of go to jail*)
+(** gets location of go to jail*)
 let rec get_gotojail_location (board_tiles:(Board.corner_tile list)) =
   match board_tiles with
   |[] -> failwith "get_gotojail_location: fails not a corner_tile in board"
   | h::t when h.corner_tile_type = GoToJail -> h.location
   |h::t -> get_gotojail_location t
 
-  (**  updates jail_list with new_player in jail and changes their location to jail*)
-  let update_jail_list id jail_list=
+(**  updates jail_list with new_player in jail and changes their location to jail*)
+let update_jail_list id jail_list=
   ((id, 0)::jail_list)
 
-   (** increases current player's roll count by +1*)
-  let update_jail_roll_count id jail_list= let curr_roll_count =get_jail_roll_counter jail_list id in 
+(** increases current player's roll count by +1*)
+let update_jail_roll_count id jail_list= let curr_roll_count =get_jail_roll_counter jail_list id in 
   (id, curr_roll_count+1)::(List.remove_assoc id jail_list)
 
 
@@ -260,30 +260,30 @@ let rec get_gotojail_location (board_tiles:(Board.corner_tile list)) =
 let rec roll_update_current_player players players_list player_names current_player_id board acc rent_acc owner_id_acc jail_list=
   match players_list with
   |[]-> (if is_property (get_property (get_current_location players) board) 
-  then (roll_update_owner acc player_names current_player_id board rent_acc owner_id_acc [])
-   else acc)
+         then (roll_update_owner acc player_names current_player_id board rent_acc owner_id_acc [])
+         else acc)
   |player::t -> 
     begin
       if (player.id = current_player_id) then let dice_roll = (dice 0) in 
-      let new_loc = player.location + (fst(dice_roll)+snd(dice_roll)) in 
-      let new_score = (roll_change_score player.score new_loc board player_names) in 
-      (* check if new_loc is actually go to jail and update the location to be visiting jail *)
-      (* check if id and jail count stuff then check if not doubles and print still in jail otherwise *)
-      (if ((check_jail_list jail_list current_player_id dice_roll)= false)then
-        roll_update_current_player players t player_names current_player_id board ({
-          id= player.id;
-          score = new_score;
-          location = new_loc mod 40;
-          properties = player.properties;
-          money = new_score
-        }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (new_loc mod 40) board) )::owner_id_acc ) jail_list
-        else (roll_update_current_player players t player_names current_player_id board ( {
-          id = player.id;
-          score = player.score;
-          location= player.location;
-          properties = player.properties;
-          money = player.money
-        }::acc) rent_acc owner_id_acc jail_list))      
+        let new_loc = player.location + (fst(dice_roll)+snd(dice_roll)) in 
+        let new_score = (roll_change_score player.score new_loc board player_names) in 
+        (* check if new_loc is actually go to jail and update the location to be visiting jail *)
+        (* check if id and jail count stuff then check if not doubles and print still in jail otherwise *)
+        (if ((check_jail_list jail_list current_player_id dice_roll)= false)then
+           roll_update_current_player players t player_names current_player_id board ({
+               id= player.id;
+               score = new_score;
+               location = new_loc mod 40;
+               properties = player.properties;
+               money = new_score
+             }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (new_loc mod 40) board) )::owner_id_acc ) jail_list
+         else (roll_update_current_player players t player_names current_player_id board ( {
+             id = player.id;
+             score = player.score;
+             location= player.location;
+             properties = player.properties;
+             money = player.money
+           }::acc) rent_acc owner_id_acc jail_list))      
       else roll_update_current_player players t player_names current_player_id board ( {
           id = player.id;
           score = player.score;
@@ -381,7 +381,7 @@ let update_location_to_jail_main players board= {
   current_player = players.current_player;
   number_of_players = players.number_of_players;
   player_names = players.player_names;
-      jail_list = players.jail_list
+  jail_list = players.jail_list
 
 }
 
@@ -389,20 +389,20 @@ let update_location_to_jail_main players board= {
 (** updates the players state based on roll (ex: location, score,
     potential property changes) and changes to the next player*)
 let roll_new_player players board = 
-let more_players= update_location_to_jail_main players board in
-let new_player_list = roll_update_players more_players board in {
-  player_list = new_player_list;
-  current_player = more_players.current_player;
-  number_of_players = more_players.number_of_players;
-  player_names = more_players.player_names;
+  let more_players= update_location_to_jail_main players board in
+  let new_player_list = roll_update_players more_players board in {
+    player_list = new_player_list;
+    current_player = more_players.current_player;
+    number_of_players = more_players.number_of_players;
+    player_names = more_players.player_names;
     jail_list = (print_endline "made it to jail_list"; (if (check_jail_type (get_current_location_helper new_player_list more_players.current_player) board) 
-    then (update_jail_list more_players.current_player more_players.jail_list)
-    else if (check_in_jail (get_current_location_helper new_player_list more_players.current_player) board more_players.current_player more_players.jail_list) 
-      then (update_jail_roll_count more_players.current_player more_players.jail_list)
-    else (if (List.mem_assoc more_players.current_player more_players.jail_list)
-    then (List.remove_assoc more_players.current_player more_players.jail_list) else more_players.jail_list)
-    ))
-}
+                                                        then (update_jail_list more_players.current_player more_players.jail_list)
+                                                        else if (check_in_jail (get_current_location_helper new_player_list more_players.current_player) board more_players.current_player more_players.jail_list) 
+                                                        then (update_jail_roll_count more_players.current_player more_players.jail_list)
+                                                        else (if (List.mem_assoc more_players.current_player more_players.jail_list)
+                                                              then (List.remove_assoc more_players.current_player more_players.jail_list) else more_players.jail_list)
+                                                       ))
+  }
 
 
 let rec list_printer lst =
@@ -431,7 +431,7 @@ let buy_new_player players board = {
   current_player = players.current_player;
   number_of_players = players.number_of_players;
   player_names = players.player_names;
-      jail_list = players.jail_list
+  jail_list = players.jail_list
 
 }
 
@@ -496,7 +496,7 @@ let trade_new_player players p1 p2 px_prop py_prop board cash=
     current_player = players.current_player;
     number_of_players = players.number_of_players;
     player_names = players.player_names;
-        jail_list = players.jail_list
+    jail_list = players.jail_list
 
   }
 
@@ -532,13 +532,13 @@ let upgrade_new_player players board prop_loc= {
   current_player = players.current_player;
   number_of_players = players.number_of_players;
   player_names = players.player_names;
-      jail_list = players.jail_list
+  jail_list = players.jail_list
 
 }
 
 (** *)
 let forfeit_player (curr_player:player) (players:players) =
-print_endline "forfeit_player";
+  print_endline "forfeit_player";
   {players with player_list=(remove_helper players.player_list curr_player []);
                 number_of_players=players.number_of_players-1;
                 player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) []);
@@ -547,28 +547,12 @@ print_endline "forfeit_player";
 (** updates the players state based on their turn (ex: location, score,
     potential property changes) and changes to the next player*)
 let new_player players board= 
-let more_players= update_location_to_jail_main players board in {
-  player_list = more_players.player_list;
-  current_player = (players.current_player +1) mod
-                   (List.length players.player_names);
-  number_of_players = players.number_of_players;
-  player_names = players.player_names;
-      jail_list = players.jail_list
+  let more_players= update_location_to_jail_main players board in {
+    player_list = more_players.player_list;
+    current_player = (players.current_player +1) mod
+                     (List.length players.player_names);
+    number_of_players = players.number_of_players;
+    player_names = players.player_names;
+    jail_list = players.jail_list
 
-}
-
-
-(* type players = {
-   player_list : player list;
-   current_player : int;
-   number_of_players : int;
-   player_names : string list
-   } *)
-
-(* type player = {
-   id: int;
-   score: int;
-   location: int;
-   properties: string list;
-   money: int;
-   } *)
+  }

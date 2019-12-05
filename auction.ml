@@ -1,16 +1,41 @@
-(* 
-let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int list) (bids:int*int list) (highest:int*int) (player_index:int) =
+
+let replace lst i v : 'a list =
+  let rec helper i v count acc = function
+    | [] -> (List.rev acc)
+    | h::t -> if count = i then helper i v (count+1) (v::acc) t
+      else helper i v (count+1) (h::acc) t
+  in
+  helper i v 0 [] lst
+
+let is_int s =
+  match int_of_string_opt s with
+  | None -> false
+  | _ -> true
+
+let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int list) (bids:int list) (highest:int*int) (player_index:int) =
   if List.length out = players.number_of_players-1 then (fst highest, forfeit_player.properties, snd highest)
   else begin
     if List.mem player_index out then loop forfeit_player players out bids highest ((player_index+1) mod players.number_of_players)
     else begin
       print_endline ("Player " ^ (List.nth players.player_names player_index) ^
-                     ", please enter your either your bid or type \"forfeit\" to stop bidding.");
+                     ", please enter either your bid or type \"forfeit\" to stop bidding.");
+      print_string  "> ";
+      match read_line () with
+      | exception End_of_file -> exit 0
+      | s -> if s = "forfeit" then
+          loop forfeit_player players (player_index::out) bids highest ((player_index+1) mod players.number_of_players)
+        else if is_int s then
+          let new_highest = if int_of_string s > snd highest then (player_index, int_of_string s)
+            else highest
+          in
+          loop forfeit_player players out (replace bids player_index (int_of_string s)) new_highest ((player_index+1) mod players.number_of_players)
+        else begin
+          print_endline "Please enter either a number for your bid or \"forfeit\" to stop bidding.";
+          print_string  "> ";
+          loop forfeit_player players out bids highest player_index
+        end
     end
-  end *)
-
-
-
+  end
 
 let auction (forfeit_player:Player.player) (players:Player.players) =
   print_endline ("Player " ^ (List.nth players.player_names forfeit_player.id) ^
@@ -22,5 +47,5 @@ let auction (forfeit_player:Player.player) (players:Player.players) =
   else
     print_endline ("Player " ^ (List.nth players.player_names 0) ^  "will bid first.");
   print_string  "> ";
-  (* loop forfeit_player players [forfeit_player.id] [] (0, 0) 0; *)
+  loop forfeit_player players [forfeit_player.id] [] (0, 0) 0;
   (* player that wins (id), list of properties, and price they paid *)
