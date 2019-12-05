@@ -275,7 +275,11 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         | str -> play_game_recursively prev_cmd str player_info board
       )
     | Inventory player_name -> (
-        print_string player_name; print_endline "'s inventory:";let list = (Player.inventory_helper player_info.player_list [] (get_player_id_from_name player_info.player_names player_name 0)) in (Player.list_printer list);
+        print_string player_name; print_endline "'s property inventory:";
+        let money = (Player.inventory_money_helper player_info.player_list 0 (get_player_id_from_name player_info.player_names player_name 0)) in
+        let list = (Player.inventory_helper player_info.player_list [] (get_player_id_from_name player_info.player_names player_name 0)) in 
+        (Player.list_printer list);
+        print_string player_name; print_string "'s money: "; print_int money;
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0

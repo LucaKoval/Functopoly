@@ -278,11 +278,19 @@ let rec list_printer lst =
   |[]-> ()
   |h::t -> print_endline h; list_printer t
 
+(** takes in an accumulator just for shits*)
 let rec inventory_helper players_list acc current_player_id =
   match players_list with
   |[]-> acc
   |h::t when h.id = current_player_id -> h.properties
   |h::t -> inventory_helper t acc current_player_id
+
+(** takes in an accumulator just for shits*)
+let rec inventory_money_helper players_list acc current_player_id =
+  match players_list with
+  |[]-> acc
+  |h::t when h.id = current_player_id -> h.money
+  |h::t -> inventory_money_helper t acc current_player_id
 
 (** updates the players state based on buy (ex: location, score,
     potential property changes) and changes to the next player*)
