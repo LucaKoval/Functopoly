@@ -435,17 +435,6 @@ let buy_new_player players board = {
 
 }
 
-(** updates the players state based on their turn (ex: location, score,
-    potential property changes) and changes to the next player*)
-let new_player players = {
-  player_list = (*update_players*) players.player_list;
-  current_player = (players.current_player +1) mod
-                   (List.length players.player_names);
-  number_of_players = players.number_of_players;
-  player_names = players.player_names;
-      jail_list = players.jail_list
-
-}
 
 let rec remove_helper lst el acc=
   match lst with
@@ -554,6 +543,20 @@ print_endline "forfeit_player";
                 number_of_players=players.number_of_players-1;
                 player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) []);
   }
+
+(** updates the players state based on their turn (ex: location, score,
+    potential property changes) and changes to the next player*)
+let new_player players board= 
+let more_players= update_location_to_jail_main players board in {
+  player_list = more_players.player_list;
+  current_player = (players.current_player +1) mod
+                   (List.length players.player_names);
+  number_of_players = players.number_of_players;
+  player_names = players.player_names;
+      jail_list = players.jail_list
+
+}
+
 
 (* type players = {
    player_list : player list;
