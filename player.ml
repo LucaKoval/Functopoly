@@ -170,24 +170,20 @@ let rec roll_update_owner players_list player_names current_player_id board rent
   |[]-> new_acc
   |player::t -> 
     begin
-      <<<<<<< HEAD
-        print_endline "roll_update_owner";
-      =======
-      >>>>>>> 263e87698b4c2d8a0b8b4dcf4cc09db86c3df398
-        if (player.id = (List.nth owner_id 0)) then roll_update_owner t player_names current_player_id board rent owner_id ({
-            id= player.id;
-            score = player.score + (List.nth rent 0);
-            location = player.location;
-            properties = player.properties;
-            money = player.money + (List.nth rent 0);
-          }::new_acc) 
-        else roll_update_owner t player_names current_player_id board rent owner_id ( {
-            id = player.id;
-            score = player.score;
-            location= player.location;
-            properties = player.properties;
-            money = player.money
-          }::new_acc)
+      if (player.id = (List.nth owner_id 0)) then roll_update_owner t player_names current_player_id board rent owner_id ({
+          id= player.id;
+          score = player.score + (List.nth rent 0);
+          location = player.location;
+          properties = player.properties;
+          money = player.money + (List.nth rent 0);
+        }::new_acc) 
+      else roll_update_owner t player_names current_player_id board rent owner_id ( {
+          id = player.id;
+          score = player.score;
+          location= player.location;
+          properties = player.properties;
+          money = player.money
+        }::new_acc)
     end
 
 
