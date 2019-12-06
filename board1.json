@@ -270,7 +270,9 @@
   ],
   "cards": [
     {
-      "name": "Advance to \"Go\". (Collect $200)",
+      "description": "Advance to \"Go\". (Collect $200) (Mr. Monopoly hops on both feet.)",
+      "subtype": "Advance to",
+      "value": "Go",
       "types": [
         {
           "type": "chance"
@@ -281,7 +283,85 @@
       ]
     },
     {
-      "name": "Hospital Fees. Pay $50.",
+      "description": "Advance to Illinois Avenue. (Mr. Monopoly has tied a cloth bundle onto his cane to make a bindle, carried over his right shoulder, and is smoking a cigar)",
+      "subtype": "Advance to",
+      "value": "Illinois Avenue",
+      "types": [
+        {
+          "type": "chance"
+        }
+      ]
+    },
+    {
+      "description": "Bank pays you dividend of $50. (With his feet up on a telephone-bearing desk, Mr. Monopoly leans back in an overstuffed chair, blowing cigar smoke rings)",
+      "subtype": "Bank pays you",
+      "value": "50",
+      "types": [
+        {
+          "type": "chance"
+        }
+      ]
+    },
+    {
+      "description": "Get out of Jail Free. (Mr. Monopoly, in close-fitting one-piece prison stripes, is literally kicked out)",
+      "subtype": "Get out of jail",
+      "value": "",
+      "types": [
+        {
+          "type": "chance"
+        },
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "Go Back Three 3 Spaces. (Mr. Monopoly is hauled back by a cane hooked around his neck)",
+      "subtype": "Go back",
+      "value": "3",
+      "types": [
+        {
+          "type": "chance"
+        }
+      ]
+    },
+    {
+      "description": "Go to Jail. (A truncheon-carrying policeman in a dark-colored uniform hauls a surprised Mr Monopoly along by the feet)",
+      "subtype": "Advance to",
+      "value": "Jail",
+      "types": [
+        {
+          "type": "chance"
+        },
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "Pay poor tax of $15 (His trouser pockets pulled out to show them empty, Mr. Monopoly spreads his hands)",
+      "subtype": "Pay",
+      "value": "15",
+      "types": [
+        {
+          "type": "chance"
+        }
+      ]
+    },
+    {
+      "description": "You have won a crossword competition. Collect $100.",
+      "subtype": "Collect",
+      "value": "100",
+      "types": [
+        {
+          "type": "chance"
+        }
+      ]
+    },
+    {
+      "description": "Bank error in your favor. Collect $200. <Mr. Monopoly falls back in astonishment as an arm presents a sheaf of cash out of a bank teller's window>",
+      "subtype": "Collect",
+      "value": "200",
       "types": [
         {
           "type": "community_chest"
@@ -289,10 +369,122 @@
       ]
     },
     {
-      "name": "Take a trip to Reading Railroad. If you pass Go, collect $200.",
+      "description": "Doctor's fees. Pay $50. <Mr. Monopoly angrily brandishes crutches as he stomps with a leg cast>",
+      "subtype": "Pay",
+      "value": "50",
       "types": [
         {
-          "type": "chance"
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "From sale of stock you get $50. <Mr. Monopoly, happily entangled in the tape of a stock ticker, waves cash.>",
+      "subtype": "Collect",
+      "value": "50",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "Grand Opera Night. Collect $50 from every player for opening night seats. <A wall sign near steps reads 'Opera Tonite - 8 PM Sharp'; Mr. Monopoly leans against it checking his pocket watch in annoyance>",
+      "subtype": "Collect from all",
+      "value": "50",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "Holiday Xmas Fund matures. Receive $100. <Mr. Monopoly carries along a giant Xmas sock containing a sheaf of cash>",
+      "subtype": "Collect",
+      "value": "100",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "Income tax refund. Collect $20. <Mr Monopoly faints back against a man displaying the Refund paper>",
+      "subtype": "Collect",
+      "value": "20",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "It's your birthday. Collect $10 from every player. {Mr. Monopoly holds his gift and gets a M sign on the top of it.}",
+      "subtype": "Collect from all",
+      "value": "10",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "Life insurance matures – Collect $100 <Below an I N S sign stands a bent Mr Monopoly, his long beard brushing the floor>",
+      "subtype": "Collect",
+      "value": "100",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "Hospital Fees. Pay $50. <A bored nurse holds out her hand for payment while Mr. Monopoly holds 2 swaddled infants, one in each arm>",
+      "subtype": "Pay",
+      "value": "50",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "School fees. Pay $50. <A bespectacled schoolboy unhappily receives a head pat and a dime (Rockefeller style) from Mr. Monopoly>",
+      "subtype": "Pay",
+      "value": "50",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "Receive $25 consultancy fee. <As Justice of the Peace, a stern Mr. M holds out his hand for fee from an embarrassed groom whose bride hold a bouquet behind him>",
+      "subtype": "Collect",
+      "value": "25",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "You have won second prize in a beauty contest. Collect $10. <Mr. Monopoly preens with a sash and large bouquet>",
+      "subtype": "Collect",
+      "value": "10",
+      "types": [
+        {
+          "type": "community_chest"
+        }
+      ]
+    },
+    {
+      "description": "You inherit $100. <Mr Monopoly. holds his head as unseen people's hands offer brochures titled 'Buy Yacht', 'World Tour', and 'Rolls Royce'>",
+      "subtype": "Collect",
+      "value": "100",
+      "types": [
+        {
+          "type": "community_chest"
         }
       ]
     }
