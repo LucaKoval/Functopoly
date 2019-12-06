@@ -1,10 +1,13 @@
 open Yojson.Basic.Util
 
-type color = Brown | LightBlue | Magenta | Orange | Red | Yellow | Green | Blue | NoColor
+type color = Brown | LightBlue | Magenta | Orange | Red | Yellow | Green | 
+             Blue | NoColor
 type tile_type = Property | Railroad | Utility
 type card_type = Chance | CommunityChest
 type tax_tile_type = IncomeTax | LuxuryTax
 type corner_tile_type = Go | JailJustVisiting | FreeParking | GoToJail
+type subtype_type = AdvanceTo | Collect | GetOutOfJail | GoBack | Pay | 
+                    CollectFromAll
 
 type property_tile = {
   name : string;
@@ -23,7 +26,9 @@ type card_tile = {
 }
 
 type card = {
-  name : string;
+  description : string;
+  subtype: subtype_type;
+  value: string;
   types : card_type list;
 }
 
@@ -111,8 +116,20 @@ let to_card_type card_type =
   else if (card_type = "community_chest") then CommunityChest
   else failwith ("Improper card type: " ^ card_type)
 
+let to_subtype str = 
+  if (str = "Collect") then Collect
+  else if (str = "Advance to") then AdvanceTo
+  else if (str = "Get out of jail") then GetOutOfJail
+  else if (str = "Go back") then GoBack
+  else if (str = "Collect from all") then CollectFromAll
+  else if (str = "Pay") then Pay
+  else failwith "Incorrect board configuration. Please fix your board. 
+  Specifically - looks like you have a typo in your subtypes for your cards"
+
 let card_of_json j = {
-  name = "";
+  description = j |> member "description" |> to_string;
+  subtype = j |> member "subtype" |> to_string |> to_subtype;
+  value = j |> member "value" |> to_string;
   types = j |> member "types" |> to_list |> List.map
             (fun x -> x |> member "type" |> to_string |> to_card_type);
 }

@@ -294,7 +294,7 @@
     },
     {
       "description": "Bank pays you dividend of $50. (With his feet up on a telephone-bearing desk, Mr. Monopoly leans back in an overstuffed chair, blowing cigar smoke rings)",
-      "subtype": "Bank pays you",
+      "subtype": "Collect",
       "value": "50",
       "types": [
         {
