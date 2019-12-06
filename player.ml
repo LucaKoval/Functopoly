@@ -164,9 +164,11 @@ let select_random_card cards =
   let rand_ind = (Random.int (List.length cards)) in
   List.nth cards rand_ind
 
-let card_main location board curr_player score = 
+
+let card_main location board players curr_player score = 
   let chance_or_community = get_card_type_from_index location board.card_tiles in
   let selected_card = select_random_card board.cards in
+  let curr_player = (List.nth players curr_player) in
   print_string "You landed on a card tile for the ";
   print_string chance_or_community;
   print_endline " deck and picked up the following card.";
@@ -176,7 +178,7 @@ let card_main location board curr_player score =
   | Collect -> score + int_of_string selected_card.value
   | GetOutOfJail -> 0
   | GoBack -> 0
-  | Pay -> 0
+  | Pay -> score - int_of_string selected_card.value
   | CollectFromAll -> 0
   | _ -> 0
 
@@ -205,7 +207,7 @@ let roll_change_score playerscore new_loc board player_names curr_player players
         else (
           (* TODO: tiles that aren't properties? *)
           if is_card (get_curr_tile new_loc board) then 
-            card_main new_loc board (List.nth players curr_player) playerscore
+            card_main new_loc board players curr_player playerscore
           else 0
         )
        )
