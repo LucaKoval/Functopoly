@@ -1,6 +1,7 @@
 open Yojson.Basic.Util
 open Board
 open Indices
+open Cards
 
 type player = {
   id: int;
@@ -141,10 +142,49 @@ let update_current_player player current_player_id =
       money = player.money
     })
 
+let get_curr_tile current_loc board =
+  match (Indices.return_tile current_loc board) with 
+  | None -> failwith "no tile at this location"
+  | Some v -> v
+
+let is_card tile =
+  match tile with
+  | PropertyTile a -> false
+  | CardTile a -> true
+  | TaxTile a -> false
+  | CornerTile a -> false
+
+let rec get_card_type_from_index location (tiles:Board.card_tile list) = 
+  match tiles with
+  | [] -> ""
+  | h::t -> if h.location = location then h.card_tile_name
+    else get_card_type_from_index location t
+
+let select_random_card cards = 
+  let rand_ind = (Random.int (List.length cards)) in
+  List.nth cards rand_ind
+
+let card_main location board curr_player score = 
+  let chance_or_community = get_card_type_from_index location board.card_tiles in
+  let selected_card = select_random_card board.cards in
+  print_string "You landed on a card tile for the ";
+  print_string chance_or_community;
+  print_endline " deck and picked up the following card.";
+  print_endline selected_card.description;
+  match selected_card.subtype with
+  | AdvanceTo -> 0
+  | Collect -> score + int_of_string selected_card.value
+  | GetOutOfJail -> 0
+  | GoBack -> 0
+  | Pay -> 0
+  | CollectFromAll -> 0
+  | _ -> 0
+
+
 (** if the new location is a unowned property, the price of the new property is returned, 
     else if the property is owned, the property price is returned 
     else if the location is not a property at all, 0 is returned*)
-let roll_change_score playerscore new_loc board player_names =
+let roll_change_score playerscore new_loc board player_names curr_player players =
   if (get_rent board (new_loc mod 40))<>0 then
     let prop= get_property_name (get_property (new_loc mod 40) board) in
     let owner= get_owner_name (get_property (new_loc mod 40) board) player_names in 
@@ -161,7 +201,13 @@ let roll_change_score playerscore new_loc board player_names =
     print_string " is available for purchase! Would you like to buy? ";
     (if new_loc > 40 then playerscore + 200 else if new_loc = 40 then playerscore + 400
      else playerscore) )
-  else (if (new_loc=10||new_loc=30) then 0 else (print_string "this is not a property, other card types are currently not implemented at this time, please treat this as a blank space for now"; 0) (* ToDo: tiles that aren't properties?*)
+  else (if (new_loc=10||new_loc=30) then 0 
+        else (
+          (* TODO: tiles that aren't properties? *)
+          if is_card (get_curr_tile new_loc board) then 
+            card_main new_loc board (List.nth players curr_player) playerscore
+          else 0
+        )
        )
 
 (** updates the current player's state if its their turn based on roll*)
@@ -269,7 +315,7 @@ let rec roll_update_current_player players players_list player_names current_pla
         (* check if id and jail count stuff then check if not doubles and print still in jail otherwise *)
         (if ((check_jail_list jail_list current_player_id dice_roll)= false)then
            let new_loc = player.location + (fst(dice_roll)+snd(dice_roll)) in 
-           let new_score = (roll_change_score player.score new_loc board player_names) in 
+           let new_score = (roll_change_score player.score new_loc board player_names current_player_id players.player_list) in 
            roll_update_current_player players t player_names current_player_id board ({
                id= player.id;
                score = new_score;
