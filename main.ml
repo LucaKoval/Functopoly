@@ -414,6 +414,7 @@ let rec main_helper file_name =
 
 
 let rec main () =
+  Random.self_init ();
   print_endline "Please enter the name of the game file you want to load.\n";
   print_string  "> ";
   match read_line () with
