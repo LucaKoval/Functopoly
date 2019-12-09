@@ -25,10 +25,10 @@ let rec to_player numplayers acc=
   |(0)-> acc
   |x-> to_player (numplayers-1) ({
       id = (x-1);
-      score = 0;
+      score = 1500;
       location = 0;
       properties = [];
-      money = 0
+      money = 1500
     }::acc)
 
 (** print list of ints*)
@@ -538,13 +538,13 @@ let roll_new_player players board =
     current_player = more_players.current_player;
     number_of_players = more_players.number_of_players;
     player_names = more_players.player_names;
-    jail_list = (print_endline "made it to jail_list"; (if (check_jail_type (get_current_location_helper new_player_list more_players.current_player) board) 
-                                                        then (update_jail_list more_players.current_player more_players.jail_list)
-                                                        else if (check_in_jail (get_current_location_helper new_player_list more_players.current_player) board more_players.current_player more_players.jail_list) 
-                                                        then (update_jail_roll_count more_players.current_player more_players.jail_list)
-                                                        else (if (List.mem_assoc more_players.current_player more_players.jail_list)
-                                                              then (List.remove_assoc more_players.current_player more_players.jail_list) else more_players.jail_list)
-                                                       ))
+    jail_list = (if (check_jail_type (get_current_location_helper new_player_list more_players.current_player) board) 
+                 then (update_jail_list more_players.current_player more_players.jail_list)
+                 else if (check_in_jail (get_current_location_helper new_player_list more_players.current_player) board more_players.current_player more_players.jail_list) 
+                 then (update_jail_roll_count more_players.current_player more_players.jail_list)
+                 else (if (List.mem_assoc more_players.current_player more_players.jail_list)
+                       then (List.remove_assoc more_players.current_player more_players.jail_list) else more_players.jail_list)
+                )
   }
 
 
@@ -578,18 +578,16 @@ let buy_new_player players board = {
 
 }
 
-
 let rec remove_helper lst el acc=
-  print_endline "hello over there";
   match lst with
-  |[]-> acc
-  |h::t when h = el -> remove_helper lst el acc
-  |h::t -> remove_helper lst el (h::acc)
+  |[]-> List.rev acc
+  |h::t when h = el -> remove_helper t el acc
+  |h::t -> remove_helper t el (h::acc)
 
 (** updates the player two 2 stuff and then passes that new players list into trade_update_player for the final updates*)
 let rec trade_update_player2 players_list p1 p2 px_prop py_prop board cash acc=
   match players_list with
-  |[]-> trade_update_player2 players_list p1 p2 px_prop py_prop board cash acc
+  |[]-> acc
   |player::t->
     begin
       if (player.id = p2) then (
@@ -685,14 +683,6 @@ let rec remove_helper_2 el acc = function
   | h::t when h = el -> remove_helper_2 el acc t
   | h::t -> remove_helper_2 el (h::acc) t
 
-(*
-let forfeit_player (curr_player:player) (players:players) =
-  { players with player_list=(remove_helper_2 curr_player [] players.player_list);
-                 number_of_players=players.number_of_players-1;
-                 player_names=(remove_helper_2 (List.nth players.player_names curr_player.id) [] players.player_names);
-  }
-*)
-
 (** updates the players state based on their turn (ex: location, score,
     potential property changes) and changes to the next player*)
 let new_player players board= 
@@ -720,7 +710,6 @@ let rec auction_update_current_player players_list board acc p1_id (fp_id:int) p
   |[]-> acc
   |player::t -> let prop_value= (get_prop_value prop_lst board 0) in
     begin
-      print_endline ("player that won's id: " ^ string_of_int p1_id);
       if (player.id = p1_id) then (
         auction_update_current_player t board ({
             id= player.id + (if player.id > fp_id then -1 else 0);
