@@ -173,8 +173,7 @@ let rec get_property_location property = function
     then h.location
     else get_property_location property t
 
-let get_new_location str board = 
-  match str with
+let get_new_location board = function
   | "Go" -> 0
   | "Jail" -> 30
   | property -> get_property_location property board.property_tiles
@@ -209,6 +208,37 @@ let update_location_main str players board= {
   jail_list = players.jail_list
 }
 
+let rec update_location_goback str players_list current_player_id board acc=
+  match players_list with
+  | []-> acc
+  | player::t ->
+    begin
+      if (player.id = current_player_id) then (
+        update_location_goback str t current_player_id board ({
+            id= player.id;
+            score = player.score;
+            location = player.location - (int_of_string str);
+            properties = player.properties;
+            money = player.money
+          }::acc) )
+      else update_location_goback str t current_player_id board (  {
+          id = player.id;
+          score = player.score;
+          location= player.location;
+          properties = player.properties;
+          money = player.money
+        }::acc) 
+    end
+
+let update_location_goback_main str players board= {
+  player_list = update_location_goback str players.player_list players.current_player board [];
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names;
+  jail_list = players.jail_list
+}
+
+
 let card_main location board players curr_player score = 
   let chance_or_community = get_card_type_from_index location board.card_tiles in
   let selected_card = select_random_card board.cards in
@@ -218,12 +248,11 @@ let card_main location board players curr_player score =
   print_endline " deck and picked up the following card.";
   print_endline selected_card.description;
   match selected_card.subtype with
-  | AdvanceTo -> ((update_location_main selected_card.value players board), 0)
+  | AdvanceTo -> (update_location_main selected_card.value players board, 0)
   | Collect -> (players, score + int_of_string selected_card.value)
-  | GetOutOfJail -> (players, 0)
-  | GoBack -> (players, 0)
+  | GoBack -> (update_location_goback_main selected_card.value players board, score)
   | Pay -> (players, score - int_of_string selected_card.value)
-  | CollectFromAll -> (players, 0)
+  | CollectFromAll -> (players, score)
   | _ -> (players, 0)
 
 
