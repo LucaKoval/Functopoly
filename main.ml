@@ -241,6 +241,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
                                                                                | str -> play_game_recursively str_command str update_player_roll board)
     | EndTurn ->
       let current_player = Player.get_current_player player_info in
+      (* print_endline (string_of_int current_player.money); *)
       if current_player.money < 0 then
         begin
           (* TODO: This returns information pertaining to the properties of
@@ -249,14 +250,13 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           let auction_info = Auction.auction current_player player_info in
           let post_forfeit_player_info = Player.forfeit_player current_player player_info board auction_info in
           let current_name = (get_current_player_name post_forfeit_player_info) in
-          print_endline ("current_name: " ^ current_name);
-          (print_string ", it's your turn now! Your current location is "; 
-           print_int (Player.get_current_location post_forfeit_player_info);
-           print_string  "> ";
-           match read_line () with
-           | exception End_of_file -> exit 0;
-           | str -> play_game_recursively str_command str post_forfeit_player_info board
-          )
+          print_endline ("Player " ^ current_name ^ ", it's your turn now! Your current location is "
+                         ^ string_of_int (Player.get_current_location post_forfeit_player_info)); 
+          print_endline "";
+          print_string  "> ";
+          match read_line () with
+          | exception End_of_file -> exit 0;
+          | str -> play_game_recursively str_command str post_forfeit_player_info board
         end
       else
         let new_player_info = (Player.new_player player_info board) in 
@@ -277,11 +277,12 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         | str -> play_game_recursively prev_cmd str player_info board
       )
     | Inventory player_name -> (
-        print_string player_name; print_endline "'s property inventory:";
+        print_string player_name; print_endline "'s inventory:";
         let money = (Player.inventory_money_helper player_info.player_list 0 (get_player_id_from_name player_info.player_names player_name 0)) in
         let list = (Player.inventory_helper player_info.player_list [] (get_player_id_from_name player_info.player_names player_name 0)) in 
         (Player.list_printer list);
         print_string player_name; print_string "'s money: "; print_int money;
+        print_endline "";
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
