@@ -274,7 +274,7 @@ let card_main location board players curr_player score =
   | Collect -> (players, score + int_of_string selected_card.value)
   | GoBack -> (update_location_goback_main selected_card.value players board, score)
   | Pay -> (players, score - int_of_string selected_card.value)
-  | CollectFromAll -> (update_collect_from_all selected_card.value players, score)
+  | CollectFromAll -> (update_collect_from_all selected_card.value players, 0)
   | _ -> (players, 0)
 
 
