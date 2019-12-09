@@ -663,12 +663,13 @@ let rec remove_helper_2 el acc = function
   | h::t when h = el -> remove_helper_2 el acc t
   | h::t -> remove_helper_2 el (h::acc) t
 
-(** *)
+(*
 let forfeit_player (curr_player:player) (players:players) =
   { players with player_list=(remove_helper_2 curr_player [] players.player_list);
                  number_of_players=players.number_of_players-1;
                  player_names=(remove_helper_2 (List.nth players.player_names curr_player.id) [] players.player_names);
   }
+*)
 
 (** updates the players state based on their turn (ex: location, score,
     potential property changes) and changes to the next player*)
@@ -681,4 +682,51 @@ let new_player players board=
     player_names = players.player_names;
     jail_list = players.jail_list
 
+  }
+
+
+(** gets the sum of the price value of a list of properties*)
+let rec get_prop_value prop_lst board acc=
+match prop_lst with
+|[]-> acc
+|h::t-> get_prop_value t board ((get_property_price h board)+acc)
+
+
+(** updates the given player's propeties, money, and score based on forfeit info BEFORE forfeit player is removed*)
+let rec auction_update_current_player players_list board acc p1_id prop_lst amt=
+  match players_list with
+  |[]-> acc
+  |player::t -> let prop_value= (get_prop_value prop_lst board 0) in
+    begin
+      if (player.id = p1_id) then (
+        auction_update_current_player t board ({
+            id= player.id;
+            score = (player.score + prop_value -amt);
+            location = player.location;
+            properties = prop_lst@(player.properties);
+            money = player.money-amt
+          }::acc) p1_id prop_lst amt)
+      else auction_update_current_player t board (  {
+          id = player.id;
+          score = player.score;
+          location= player.location;
+          properties = player.properties;
+          money = player.money
+        }::acc) p1_id prop_lst amt
+    end
+
+(** updates players with propeties, money, and score based on forfeit auction BEFORE forfeit player is removed*)
+let auction_new_player players board (p1_id:int) (prop_lst:string list) (amt:int)= {
+  player_list = auction_update_current_player players.player_list board [] p1_id prop_lst amt;
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names;
+  jail_list = players.jail_list
+}    
+
+let forfeit_player (curr_player:player) (players_init:players) board (p1_id, prop_lst, amt) =
+let players = auction_new_player players_init board.property_tiles p1_id prop_lst amt in
+  { players with player_list=(remove_helper_2 curr_player [] players.player_list);
+                 number_of_players=players.number_of_players-1;
+                 player_names=(remove_helper_2 (List.nth players.player_names curr_player.id) [] players.player_names);
   }
