@@ -67,7 +67,8 @@ let get_current_location players =
 (** takes in a 0 just for shits and returns a tuple of numbers rolled by 2 dice*)
 let dice zero =
   let x = (Random.int 6) + 1 in let y = (Random.int 6) +1  +zero in
-  print_string "You rolled a "; print_int x; print_string " and a "; print_int y; print_endline ""; (x,y) 
+  print_string "You rolled a "; print_int x; print_string " and a "; 
+  print_int y; print_endline ""; (x,y) 
 
 (** [new_property player] is Some property that the current player obtains if
     any, otherwise None*)
@@ -164,23 +165,66 @@ let select_random_card cards =
   let rand_ind = (Random.int (List.length cards)) in
   List.nth cards rand_ind
 
+(** takes in a [property] name and the list of property_tiles and returns the 
+    location of that [property] on the board *)
+let rec get_property_location property = function
+  | [] -> failwith "Property not found"
+  | h::t -> if (String.lowercase property) = (String.lowercase h.name) 
+    then h.location
+    else get_property_location property t
+
+let get_new_location str board = 
+  match str with
+  | "Go" -> 0
+  | "Jail" -> 30
+  | property -> get_property_location property board.property_tiles
+
+let rec update_location str players_list current_player_id board acc=
+  match players_list with
+  | []-> acc
+  | player::t ->
+    begin
+      if (player.id = current_player_id) then (
+        update_location str t current_player_id board ({
+            id= player.id;
+            score = player.score;
+            location = get_new_location str board;
+            properties = player.properties;
+            money = player.money
+          }::acc) )
+      else update_location str t current_player_id board (  {
+          id = player.id;
+          score = player.score;
+          location= player.location;
+          properties = player.properties;
+          money = player.money
+        }::acc) 
+    end
+
+let update_location_main str players board= {
+  player_list = update_location str players.player_list players.current_player board [];
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names;
+  jail_list = players.jail_list
+}
 
 let card_main location board players curr_player score = 
   let chance_or_community = get_card_type_from_index location board.card_tiles in
   let selected_card = select_random_card board.cards in
-  let curr_player = (List.nth players curr_player) in
+  let curr_player = (List.nth players.player_list curr_player) in
   print_string "You landed on a card tile for the ";
   print_string chance_or_community;
   print_endline " deck and picked up the following card.";
   print_endline selected_card.description;
   match selected_card.subtype with
-  | AdvanceTo -> 0
-  | Collect -> score + int_of_string selected_card.value
-  | GetOutOfJail -> 0
-  | GoBack -> 0
-  | Pay -> score - int_of_string selected_card.value
-  | CollectFromAll -> 0
-  | _ -> 0
+  | AdvanceTo -> ((update_location_main selected_card.value players board), 0)
+  | Collect -> (players, score + int_of_string selected_card.value)
+  | GetOutOfJail -> (players, 0)
+  | GoBack -> (players, 0)
+  | Pay -> (players, score - int_of_string selected_card.value)
+  | CollectFromAll -> (players, 0)
+  | _ -> (players, 0)
 
 
 (** if the new location is a unowned property, the price of the new property is returned, 
@@ -194,21 +238,21 @@ let roll_change_score playerscore new_loc board player_names curr_player players
     print_string prop; print_string " is owned by "; print_string owner; 
     print_string " Rent paid: "; print_int rent;
     print_endline "";
-    (if new_loc > 40 then (playerscore + 200-(get_rent board (new_loc mod 40))) 
-     else if new_loc = 40 then (playerscore + 400-(get_rent board (new_loc mod 40)))
-     else playerscore- (get_rent board (new_loc mod 40)))
+    (if new_loc > 40 then (players, (playerscore + 200-(get_rent board (new_loc mod 40))))
+     else if new_loc = 40 then (players, (playerscore + 400-(get_rent board (new_loc mod 40))))
+     else (players, playerscore- (get_rent board (new_loc mod 40))))
   else if (is_property (get_property (new_loc mod 40) board)) then (
     let prop= get_property_name (get_property (new_loc mod 40) board) in
     print_string prop;
     print_string " is available for purchase! Would you like to buy? ";
-    (if new_loc > 40 then playerscore + 200 else if new_loc = 40 then playerscore + 400
-     else playerscore) )
-  else (if (new_loc=10||new_loc=30) then 0 
+    (if new_loc > 40 then (players, playerscore + 200) else if new_loc = 40 then (players, playerscore + 400)
+     else (players, playerscore)) )
+  else (if (new_loc=10||new_loc=30) then (players, 0) 
         else (
           (* TODO: tiles that aren't properties? *)
           if is_card (get_curr_tile new_loc board) then 
             card_main new_loc board players curr_player playerscore
-          else 0
+          else (players, 0)
         )
        )
 
@@ -317,7 +361,7 @@ let rec roll_update_current_player players players_list player_names current_pla
         (* check if id and jail count stuff then check if not doubles and print still in jail otherwise *)
         (if ((check_jail_list jail_list current_player_id dice_roll)= false)then
            let new_loc = player.location + (fst(dice_roll)+snd(dice_roll)) in 
-           let new_score = (roll_change_score player.score new_loc board player_names current_player_id players.player_list) in 
+           let (players, new_score) = (roll_change_score player.score new_loc board player_names current_player_id players) in 
            roll_update_current_player players t player_names current_player_id board ({
                id= player.id;
                score = new_score;
