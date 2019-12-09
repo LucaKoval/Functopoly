@@ -239,6 +239,28 @@ let update_location_goback_main str players board= {
 }
 
 
+let rec update_collect_from_all_player str players_list acc=
+  match players_list with
+  | []-> acc
+  | player::t ->
+    begin
+      update_collect_from_all_player str t ( {
+          id = player.id;
+          score = (player.score - (int_of_string str));
+          location= player.location;
+          properties = player.properties;
+          money = (player.money- (int_of_string str))
+        }::acc) 
+    end
+
+let update_collect_from_all str players= {
+  player_list = update_collect_from_all_player str players.player_list [];
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names;
+  jail_list = players.jail_list
+}
+
 let card_main location board players curr_player score = 
   let chance_or_community = get_card_type_from_index location board.card_tiles in
   let selected_card = select_random_card board.cards in
@@ -252,7 +274,7 @@ let card_main location board players curr_player score =
   | Collect -> (players, score + int_of_string selected_card.value)
   | GoBack -> (update_location_goback_main selected_card.value players board, score)
   | Pay -> (players, score - int_of_string selected_card.value)
-  | CollectFromAll -> (players, score)
+  | CollectFromAll -> (update_collect_from_all selected_card.value players, score)
   | _ -> (players, 0)
 
 
