@@ -37,14 +37,25 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
     end
   end
 
+let player_list_mem_other (player:Player.player) (lst:Player.players) : Player.player =
+  if (List.nth lst.player_list 0).id = player.id then List.nth lst.player_list 1
+  else List.nth lst.player_list 1
+
 let auction (forfeit_player:Player.player) (players:Player.players) =
-  print_endline ("Player " ^ (List.nth players.player_names forfeit_player.id) ^
-                 " has gone bankrupt. All of their properties will be auctioned
-                 as one group of properties. The bidding will begin at 0.");
-  if forfeit_player.id = 0 then begin
-    print_endline ("Player " ^ (List.nth players.player_names 1) ^ " will bid first.");
+  if List.length players.player_list = 2 then begin
+    print_endline ("Player " ^ (List.nth players.player_names (player_list_mem_other forfeit_player players).id) ^
+                   " wins!");
+    exit 0;
   end
-  else
-    print_endline ("Player " ^ (List.nth players.player_names 0) ^ " will bid first.");
-  print_string  "> ";
-  loop forfeit_player players [forfeit_player.id] [] (0, 0) 0;
+  else begin
+    print_endline ("Player " ^ (List.nth players.player_names forfeit_player.id) ^
+                   " has gone bankrupt. All of their properties will be auctioned
+                 as one group of properties. The bidding will begin at 0.");
+    if forfeit_player.id = 0 then begin
+      print_endline ("Player " ^ (List.nth players.player_names 1) ^ " will bid first.");
+    end
+    else
+      print_endline ("Player " ^ (List.nth players.player_names 0) ^ " will bid first.");
+    print_string  "> ";
+    loop forfeit_player players [forfeit_player.id] [] (0, 0) 0;
+  end
