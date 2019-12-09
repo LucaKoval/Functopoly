@@ -187,7 +187,7 @@ let rec update_location str players_list current_player_id board acc=
         update_location str t current_player_id board ({
             id= player.id;
             score = player.score;
-            location = get_new_location str board;
+            location = get_new_location board str;
             properties = player.properties;
             money = player.money
           }::acc) )
