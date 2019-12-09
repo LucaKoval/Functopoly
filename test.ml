@@ -2,6 +2,16 @@ open OUnit2
 open Board
 open Indices
 
+(* Our test plan:
+
+
+
+
+
+
+
+*)
+
 let board1 = Yojson.Basic.from_file "board1.json" |> from_json
 
 let string_color = function

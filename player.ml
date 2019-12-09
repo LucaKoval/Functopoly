@@ -1,7 +1,7 @@
 open Yojson.Basic.Util
 open Board
 open Indices
-open Cards
+(* open Cards *)
 
 type player = {
   id: int;
@@ -25,10 +25,10 @@ let rec to_player numplayers acc=
   |(0)-> acc
   |x-> to_player (numplayers-1) ({
       id = (x-1);
-      score = 1500;
+      score = 0;
       location = 0;
       properties = [];
-      money = 1500
+      money = 0
     }::acc)
 
 (** print list of ints*)
@@ -529,6 +529,7 @@ let buy_new_player players board = {
 
 
 let rec remove_helper lst el acc=
+  print_endline "hello over there";
   match lst with
   |[]-> acc
   |h::t when h = el -> remove_helper lst el acc
@@ -628,12 +629,16 @@ let upgrade_new_player players board prop_loc= {
 
 }
 
+let rec remove_helper_2 el acc = function
+  | []-> List.rev acc
+  | h::t when h = el -> remove_helper_2 el acc t
+  | h::t -> remove_helper_2 el (h::acc) t
+
 (** *)
 let forfeit_player (curr_player:player) (players:players) =
-  print_endline "forfeit_player";
-  {players with player_list=(remove_helper players.player_list curr_player []);
-                number_of_players=players.number_of_players-1;
-                player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) []);
+  { players with player_list=(remove_helper_2 curr_player [] players.player_list);
+                 number_of_players=players.number_of_players-1;
+                 player_names=(remove_helper_2 (List.nth players.player_names curr_player.id) [] players.player_names);
   }
 
 (** updates the players state based on their turn (ex: location, score,
