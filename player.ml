@@ -34,14 +34,14 @@ let rec to_player numplayers acc=
 (** print list of ints*)
 let rec print_int_list lst =
   match lst with
-  |h::t -> print_int h; print_string " "; print_int_list t
-  |[] -> print_string " "
+  | h::t -> print_int h; print_string " "; print_int_list t
+  | [] -> print_string " "
 
 (** print list of strings*)
 let rec print_string_list lst =
   match lst with
-  |h::t -> print_string h; print_string " "; print_string_list t
-  |[] -> print_string " "
+  | h::t -> print_string h; print_string " "; print_string_list t
+  | [] -> print_string " "
 
 (** creates the original players data structure using user input*)
 let to_players num_players input_names = {
@@ -57,9 +57,9 @@ let get_current_player (players:players) =
 
 let rec get_current_location_helper player_list current_id =
   match player_list with
-  |h::t when h.id = current_id -> h.location
-  |h::t -> get_current_location_helper t current_id
-  |_-> failwith "no current player error"
+  | h::t when h.id = current_id -> h.location
+  | h::t -> get_current_location_helper t current_id
+  | _-> failwith "no current player error"
 
 let get_current_location players =
   get_current_location_helper players.player_list players.current_player
@@ -169,7 +169,7 @@ let select_random_card cards =
     location of that [property] on the board *)
 let rec get_property_location property = function
   | [] -> failwith "Property not found"
-  | h::t -> if (String.lowercase property) = (String.lowercase h.name) 
+  | h::t -> if (String.lowercase_ascii property) = (String.lowercase_ascii h.name) 
     then h.location
     else get_property_location property t
 
@@ -709,9 +709,9 @@ let new_player players board=
 
 (** gets the sum of the price value of a list of properties*)
 let rec get_prop_value prop_lst board acc=
-match prop_lst with
-|[]-> acc
-|h::t-> get_prop_value t board ((get_property_price h board)+acc)
+  match prop_lst with
+  |[]-> acc
+  |h::t-> get_prop_value t board ((get_property_price h board)+acc)
 
 
 (** updates the given player's propeties, money, and score based on forfeit info BEFORE forfeit player is removed*)
@@ -747,7 +747,7 @@ let auction_new_player players board (p1_id:int) (prop_lst:string list) (amt:int
 }    
 
 let forfeit_player (curr_player:player) (players_init:players) board (p1_id, prop_lst, amt) =
-let players = auction_new_player players_init board.property_tiles p1_id prop_lst amt in
+  let players = auction_new_player players_init board.property_tiles p1_id prop_lst amt in
   { players with player_list=(remove_helper_2 curr_player [] players.player_list);
                  number_of_players=players.number_of_players-1;
                  player_names=(remove_helper_2 (List.nth players.player_names curr_player.id) [] players.player_names);
