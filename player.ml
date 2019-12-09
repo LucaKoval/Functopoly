@@ -174,9 +174,9 @@ let rec get_property_location property = function
     else get_property_location property t
 
 let get_new_location board = function
-  | "Go" -> 0
-  | "Jail" -> 30
-  | property -> get_property_location property board.property_tiles
+  | "Go" -> ("Go", 0)
+  | "Jail" -> ("Jail", 30)
+  | property -> (property, get_property_location property board.property_tiles)
 
 let rec update_location str players_list current_player_id board acc=
   match players_list with
@@ -184,10 +184,15 @@ let rec update_location str players_list current_player_id board acc=
   | player::t ->
     begin
       if (player.id = current_player_id) then (
+        let new_tile, new_loc = get_new_location board str in
+        print_string "Your new location is the ";
+        print_string new_tile;
+        print_string " tile, which is at the numeric location ";
+        print_endline (string_of_int new_loc);
         update_location str t current_player_id board ({
             id= player.id;
             score = player.score;
-            location = get_new_location board str;
+            location = new_loc;
             properties = player.properties;
             money = player.money
           }::acc) )
@@ -214,6 +219,8 @@ let rec update_location_goback str players_list current_player_id board acc=
   | player::t ->
     begin
       if (player.id = current_player_id) then (
+        print_string "Your new location is ";
+        print_endline (string_of_int (player.location - (int_of_string str)));
         update_location_goback str t current_player_id board ({
             id= player.id;
             score = player.score;
@@ -249,8 +256,8 @@ let rec update_collect_from_all_player str players_list acc=
           score = (player.score - (int_of_string str));
           location= player.location;
           properties = player.properties;
-          money = (player.money- (int_of_string str))
-        }::acc) 
+          money = (player.money - (int_of_string str))
+        }::acc)
     end
 
 let update_collect_from_all str players= {
@@ -261,21 +268,88 @@ let update_collect_from_all str players= {
   jail_list = players.jail_list
 }
 
+let rec update_score_collect str players_list current_player_id board acc=
+  match players_list with
+  | []-> acc
+  | player::t ->
+    begin
+      if (player.id = current_player_id) then (
+        print_string "Your score is now ";
+        print_string (string_of_int (player.score + (int_of_string str)));
+        print_string " and your money is now ";
+        print_endline (string_of_int (player.money + (int_of_string str)));
+        update_score_collect str t current_player_id board ({
+            id= player.id;
+            score = player.score + (int_of_string str);
+            location = player.location;
+            properties = player.properties;
+            money = player.money + (int_of_string str)
+          }::acc) )
+      else update_score_collect str t current_player_id board (  {
+          id = player.id;
+          score = player.score;
+          location= player.location;
+          properties = player.properties;
+          money = player.money
+        }::acc) 
+    end
+
+let update_score_collect_main str players board= {
+  player_list = update_score_collect str players.player_list players.current_player board [];
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names;
+  jail_list = players.jail_list
+}
+
+let rec update_score_pay str players_list current_player_id board acc=
+  match players_list with
+  | []-> acc
+  | player::t ->
+    begin
+      if (player.id = current_player_id) then (
+        print_string "Your score is now ";
+        print_string (string_of_int (player.score - (int_of_string str)));
+        print_string " and your money is now ";
+        print_endline (string_of_int (player.money - (int_of_string str)));
+        update_score_pay str t current_player_id board ({
+            id= player.id;
+            score = player.score - (int_of_string str);
+            location = player.location;
+            properties = player.properties;
+            money = player.money - (int_of_string str)
+          }::acc) )
+      else update_score_pay str t current_player_id board (  {
+          id = player.id;
+          score = player.score;
+          location= player.location;
+          properties = player.properties;
+          money = player.money
+        }::acc) 
+    end
+
+let update_score_pay_main str players board= {
+  player_list = update_score_pay str players.player_list players.current_player board [];
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names;
+  jail_list = players.jail_list
+}
+
 let card_main location board players curr_player score = 
   let chance_or_community = get_card_type_from_index location board.card_tiles in
   let selected_card = select_random_card board.cards in
-  let curr_player = (List.nth players.player_list curr_player) in
   print_string "You landed on a card tile for the ";
   print_string chance_or_community;
   print_endline " deck and picked up the following card.";
   print_endline selected_card.description;
   match selected_card.subtype with
-  | AdvanceTo -> (update_location_main selected_card.value players board, 0)
-  | Collect -> (players, score + int_of_string selected_card.value)
+  | AdvanceTo -> (update_location_main selected_card.value players board, score)
+  | Collect -> (update_score_collect_main selected_card.value players board, score + int_of_string selected_card.value)
   | GoBack -> (update_location_goback_main selected_card.value players board, score)
-  | Pay -> (players, score - int_of_string selected_card.value)
-  | CollectFromAll -> (update_collect_from_all selected_card.value players, 0)
-  | _ -> (players, 0)
+  | Pay -> (update_score_pay_main selected_card.value players board, score - int_of_string selected_card.value)
+  | CollectFromAll -> (update_collect_from_all selected_card.value players, score)
+  | _ -> (players, score)
 
 
 (** if the new location is a unowned property, the price of the new property is returned, 
