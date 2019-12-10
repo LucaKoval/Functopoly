@@ -544,9 +544,9 @@ let rec buy_update_current_player players_list player_names current_player_id bo
 (** get's the property price from a string*)
 let rec get_property_price prop_name (board_properties:(Board.property_tile list)) =
   match board_properties with
-  |[] -> failwith "get_property_price: not a property in board"
+  | [] -> failwith "get_property_price: not a property in board"
   | h::t when h.name =prop_name -> h.price
-  |h::t ->  get_property_price prop_name t
+  | h::t ->  get_property_price prop_name t
 
 (** makes a list of the current_player id to pass into mapping function in
     update_players*)
