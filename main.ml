@@ -42,12 +42,14 @@ let command_list =
   "\nHere's the list of commands you can \
    run:\n\
    roll: Rolls the dice for the next player.\n\
-   endturn: Ends the current player's turn and moves the dice to the next player.\n\
+   endturn: Ends the current player's turn and moves the dice to the next 
+   player.\n\
    help: Prints the list of commands you can run.\n\
    inventory <player_name>: Prints the inventory for <player_name>.\n\
    buy: Buys a property if you landed on one.\n\
    trade: Initiates a trade sequence.\n\
-   upgrade: Displays upgradeable properties and then allows you to upgrade them. \n\
+   upgrade: Displays upgradeable properties and then allows you to upgrade 
+   them. \n\
    quit: Quits the game and displays the winner.\n"
 
 
@@ -87,13 +89,22 @@ let rec remove_empties = function
   | h::t -> if h <> "" then h else (remove_empties t)
 
 let parse_price str property_to_trade =
-  if (String.contains str ',') then (let comma_split = String.split_on_char ',' str in
-                                     let spaces_removed = remove_spaces comma_split in
-                                     let cash = remove_zeroes (parse_cash spaces_removed) in
-                                     let property = parse_property spaces_removed in 
+  if (String.contains str ',') then (let comma_split = String.split_on_char ',' 
+                                         str in
+                                     let spaces_removed = remove_spaces 
+                                         comma_split in
+                                     let cash = remove_zeroes (parse_cash 
+                                                                 spaces_removed)
+                                     in
+                                     let property = parse_property 
+                                         spaces_removed in 
                                      (cash, property, property_to_trade)
-                                    ) else (try ((int_of_string (String.trim str)), "", property_to_trade)
-                                            with Failure e -> (0, (String.trim str), property_to_trade) 
+                                    ) else (try ((int_of_string (String.trim 
+                                                                   str)), "", 
+                                                 property_to_trade)
+                                            with Failure e -> (0, (String.trim 
+                                                                     str), 
+                                                               property_to_trade) 
                                            )
 
 let print_price cash property trader2 = 
@@ -106,7 +117,8 @@ let print_price cash property trader2 =
 
 (** Let the bargaining begin! *)
 let rec bargaining trader1_price trader1 trader2 property_to_trade =
-  let (cash, property, property_to_trade) =  parse_price trader1_price property_to_trade in
+  let (cash, property, property_to_trade) =  parse_price trader1_price 
+      property_to_trade in
   let () = print_price cash property trader2 in
   print_endline ", do you accept or reject this price?";
   print_string  "> ";
@@ -114,20 +126,24 @@ let rec bargaining trader1_price trader1 trader2 property_to_trade =
   | exception End_of_file -> exit 0
   | accept_or_reject -> 
     if (String.trim accept_or_reject) = "accept" then 
-      (cash, property, property_to_trade) (** TODO: update the player and property info *)
+      (cash, property, property_to_trade) (** TODO: update the player and 
+                                              property info *)
     else if ((String.trim accept_or_reject) = "reject") then (
       print_string (get_current_player_name trader1);
       print_endline ", your price was rejected. Please propose a better price
         or type endbargain to call off the trade. \
                      Please enter the price in one of the following ways:\
                      1. An int cash value. Example: 10 \
-                     2. The name of a property belonging to the player you're trading with. Example: x \
-                     3. Int cash value followed by a comma and the desired property name. Example: 10, x
+                     2. The name of a property belonging to the player you're 
+                     trading with. Example: x \
+                     3. Int cash value followed by a comma and the desired 
+                     property name. Example: 10, x
         ";
       print_string  "> ";
       match read_line () with
       | exception End_of_file -> exit 0
-      | better_price -> if (String.trim accept_or_reject) = "endbargain" then (0, "", property_to_trade)
+      | better_price -> if (String.trim accept_or_reject) = "endbargain" then 
+          (0, "", property_to_trade)
         else bargaining better_price trader1 trader2 property_to_trade
     )
     else (print_endline "Invalid response. Please re-enter your decision";
@@ -139,24 +155,29 @@ let rec property_trade trader1 =
   match read_line () with
   | exception End_of_file -> exit 0
   | property_to_trade -> 
-    if (not(valid_property trader1 property_to_trade)) then (print_endline "Invalid property. \
-                                                                            Please re-enter the name of the property you want to trade.";
-                                                             property_trade trader1)
+    if (not(valid_property trader1 property_to_trade)) then 
+      (print_endline "Invalid property. Please re-enter the name of the 
+    property you want to trade.";
+       property_trade trader1)
     else property_to_trade
 
 let rec execute_trade trader1 trader2 =
-  if (not(valid_player trader1 trader2)) then (print_endline "Invalid player name. \
-                                                              Please re-enter the name of the player you want to trade with.";
-                                               print_string  "> ";
-                                               match read_line () with
-                                               | exception End_of_file -> exit 0
-                                               | trade_partner -> execute_trade trader1 trade_partner)
+  if (not(valid_player trader1 trader2)) 
+  then (print_endline "Invalid player name. Please re-enter the name of the 
+  player you want to trade with.";
+        print_string  "> ";
+        match read_line () with
+        | exception End_of_file -> exit 0
+        | trade_partner -> 
+          execute_trade trader1 trade_partner)
   else let property_to_trade = property_trade trader1 in
     print_endline "What price do you want to trade at? \n\
                    (Please enter the price in one of the following ways:\n\
                    1. An int cash value. Example: 10 \n\
-                   2. The name of a property belonging to the player you're trading with. Example: x \n\
-                   3. Int cash value followed by a comma and the desired property name. Example: 10, x \n\
+                   2. The name of a property belonging to the player you're 
+                   trading with. Example: x \n\
+                   3. Int cash value followed by a comma and the desired 
+                   property name. Example: 10, x \n\
                    )";
     print_string  "> ";
     match read_line () with
@@ -167,7 +188,8 @@ let rec execute_trade trader1 trader2 =
 
 (** gets property name*)
 let buy_helper player_info board=
-  Player.get_property_name (get_property (Player.get_current_location player_info) board)
+  Player.get_property_name (get_property (Player.get_current_location 
+                                            player_info) board)
 
 
 let rec get_player_id_from_name player_names name acc=
@@ -218,7 +240,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
   )
   else
     let parsed_command = (try Command.parse str_command with
-        | Malformed -> (print_endline "The command you entered was Malformed :( \
+        | Malformed -> (print_endline "The command you entered was Malformed :(\
                                        Please try again.";
                         print_string  "> ";
                         match read_line () with
@@ -234,11 +256,11 @@ let rec play_game_recursively prev_cmd str_command player_info board =
                                board)) in
     match parsed_command with
     | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
-    | Roll -> let update_player_roll = (roll_new_player player_info board) in (print_endline "";
-                                                                               print_string  "> ";
-                                                                               match read_line () with
-                                                                               | exception End_of_file -> exit 0;
-                                                                               | str -> play_game_recursively str_command str update_player_roll board)
+    | Roll -> let update_player_roll = (roll_new_player player_info board) in 
+      (print_endline "";print_string  "> ";
+       match read_line () with
+       | exception End_of_file -> exit 0;
+       | str -> play_game_recursively str_command str update_player_roll board)
     | EndTurn ->
       let current_player = Player.get_current_player player_info in
       (* print_endline (string_of_int current_player.money); *)
@@ -246,17 +268,23 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         begin
           (* TODO: This returns information pertaining to the properties of
              the forfeited playing changing hands. This needs to be reflected in
-             the data structures passed in with each call to play_game_recursively *)
+             the data structures passed in with each call to play_game_
+             recursively *)
           let auction_info = Auction.auction current_player player_info in
-          let post_forfeit_player_info = Player.forfeit_player current_player player_info board auction_info in
-          let current_name = (get_current_player_name post_forfeit_player_info) in
-          print_endline ("Player " ^ current_name ^ ", it's your turn now! Your current location is "
-                         ^ string_of_int (Player.get_current_location post_forfeit_player_info)); 
+          let post_forfeit_player_info = Player.forfeit_player current_player 
+              player_info board auction_info in
+          let current_name = (get_current_player_name post_forfeit_player_info) 
+          in
+          print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
+          current location is "
+                         ^ string_of_int (Player.get_current_location 
+                                            post_forfeit_player_info)); 
           print_endline "";
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0;
-          | str -> play_game_recursively str_command str post_forfeit_player_info board
+          | str -> play_game_recursively str_command str 
+                     post_forfeit_player_info board
         end
       else
         let new_player_info = (Player.new_player player_info board) in 
@@ -278,8 +306,10 @@ let rec play_game_recursively prev_cmd str_command player_info board =
       )
     | Inventory player_name -> (
         print_string player_name; print_endline "'s inventory:";
-        let money = (Player.inventory_money_helper player_info.player_list 0 (get_player_id_from_name player_info.player_names player_name 0)) in
-        let list = (Player.inventory_helper player_info.player_list [] (get_player_id_from_name player_info.player_names player_name 0)) in 
+        let money = (Player.inventory_money_helper player_info.player_list 0 
+                       (get_player_id_from_name player_info.player_names player_name 0)) in
+        let list = (Player.inventory_helper player_info.player_list [] 
+                      (get_player_id_from_name player_info.player_names player_name 0)) in 
         (Player.list_printer list);
         print_string player_name; print_string "'s money: "; print_int money;
         print_endline "";
@@ -287,18 +317,21 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         match read_line () with
         | exception End_of_file -> exit 0
         | str -> play_game_recursively prev_cmd str player_info board)
-    | Buy -> let update_player_buy = (Player.buy_new_player player_info board) in
+    | Buy -> let update_player_buy = (Player.buy_new_player player_info board) 
+      in
       let curr_location = get_current_location player_info in
       let property = get_property curr_location board in
       if (not(is_property property)) then (
-        print_endline "You cannot buy on a tile that isn't a property! Please enter a valid command.";
+        print_endline "You cannot buy on a tile that isn't a property! Please 
+        enter a valid command.";
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
         | str -> play_game_recursively str_command str player_info board)
 
       else if ((get_owner_id property) <> -1) then (
-        print_endline "You cannot buy a property that is already owned by someone! 
+        print_endline "You cannot buy a property that is already owned by 
+        someone! 
         However, you can trade if you'd like. Please enter a valid command.";
         print_string  "> ";
         match read_line () with
@@ -307,11 +340,14 @@ let rec play_game_recursively prev_cmd str_command player_info board =
       else
         let prop_name = buy_helper player_info board in (
           print_string "Congrats you now own ";
-          print_endline (get_property_name (get_property (get_current_location player_info) board));
+          print_endline (get_property_name (get_property (get_current_location 
+                                                            player_info) board));
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
-          | str -> play_game_recursively str_command str update_player_buy (Board.buy_update_board board update_player_buy.current_player prop_name))
+          | str -> play_game_recursively str_command str update_player_buy 
+                     (Board.buy_update_board board update_player_buy.current_player 
+                        prop_name))
     (* Player enters 'upgrade'
        Displays list of upgradeable properties (will need to somehow check what
        groups of properties the players owns completely)
@@ -320,11 +356,13 @@ let rec play_game_recursively prev_cmd str_command player_info board =
     *)
     | Upgrade -> let current_player_id = (player_info.current_player) in
       let color_groups = Upgrade.get_color_groups current_player_id board in
-      let upgradeable_properties = Upgrade.get_upgradeable_properties current_player_id board color_groups in
+      let upgradeable_properties = Upgrade.get_upgradeable_properties 
+          current_player_id board color_groups in
       let prop_string = properties_to_string upgradeable_properties in
       if (List.length upgradeable_properties = 0) then
         begin
-          print_endline "You do not have any upgradeable properties at this moment.";
+          print_endline "You do not have any upgradeable properties at this 
+          moment.";
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
@@ -332,20 +370,24 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         end
       else
         begin
-          print_endline ("You can upgrade the following properties: " ^ prop_string);
+          print_endline ("You can upgrade the following properties: " ^ 
+                         prop_string);
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
           | name -> if List.mem_assoc name upgradeable_properties then
               let index = List.assoc name upgradeable_properties in
-              let update_player_upgrade = (Player.upgrade_new_player player_info board index) in
+              let update_player_upgrade = (Player.upgrade_new_player player_info
+                                             board index) in
               print_endline name;
-              let new_board = {board with property_tiles = (Upgrade.update_level index board.property_tiles)} in
+              let new_board = {board with property_tiles = (Upgrade.update_level
+                                                              index board.property_tiles)} in
               print_endline ("You have upgraded " ^ name);
               print_string  "> ";
               match read_line () with
               | exception End_of_file -> exit 0
-              | str -> play_game_recursively prev_cmd str update_player_upgrade new_board
+              | str -> play_game_recursively prev_cmd str update_player_upgrade 
+                         new_board
             else
               begin
                 print_endline "That is not a property you can upgrade.";
@@ -372,15 +414,19 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | trader2 -> let (cash, property, property_to_trade) = execute_trade player_info trader2 in
-          let player1 = (get_player_id_from_name player_info.player_names (get_current_player_name player_info) 0) in
-          let player2 = (get_player_id_from_name player_info.player_names trader2 0) in
+        | trader2 -> let (cash, property, property_to_trade) = execute_trade 
+                         player_info trader2 in
+          let player1 = (get_player_id_from_name player_info.player_names 
+                           (get_current_player_name player_info) 0) in
+          let player2 = (get_player_id_from_name player_info.player_names 
+                           trader2 0) in
           print_endline "Trade complete.";
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
           | str -> (
-              let updated_player_info = trade_new_player player_info player1 player2 property_to_trade property (board.property_tiles) cash in
+              let updated_player_info = trade_new_player player_info player1
+                  player2 property_to_trade property (board.property_tiles) cash in
               play_game_recursively prev_cmd str updated_player_info board)
       )
 

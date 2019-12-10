@@ -175,7 +175,7 @@ let rec get_property_location property = function
 
 let get_new_location board = function
   | "Go" -> ("Go", 0)
-  | "Jail" -> ("Jail", 30)
+  | "Jail" -> ("Jail", 30) (* TODO: send current player to jail  *)
   | property -> (property, get_property_location property board.property_tiles)
 
 let rec update_location str players_list current_player_id board acc=
@@ -705,10 +705,23 @@ let rec trade_update_player players_list p1 p2 px_prop py_prop board cash acc=
     end
 
 
-(** takes in players: players p1: int, p2: int, p1_prop: string, p2_prop: string, cash: int *)
+(** takes in players: players p1: int, p2: int, p1_prop: string, p2_prop: 
+    string, cash: int *)
+(**  A player can trade a property for either cash or a property or 
+              both. player1 is selling the property to player2 for cash or one 
+              of player2's properties.
+                 Example: So say I call helper_function p1 property_x p2 10 
+                 property_y, then
+                 1. Remove property_x from the list of p1's properties
+                 2. Add property_x to the list of p2's properties
+                 3. Add cash = 10 to p1's cash
+                 4. Subtract cash = 10 from p2's cash
+                 5. Add property_y to p1's properties
+                 6. Remove property_y from p2's properties *)
 let trade_new_player players p1 p2 px_prop py_prop board cash=
   {
-    player_list = trade_update_player players.player_list p1 p2 px_prop py_prop board cash [];
+    player_list = trade_update_player players.player_list p1 p2 px_prop py_prop 
+        board cash [];
     current_player = players.current_player;
     number_of_players = players.number_of_players;
     player_names = players.player_names;

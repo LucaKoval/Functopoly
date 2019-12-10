@@ -1,7 +1,7 @@
 open OUnit2
 open Board
 open Indices
-
+open Player
 (* Our test plan:
 
 
@@ -160,7 +160,8 @@ let bought_first_set = buy_first_set 0 board1;;
 type color_groups = {brown:int; light_blue:int; magenta:int; orange:int;
                      red:int; yellow:int; green:int; blue:int}
 let print_color_groups (cg:Upgrade.color_groups) = 
-  "{brown="^(string_of_int cg.brown)^"; light_blue="^(string_of_int cg.light_blue)^"; magenta="
+  "{brown="^(string_of_int cg.brown)^"; light_blue="^
+  (string_of_int cg.light_blue)^"; magenta="
   ^(string_of_int cg.magenta)^"; orange="^(string_of_int cg.orange)^"; red="^
   (string_of_int cg.red)^"; yellow="^(string_of_int cg.yellow)^"; green="^
   (string_of_int cg.green)^"; blue="^(string_of_int cg.blue)^"}"
@@ -194,7 +195,8 @@ let make_get_upgradeable_properties_test
     (expected_output : (string * int) list) : test = 
   name >:: (fun _ -> 
       assert_equal expected_output 
-        (Upgrade.get_upgradeable_properties id board cg) ~printer:print_upgradeable_properties)
+        (Upgrade.get_upgradeable_properties id board cg) 
+        ~printer:print_upgradeable_properties)
 
 let get_properties id (board:Board.t) =
   let rec helper acc = function
@@ -240,7 +242,8 @@ let upgrade_tests = [
     brown=2; light_blue=3; magenta=3; orange=3;
     red=3; yellow=3; green=3; blue=2
   };
-  make_get_color_groups_test "should be the first set of properties" 0 bought_first_set {
+  make_get_color_groups_test "should be the first set of properties" 0 
+    bought_first_set {
     brown=2; light_blue=0; magenta=0; orange=0;
     red=0; yellow=0; green=0; blue=0
   };
@@ -248,33 +251,117 @@ let upgrade_tests = [
     brown=0; light_blue=0; magenta=0; orange=0;
     red=0; yellow=0; green=0; blue=0
   };
-  make_get_upgradeable_properties_test "should be the first set of properties" 0 bought_first_set {
+  make_get_upgradeable_properties_test "should be the first set of properties" 
+    0 bought_first_set {
     brown=2; light_blue=0; magenta=0; orange=0;
     red=0; yellow=0; green=0; blue=0
   } (List.rev [("Mediterranean Avenue",0);("Baltic Avenue",0)]);
-  make_get_upgradeable_properties_test "should be none of the properties" 0 board1 {
+  make_get_upgradeable_properties_test "should be none of the properties" 0 
+    board1 {
     brown=0; light_blue=0; magenta=0; orange=0;
     red=0; yellow=0; green=0; blue=0
   } [];
-  make_update_level_tests "should be none of the properties" 0 (get_properties 0 board1) [];
-  make_update_level_tests "Nothing should be upgraded" 0 (get_properties 0 bought_first_set) (List.rev [
-      {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;level=0;tile_type=Board.Property;owner=0};
-      {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;level=0;tile_type=Board.Property;owner=0}
+  make_update_level_tests "should be none of the properties" 0 (get_properties 
+                                                                  0 board1) [];
+  make_update_level_tests "Nothing should be upgraded" 0 (get_properties 0 
+                                                            bought_first_set) (List.rev [
+      {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;
+       level=0;tile_type=Board.Property;owner=0};
+      {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;
+       level=0;tile_type=Board.Property;owner=0}
     ]);
-  make_update_level_tests "Mediterranean Avenue should be upgraded once" 1 (get_properties 0 bought_first_set) (List.rev [
-      {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;level=0;tile_type=Board.Property;owner=0};
-      {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;level=1;tile_type=Board.Property;owner=0}
-    ]);
-  make_update_level_tests "Baltic Avenue should be upgraded once" 3 (get_properties 0 bought_first_set) (List.rev [
-      {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;level=1;tile_type=Board.Property;owner=0};
-      {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;level=0;tile_type=Board.Property;owner=0}
-    ]);
+  make_update_level_tests "Mediterranean Avenue should be upgraded once" 1 
+    (get_properties 0 bought_first_set) (List.rev [
+        {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;
+         level=0;tile_type=Board.Property;owner=0};
+        {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;
+         level=1;tile_type=Board.Property;owner=0}
+      ]);
+  make_update_level_tests "Baltic Avenue should be upgraded once" 3 
+    (get_properties 0 bought_first_set) (List.rev [
+        {name="Baltic Avenue";location=3;price=60;rent=4;color=Board.Brown;
+         level=1;tile_type=Board.Property;owner=0};
+        {name="Mediterranean Avenue";location=1;price=60;rent=2;color=Board.Brown;
+         level=0;tile_type=Board.Property;owner=0}
+      ]);
+]
+
+
+let make_player1 = {
+  id = 0;
+  score = 1600;
+  location = 0;
+  properties = ["Oriental Avenue"];
+  money = 1500;
+}
+let make_player2 = {
+  id = 1;
+  score = 1600;
+  location = 0;
+  properties = ["Vermont Avenue"];
+  money = 1500;
+}
+
+let make_players1 =
+  {
+    player_list = [make_player1; make_player2];
+    current_player = 0;
+    number_of_players = 2;
+    player_names = ["p1"; "p2"];
+    jail_list = []
+  }
+
+let make_player3 = {
+  id = 0;
+  score = 1650;
+  location = 0;
+  properties = ["Vermont Avenue"];
+  money = 1550;
+}
+let make_player4 = {
+  id = 1;
+  score = 1550;
+  location = 0;
+  properties = ["Oriental Avenue"];
+  money = 1450;
+}
+
+(* 
+let print_players (ps:Player.players) =  
+*)
+
+let make_trade_test
+    (name : string)
+    (p_info : Player.players) 
+    (p1 : int)
+    (p2 : int)
+    (prop1 : string)
+    (prop2 : string)
+    (board : Board.t) 
+    (score : int)
+    (expected_output : Player.players) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output 
+        (Player.trade_new_player p_info p1 p2 prop1 prop2 board.property_tiles 
+           score)
+    )
+
+let trade_tests = [
+  make_trade_test "" make_players1 0 1 "Oriental Avenue" "Vermont Avenue"
+    board1 50 {
+    player_list = [make_player3; make_player4];
+    current_player = 0;
+    number_of_players = 2;
+    player_names = ["p1"; "p2"];
+    jail_list = []
+  };
 ]
 
 let suite =
   "test suite for final project"  >::: List.flatten [
     indices_tests;
     upgrade_tests;
+    trade_tests;
   ]
 
 let _ = run_test_tt_main suite
