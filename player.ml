@@ -25,10 +25,10 @@ let rec to_player numplayers acc=
   |(0)-> acc
   |x-> to_player (numplayers-1) ({
       id = (x-1);
-      score = 1500;
+      score = 0;
       location = 0;
       properties = [];
-      money = 1500
+      money = 0
     }::acc)
 
 (** print list of ints*)

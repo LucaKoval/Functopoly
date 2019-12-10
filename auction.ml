@@ -11,6 +11,26 @@ let is_int s =
   | None -> false
   | _ -> true
 
+let rec remove_person_helper el acc = function
+  | []-> List.rev acc
+  | h::t when h = el -> remove_person_helper el acc t
+  | h::t -> remove_person_helper el (h::acc) t
+
+let player_list_mem_other (player:Player.player) (lst:Player.players) : Player.player =
+  if (List.nth lst.player_list 0).id = player.id then List.nth lst.player_list 1
+  else List.nth lst.player_list 1
+
+let find_next_valid_bidder (start:int) (out:int list) (lst:Player.players) : Player.player =
+  let rec helper index =
+    if index = (start-1) mod lst.number_of_players then failwith "impossible"
+    else
+    if List.mem (List.nth lst.player_list index).id out then
+      helper ((index+1)mod lst.number_of_players)
+    else
+      List.nth lst.player_list index
+  in
+  helper start
+
 let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int list) (bids:int list) (highest:int*int) (player_index:int) =
   (* (player that wins the bid, the properties they get, and the amount they pay) *)
   if List.length out = players.number_of_players-1 then (fst highest, forfeit_player.properties, snd highest)
@@ -23,7 +43,12 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
       match read_line () with
       | exception End_of_file -> exit 0
       | s -> if s = "forfeit" then
-          loop forfeit_player players (player_index::out) bids highest ((player_index+1) mod players.number_of_players)
+          if snd (highest) = 0 then
+            let highest_index = (find_next_valid_bidder (player_index+1) out players).id in
+            print_endline (string_of_int highest_index);
+            loop forfeit_player players (player_index::out) bids (highest_index, 0) ((player_index+1) mod players.number_of_players)
+          else
+            loop forfeit_player players (player_index::out) bids highest ((player_index+1) mod players.number_of_players)
         else if is_int s then
           let new_highest = if int_of_string s > snd highest then (player_index, int_of_string s)
             else highest
@@ -36,10 +61,6 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
         end
     end
   end
-
-let player_list_mem_other (player:Player.player) (lst:Player.players) : Player.player =
-  if (List.nth lst.player_list 0).id = player.id then List.nth lst.player_list 1
-  else List.nth lst.player_list 1
 
 let auction (forfeit_player:Player.player) (players:Player.players) =
   if List.length players.player_list = 2 then begin
