@@ -3,6 +3,11 @@ open Board
 open Indices
 (* open Cards *)
 
+let modulo x y =
+  let result = x mod y in
+  if result >= 0 then result
+  else result + y
+
 type player = {
   id: int;
   score: int;
@@ -135,7 +140,7 @@ let update_current_player player current_player_id =
   if player.id = current_player_id then let dice_roll = (dice 0) in let new_loc = player.location + (fst(dice_roll)+snd(dice_roll)) in ({
       id= player.id;
       score = if new_loc > 40 then player.score + 200 else if new_loc = 40 then player.score + 400 else player.score;
-      location = new_loc mod 40;
+      location = modulo new_loc 40;
       properties = player.properties;
       money = if new_loc > 40 then player.money + 200 else if new_loc = 40 then player.money + 400 else player.money
     })
@@ -231,11 +236,11 @@ let rec update_location_goback str players_list current_player_id board acc=
     begin
       if (player.id = current_player_id) then (
         print_string "Your new location is ";
-        print_endline (string_of_int (player.location - (int_of_string str)));
+        print_endline (string_of_int (modulo (player.location - (int_of_string str)) 40));
         update_location_goback str t current_player_id board ({
             id= player.id;
             score = player.score;
-            location = player.location - (int_of_string str);
+            location = modulo (player.location - (int_of_string str)) 40;
             properties = player.properties;
             money = player.money
           }::acc) )
@@ -366,18 +371,18 @@ let card_main location board players curr_player score =
     else if the property is owned, the property price is returned 
     else if the location is not a property at all, 0 is returned*)
 let roll_change_score playerscore new_loc board player_names curr_player players =
-  if (get_rent board (new_loc mod 40))<>0 then
-    let prop= get_property_name (get_property (new_loc mod 40) board) in
-    let owner= get_owner_name (get_property (new_loc mod 40) board) player_names in 
-    let rent = get_rent board (new_loc mod 40) in
+  if (get_rent board (modulo new_loc 40))<>0 then
+    let prop= get_property_name (get_property (modulo new_loc 40) board) in
+    let owner= get_owner_name (get_property (modulo new_loc 40) board) player_names in 
+    let rent = get_rent board (modulo new_loc 40) in
     print_string prop; print_string " is owned by "; print_string owner; 
     print_string " Rent paid: "; print_int rent;
     print_endline "";
-    (if new_loc > 40 then (players, (playerscore + 200-(get_rent board (new_loc mod 40))))
-     else if new_loc = 40 then (players, (playerscore + 400-(get_rent board (new_loc mod 40))))
-     else (players, playerscore- (get_rent board (new_loc mod 40))))
-  else if (is_property (get_property (new_loc mod 40) board)) then (
-    let prop= get_property_name (get_property (new_loc mod 40) board) in
+    (if new_loc > 40 then (players, (playerscore + 200-(get_rent board (modulo new_loc 40))))
+     else if new_loc = 40 then (players, (playerscore + 400-(get_rent board (modulo new_loc 40))))
+     else (players, playerscore- (get_rent board (modulo new_loc 40))))
+  else if (is_property (get_property (modulo new_loc 40) board)) then (
+    let prop= get_property_name (get_property (modulo new_loc 40) board) in
     print_string prop;
     print_string " is available for purchase! Would you like to buy? ";
     (if new_loc > 40 then (players, playerscore + 200) else if new_loc = 40 then (players, playerscore + 400)
@@ -502,10 +507,10 @@ let rec roll_update_current_player players players_list player_names current_pla
            roll_update_current_player players t player_names current_player_id board ({
                id= player.id;
                score = new_score;
-               location = new_loc mod 40;
+               location = modulo new_loc 40;
                properties = player.properties;
                money = new_score
-             }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (new_loc mod 40) board) )::owner_id_acc ) jail_list
+             }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
          else (roll_update_current_player players t player_names current_player_id board ( {
              id = player.id;
              score = player.score;
