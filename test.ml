@@ -4,11 +4,41 @@ open Indices
 open Player
 (* Our test plan:
 
+   We wrote black box and glass box tests to ensure our code is correct. 
+   Another person in the team wrote black box tests for each member’s code. 
+   And the author of the code was responsible for adding glass box tests in 
+   case some edge cases were missed in the other person's test suite because the 
+   author is familiar with the code.
 
+   We divide our tests below based on the functional component of our codebase
+   it is testing. Each test simulates a part of the gameplay and calls the 
+   functions that implement it. We have categorized them below as OUnit tests
+   and manual terminal tests.
 
+   OUnit tests:
+   1. Parsing the board - board.ml
+   2. Converting the indices into tiles - indices.ml
+   3. Commands 
+    1. Buy
+    2. Upgrade
+    3. Trade
 
+   Manual tests:
+   1. Commands (manually tested since they all do something very simple and there
+   is not much to test for them) -
+    1. Quit
+    2. Roll
+    3. Endturn
+    4. Help
+    5. Inventory
 
-
+   Proof of correctness: 
+   Our pattern match in play_game_recursively in main.ml is exhaustive and 
+   contains all the commands a player can enter. As explained above, we have 
+   tested the correctness of the implementations of all these commands. We have 
+   also tested the step prior to the pattern matching that includes the board 
+   parsing and mapping of indices to tiles. Nothing comes after the pattern 
+   matching. So we believe we have tested all possible workflows and components.
 
 *)
 
