@@ -31,10 +31,10 @@ let rec to_player numplayers acc=
     |(0)-> acc
     |x-> to_player (numplayers-1) ({
         id = (x-1);
-        score = 1500;
+        score = 0;
         location = 0;
         properties = [];
-        money = 1500
+        money = 0
       }::acc) in
   let player_list = helper in
   List.sort (fun x y -> x.id - y.id) player_list
@@ -110,8 +110,8 @@ let get_owner_name tile player_names =
 let get_rent board current_loc =
   let current_tile = get_property current_loc board in
   if is_property current_tile
-    then if (get_owner_id current_tile)> -1
-      then tile_rent current_tile
+  then if (get_owner_id current_tile)> -1
+    then tile_rent current_tile
     else 0
   else 0
 
@@ -176,7 +176,7 @@ let rec update_location str players_list current_player_id board acc=
         print_string " tile, which is at the numeric location ";
         print_endline (string_of_int new_loc);
         update_location str t current_player_id board ({
-          player with
+            player with
             location = new_loc;
           }::acc) )
       else update_location str t current_player_id board (player::acc) 
@@ -198,7 +198,7 @@ let rec update_location_goback str players_list current_player_id board acc=
         print_string "Your new location is ";
         print_endline (string_of_int (modulo (player.location - (int_of_string str)) 40));
         update_location_goback str t current_player_id board ({
-          player with
+            player with
             location = modulo (player.location - (int_of_string str)) 40;
           }::acc) )
       else update_location_goback str t current_player_id board (player::acc) 
@@ -217,7 +217,7 @@ let rec update_collect_from_all_player str players_list acc=
   | player::t ->
     begin
       update_collect_from_all_player str t ( { 
-        player with
+          player with
           score = (player.score - (int_of_string str));
           money = (player.money - (int_of_string str))
         }::acc)
@@ -241,7 +241,7 @@ let rec update_score_collect str players_list current_player_id board acc=
         print_string " and your money is now ";
         print_endline (string_of_int (player.money + (int_of_string str)));
         update_score_collect str t current_player_id board ({
-          player with
+            player with
             score = player.score + (int_of_string str);
             money = player.money + (int_of_string str)
           }::acc) )
@@ -266,7 +266,7 @@ let rec update_score_pay str players_list current_player_id board acc=
         print_string " and your money is now ";
         print_endline (string_of_int (player.money - (int_of_string str)));
         update_score_pay str t current_player_id board ({
-          player with
+            player with
             score = player.score - (int_of_string str);
             money = player.money - (int_of_string str)
           }::acc) )
@@ -342,7 +342,7 @@ let rec roll_update_owner players_list player_names current_player_id board rent
   |player::t -> 
     begin
       if (player.id = (List.nth owner_id 0)) then roll_update_owner t player_names current_player_id board rent owner_id ({
-        player with
+          player with
           score = player.score + (List.nth rent 0);
           money = player.money + (List.nth rent 0);
         }::new_acc) 
@@ -421,10 +421,10 @@ let rec roll_update_current_player players players_list player_names current_pla
            let new_loc = modulo (player.location + (fst(dice_roll)+snd(dice_roll))) 40 in 
            let (players, new_score) = (roll_change_score player.score new_loc board player_names current_player_id players) in 
            roll_update_current_player players t player_names current_player_id board ({ player with
-               score = new_score;
-               location = modulo new_loc 40;
-               money = new_score
-             }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
+                                                                                        score = new_score;
+                                                                                        location = modulo new_loc 40;
+                                                                                        money = new_score
+                                                                                      }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
          else (roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list))      
       else roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list
     end
@@ -443,9 +443,9 @@ let rec buy_update_current_player players_list player_names current_player_id bo
     begin
       if (player.id = current_player_id) then ( 
         buy_update_current_player t player_names current_player_id board ({ player with
-            properties = ((get_property_name (get_property player.location board))::(player.properties));
-            money = player.money-(get_price player.location board)
-          }::acc))
+                                                                            properties = ((get_property_name (get_property player.location board))::(player.properties));
+                                                                            money = player.money-(get_price player.location board)
+                                                                          }::acc))
       else buy_update_current_player t player_names current_player_id board (player::acc)
     end
 
@@ -475,8 +475,8 @@ let rec update_location_to_jail players_list current_player_id board acc=
     begin
       if (player.id = current_player_id) then (
         update_location_to_jail t current_player_id board ({player with
-            location = get_jail_location board.corner_tiles
-          }::acc) )
+                                                            location = get_jail_location board.corner_tiles
+                                                           }::acc) )
       else update_location_to_jail t current_player_id board (player::acc) 
     end
 
@@ -497,10 +497,10 @@ let roll_new_player players board =
     player_names = more_players.player_names;
     jail_list = (
       if (check_jail_type (get_current_location_helper new_player_list more_players.current_player) board) 
-        then (update_jail_list more_players.current_player more_players.jail_list)
-        else if (check_in_jail (get_current_location_helper new_player_list more_players.current_player) board more_players.current_player more_players.jail_list) 
-          then (update_jail_roll_count more_players.current_player more_players.jail_list)
-          else (if (List.mem_assoc more_players.current_player more_players.jail_list)
+      then (update_jail_list more_players.current_player more_players.jail_list)
+      else if (check_in_jail (get_current_location_helper new_player_list more_players.current_player) board more_players.current_player more_players.jail_list) 
+      then (update_jail_roll_count more_players.current_player more_players.jail_list)
+      else (if (List.mem_assoc more_players.current_player more_players.jail_list)
             then (List.remove_assoc more_players.current_player more_players.jail_list)
             else more_players.jail_list)
     )
@@ -542,7 +542,7 @@ let rec trade_update_player2 players_list p1 p2 px_prop py_prop board cash acc=
     begin
       if (player.id = p2) then (
         trade_update_player2 t p1 p2 px_prop py_prop board cash ({ 
-          player with 
+            player with 
             score = player.score - cash -(get_property_price py_prop board)+ (get_property_price px_prop board);
             properties =  px_prop::(remove_helper player.properties py_prop []);
             money = player.money-cash
@@ -558,11 +558,11 @@ let rec trade_update_player players_list p1 p2 px_prop py_prop board cash acc=
     begin
       if (player.id = p1) then (
         trade_update_player t p1 p2 px_prop py_prop board cash ({ 
-          player with
-          score = player.score + cash+ (get_property_price py_prop board)- (get_property_price px_prop board) ;
-          properties =  py_prop::(remove_helper player.properties px_prop []);
-          money = player.money+cash
-        }::acc))
+            player with
+            score = player.score + cash+ (get_property_price py_prop board)- (get_property_price px_prop board) ;
+            properties =  py_prop::(remove_helper player.properties px_prop []);
+            money = player.money+cash
+          }::acc))
       else trade_update_player t p1 p2 px_prop py_prop board cash (player::acc)
     end
 
@@ -606,7 +606,7 @@ let rec upgrade_update_current_player players_list player_names current_player_i
 let upgrade_new_player players board prop_loc= {
   players with
   player_list = upgrade_update_current_player players.player_list players.player_names players.current_player board [] prop_loc
-  }
+}
 
 (** updates the players state based on their turn (ex: location, score,
     potential property changes) and changes to the next player*)
@@ -641,8 +641,8 @@ let rec auction_update_current_player players_list board acc p1_id (fp_id:int) p
             money = player.money-amt
           }::acc) p1_id fp_id prop_lst amt)
       else auction_update_current_player t board (  { player with
-          id = player.id + (if player.id > fp_id then -1 else 0)
-        }::acc) p1_id fp_id prop_lst amt
+                                                      id = player.id + (if player.id > fp_id then -1 else 0)
+                                                    }::acc) p1_id fp_id prop_lst amt
     end
 
 (** updates players with propeties, money, and score based on forfeit auction BEFORE forfeit player is removed*)
@@ -682,11 +682,11 @@ let rec update_player_percent_each players_lst acc current_player_id=
   |player::t ->
     begin
       if (player.id = current_player_id)
-        then (update_player_percent_each t ({ 
+      then (update_player_percent_each t ({ 
           player with
           score = player.score-(player.money/10);
           money = player.money-(player.money/10)
-          }::acc) current_player_id)
+        }::acc) current_player_id)
       else update_player_percent_each t (player::acc) current_player_id
     end
 

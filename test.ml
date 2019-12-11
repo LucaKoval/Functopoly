@@ -410,6 +410,16 @@ let make_find_next_valid_bidder_test
         (Auction.find_next_valid_bidder start out lst)
     )
 
+let make_player_list_mem_other_test
+    (name : string)
+    (player : Player.player)
+    (lst : Player.player list)
+    (expected_output : Player.player) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output 
+        (Auction.player_list_mem_other player lst)
+    )
+
 let auction_tests = [
   make_find_next_valid_bidder_test "should be Player 3" 2 [0] {
     player_list=[
@@ -518,6 +528,68 @@ let auction_tests = [
     properties=[];
     money=0;
   };
+
+  make_player_list_mem_other_test "should be player 1" {
+    id=2;
+    score=(~-60);
+    location=3;
+    properties=["Baltic Avenue"];
+    money=(~-60);
+  }
+    [
+      {
+        id=0;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      };
+      {
+        id=2;
+        score=(~-60);
+        location=3;
+        properties=["Baltic Avenue"];
+        money=(~-60);
+      }
+    ]
+    {
+      id=0;
+      score=0;
+      location=0;
+      properties=[];
+      money=0;
+    };
+
+  make_player_list_mem_other_test "should be player 3" {
+    id=0;
+    score=(~-60);
+    location=3;
+    properties=["Baltic Avenue"];
+    money=(~-60);
+  }
+    [
+      {
+        id=0;
+        score=(~-60);
+        location=3;
+        properties=["Baltic Avenue"];
+        money=(~-60);
+      };
+      {
+        id=2;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      }
+    ]
+    {
+      id=2;
+      score=0;
+      location=0;
+      properties=[];
+      money=0;
+    };
 ]
 
 let suite =

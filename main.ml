@@ -275,7 +275,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
     | Roll ->
       let unsorted_update_player_roll = (roll_new_player player_info board) in
       let update_player_roll = {unsorted_update_player_roll with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_roll.player_list);} in
-      print_endline (Auction.pp_player_list Auction.pp_int update_player_roll.player_list);
+      print_endline (Auction.pp_player_list_ids Auction.pp_int update_player_roll.player_list);
       if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or fixed";
                                                                       let new_info = tax_loop str_command update_player_roll board in
                                                                       (print_endline "";print_string  "> ";
@@ -297,16 +297,21 @@ let rec play_game_recursively prev_cmd str_command player_info board =
              the forfeited playing changing hands. This needs to be reflected in
              the data structures passed in with each call to play_game_
              recursively *)
-          print_endline (Auction.pp_player_list Auction.pp_int player_info.player_list);
+          print_endline (Auction.pp_player_list_ids Auction.pp_int player_info.player_list);
           let auction_info = Auction.auction current_player player_info in
-          let post_forfeit_player_info = Player.forfeit_player current_player 
+          let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
               player_info board auction_info in
+          let post_forfeit_player_info = {
+            unsorted_post_forfeit_player_info with
+            player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
+            current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
+          } in
           let current_name = (get_current_player_name post_forfeit_player_info) 
           in
           print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
           current location is "
                          ^ string_of_int (Player.get_current_location 
-                                            post_forfeit_player_info)); 
+                                            post_forfeit_player_info));
           print_endline "";
           print_string  "> ";
           match read_line () with
@@ -317,7 +322,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
       else
         let unsorted_new_player_info = (Player.new_player player_info board) in 
         let new_player_info = {unsorted_new_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_new_player_info.player_list);} in
-        print_endline (Auction.pp_player_list Auction.pp_int new_player_info.player_list);
+        print_endline (Auction.pp_player_list_ids Auction.pp_int new_player_info.player_list);
         let current_name = (get_current_player_name new_player_info) in
         print_string current_name;
         (print_string ", it's your turn now! Your current location is "; 
@@ -384,6 +389,11 @@ let rec play_game_recursively prev_cmd str_command player_info board =
                      (Board.buy_update_board board 
                         update_player_buy.current_player 
                         prop_name))
+    | No -> (print_string "> ";
+             match read_line () with
+             | exception End_of_file -> exit 0
+             | str -> play_game_recursively str_command str player_info board
+            )
     | Upgrade -> let current_player_id = (player_info.current_player) in
       let color_groups = Upgrade.get_color_groups current_player_id board in
       let upgradeable_properties = Upgrade.get_upgradeable_properties 
@@ -467,7 +477,7 @@ let start_game board =
   let initial_player_info = ANSITerminal.(print_string [blue]
                                             command_list);
     Player.to_players num_players player_names in
-  print_endline (Auction.pp_player_list Auction.pp_int initial_player_info.player_list);
+  print_endline (Auction.pp_player_list_ids Auction.pp_int initial_player_info.player_list);
   print_string (List.nth player_names 0);
   print_string " goes first: ";
   print_string  "> ";
