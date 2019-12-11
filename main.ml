@@ -370,8 +370,8 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         | exception End_of_file -> exit 0
         | str -> play_game_recursively str_command str player_info board)
       else let unsorted_update_player_buy = (Player.buy_new_player player_info board) 
-      in
-      let update_player_buy = {unsorted_update_player_buy with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_buy.player_list);} in
+        in
+        let update_player_buy = {unsorted_update_player_buy with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_buy.player_list);} in
         let prop_name = buy_helper player_info board in (
           print_string "Congrats you now own ";
           print_endline (get_property_name (get_property 
@@ -462,7 +462,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
     [play_game_recursively] *)
 let start_game board = 
   let num_players = get_num_players in
-  let player_names = get_player_names num_players [] in
+  let player_names = List.rev (get_player_names num_players []) in
 
   let initial_player_info = ANSITerminal.(print_string [blue]
                                             command_list);
