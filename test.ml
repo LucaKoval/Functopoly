@@ -35,6 +35,22 @@ let string_of_corner = function
   | FreeParking -> "free_parking"
   | GoToJail -> "go_to_jail"
 
+(** [pp_string s] pretty-prints string [s]. *)
+let pp_string s = "\"" ^ s ^ "\""
+
+(** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt]
+    to pretty-print each element of [lst]. *)
+let pp_list pp_elt lst =
+  let pp_elts lst =
+    let rec loop n acc = function
+      | [] -> acc
+      | [h] -> acc ^ pp_elt h
+      | h1::(h2::t as t') ->
+        if n=100 then acc ^ "..."  (* stop printing long list *)
+        else loop (n+1) (acc ^ (pp_elt h1) ^ "; ") t'
+    in loop 0 "" lst
+  in "[" ^ pp_elts lst ^ "]"
+
 let print_tile prop =
   match prop with
   | None -> "None"
@@ -326,10 +342,6 @@ let make_player4 = {
   money = 1450;
 }
 
-(* 
-let print_players (ps:Player.players) =  
-*)
-
 let make_trade_test
     (name : string)
     (p_info : Player.players) 
@@ -357,11 +369,133 @@ let trade_tests = [
   };
 ]
 
+let make_find_next_valid_bidder_test
+    (name : string)
+    (start : int)
+    (out : int list)
+    (lst : Player.players)
+    (expected_output : Player.player) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output 
+        (Auction.find_next_valid_bidder start out lst)
+    )
+
+let auction_tests = [
+  make_find_next_valid_bidder_test "should be Player 3" 2 [0] {
+    player_list=[
+      {
+        id=0;
+        score=(~-60);
+        location=3;
+        properties=["Baltic Avenue"];
+        money=(~-60);
+      };
+      {
+        id=1;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      };
+      {
+        id=2;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      }
+    ];
+    current_player=0;
+    number_of_players=3;
+    player_names=["1"; "2"; "3"];
+    jail_list=[];
+  } {
+    id=2;
+    score=0;
+    location=0;
+    properties=[];
+    money=0;
+  };
+
+  make_find_next_valid_bidder_test "should be Player 3" 2 [1] {
+    player_list=[
+      {
+        id=0;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      };
+      {
+        id=1;
+        score=(~-60);
+        location=3;
+        properties=["Baltic Avenue"];
+        money=(~-60);
+      };
+      {
+        id=2;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      }
+    ];
+    current_player=1;
+    number_of_players=3;
+    player_names=["1"; "2"; "3"];
+    jail_list=[];
+  } {
+    id=2;
+    score=0;
+    location=0;
+    properties=[];
+    money=0;
+  };
+
+  make_find_next_valid_bidder_test "should be Player 1" 0 [2] {
+    player_list=[
+      {
+        id=0;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      };
+      {
+        id=1;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      };
+      {
+        id=2;
+        score=(~-60);
+        location=3;
+        properties=["Baltic Avenue"];
+        money=(~-60);
+      }
+    ];
+    current_player=2;
+    number_of_players=3;
+    player_names=["1"; "2"; "3"];
+    jail_list=[];
+  } {
+    id=0;
+    score=0;
+    location=0;
+    properties=[];
+    money=0;
+  };
+]
+
 let suite =
   "test suite for final project"  >::: List.flatten [
     indices_tests;
     upgrade_tests;
     trade_tests;
+    auction_tests;
   ]
 
 let _ = run_test_tt_main suite
