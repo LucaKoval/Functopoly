@@ -22,15 +22,21 @@ let get_current_player_name players =
   List.nth players.player_names (players.current_player)
 
 (** [get_player_names n] is the list of player names entered by the user *)
-let rec get_player_names n = 
+let rec get_player_names n acc = 
   match n with
-  | 0 -> []
+  | 0 -> acc
   | _ -> 
     print_string "Please enter the game name for the next player \n";
     print_string  "> ";
     match read_line () with
     | exception End_of_file -> []
-    | player_name -> player_name::(get_player_names (n - 1))
+    | player_name -> if (List.mem player_name acc)
+      then (print_string "Another player has taken this name. Please try again.\n";
+            get_player_names n acc)
+      else (if (String.contains player_name ' ') then 
+              (print_string "A player name cannot contain spaces. Please try again.\n";
+               get_player_names n acc)
+            else get_player_names (n-1) (player_name::acc))
 
 (** [print_string_list lst] prints out a list of strings [lst]*)
 let rec print_string_list lst =
@@ -225,13 +231,13 @@ let is_property tile =
   | _ -> false 
 
 let rec tax_loop str_command player_info board =
-(print_endline "";print_string  "> ";
-       match read_line () with
-       | "percent" -> print_endline "We have taken 10% of your money muahaha"; Player.update_player_percent player_info board
-       | "flat" -> print_endline "We have taken $200 of your money for... tax... purposes... don't ask questions"; Player.update_player_flat_tax player_info board 200
-       | anything_else -> print_string "that is an invalid entry. Please choose percent or flat";
-       tax_loop str_command player_info board
-       |_-> failwith "tax_loop")
+  (print_endline "";print_string  "> ";
+   match read_line () with
+   | "percent" -> print_endline "We have taken 10% of your money muahaha"; Player.update_player_percent player_info board
+   | "flat" -> print_endline "We have taken $200 of your money for... tax... purposes... don't ask questions"; Player.update_player_flat_tax player_info board 200
+   | anything_else -> print_string "that is an invalid entry. Please choose percent or flat";
+     tax_loop str_command player_info board
+   |_-> failwith "tax_loop")
 
 (** [play_game_recursively ]*)
 let rec play_game_recursively prev_cmd str_command player_info board =
@@ -267,19 +273,19 @@ let rec play_game_recursively prev_cmd str_command player_info board =
     match parsed_command with
     | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
     | Roll ->
- let update_player_roll = (roll_new_player player_info board) in
-     if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or flat";
-     let new_info = tax_loop str_command update_player_roll board in
-     (print_endline "";print_string  "> ";
-       match read_line () with
-       | exception End_of_file -> exit 0;
-       | str -> play_game_recursively str_command str new_info board)
-    (**if current location of update player roll is 4 then readline for tax otherwise continue regularly*) 
-      ) else 
-      (print_endline "";print_string  "> ";
-       match read_line () with
-       | exception End_of_file -> exit 0;
-       | str -> play_game_recursively str_command str update_player_roll board)
+      let update_player_roll = (roll_new_player player_info board) in
+      if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or flat";
+                                                                      let new_info = tax_loop str_command update_player_roll board in
+                                                                      (print_endline "";print_string  "> ";
+                                                                       match read_line () with
+                                                                       | exception End_of_file -> exit 0;
+                                                                       | str -> play_game_recursively str_command str new_info board)
+                                                                      (**if current location of update player roll is 4 then readline for tax otherwise continue regularly*) 
+                                                                     ) else 
+        (print_endline "";print_string  "> ";
+         match read_line () with
+         | exception End_of_file -> exit 0;
+         | str -> play_game_recursively str_command str update_player_roll board)
     | EndTurn ->
       let current_player = Player.get_current_player player_info in
       (* print_endline (string_of_int current_player.money); *)
@@ -349,7 +355,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         match read_line () with
         | exception End_of_file -> exit 0
         | str -> play_game_recursively str_command str player_info board)
-      
+
 
       else if ((get_owner_id property) <> -1) then (
         print_endline "You cannot buy a property that is already owned by 
@@ -448,7 +454,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
     [play_game_recursively] *)
 let start_game board = 
   let num_players = get_num_players in
-  let player_names = get_player_names num_players in
+  let player_names = get_player_names num_players [] in
 
   let initial_player_info = ANSITerminal.(print_string [blue]
                                             command_list);
