@@ -1,8 +1,8 @@
 open Yojson.Basic.Util
 open Board
 open Indices
-(* open Cards *)
 
+(** [modulo x y] is [x mod y] if the result is positive, otherwise [(x mod y)+y] *)
 let modulo x y =
   let result = x mod y in
   if result >= 0 then result
@@ -31,26 +31,13 @@ let rec to_player numplayers acc=
     |(0)-> acc
     |x-> to_player (numplayers-1) ({
         id = (x-1);
-        score = 0;
+        score = 1500;
         location = 0;
         properties = [];
-        money = 0
-      }::acc)
-  in
+        money = 1500
+      }::acc) in
   let player_list = helper in
   List.sort (fun x y -> x.id - y.id) player_list
-
-(** print list of ints*)
-let rec print_int_list lst =
-  match lst with
-  | h::t -> print_int h; print_string " "; print_int_list t
-  | [] -> print_string " "
-
-(** print list of strings*)
-let rec print_string_list lst =
-  match lst with
-  | h::t -> print_string h; print_string " "; print_string_list t
-  | [] -> print_string " "
 
 (** creates the original players data structure using user input*)
 let to_players num_players input_names = {
@@ -61,38 +48,34 @@ let to_players num_players input_names = {
   jail_list = []
 }
 
+(** gets the player with the current player id from players *)
 let get_current_player (players:players) =
   List.nth players.player_list players.current_player
 
+(** helper for get_current_location that gets the current players location *)
 let rec get_current_location_helper player_list current_id =
   match player_list with
   | h::t when h.id = current_id -> h.location
   | h::t -> get_current_location_helper t current_id
   | _-> failwith "no current player error"
 
+(** gets the location of the current player from players *)
 let get_current_location players =
   get_current_location_helper players.player_list players.current_player
 
-(** takes in a 0 just for shits and returns a tuple of numbers rolled by 2 dice*)
-let dice zero =
-  let x = (Random.int 6) + 1 in let y = (Random.int 6) +1  +zero in
+(** [dice z] is a tuple of numbers rolled by 2 dice*)
+let dice zero=
+  let x = (Random.int 6) + 1 in let y = (Random.int 6) +1 in
   print_string "You rolled a "; print_int x; print_string " and a "; 
   print_int y; print_endline ""; (x,y) 
 
-(** [new_property player] is Some property that the current player obtains if
-    any, otherwise None*)
-let new_property player =
-  print_endline "new_property";
-  if List.length player.properties = 0 then ""
-  else List.nth player.properties 0
-
 (** gets the tile from the current location on the board*)
 let get_property current_loc board =
-  match (Indices.return_tile current_loc board) with 
+  match Indices.return_tile current_loc board with 
   | None -> failwith "no tile at this location"
   | Some v -> v
 
-(** returns true if current tile is a property tile*)
+(** [is_property t] is true if current tile is a property tile, otherwise false*)
 let is_property tile =
   match tile with
   | PropertyTile a -> true
@@ -101,19 +84,19 @@ let is_property tile =
   | CornerTile a -> false
 
 
-(**assuming current location is a property, gets the owner id of the current location's property*)
+(** if given a property, gets its owner id, otherwise gets -2 *)
 let get_owner_id tile = 
   match tile with
   |PropertyTile a -> a.owner
   |_-> (-2)
 
-(**assuming current location is a property, gets the name of the current location's property*)
+(** assuming current location is a property, gets the property name *)
 let get_property_name tile = 
   match tile with
   |PropertyTile a -> a.name
   |_-> failwith "get_property_name: not a property tile"
 
-(**assuming current tile is a property, gets the rent of the current location's property*)
+(** assuming current tile is a property, gets the property rent *)
 let tile_rent tile = 
   match tile with
   |PropertyTile a -> a.rent
@@ -121,42 +104,24 @@ let tile_rent tile =
 
 (** gets player name of the corresponding owner id number*)
 let get_owner_name tile player_names =
-  print_endline "get_owner_name";
   List.nth player_names (get_owner_id tile)
 
-
-(** returns the rent if the current location is a property with NO owner, else 0 *)
+(** gets the rent if the current location is a property with NO owner, else 0 *)
 let get_rent board current_loc =
-  let current_tile = (get_property current_loc board) in
-  if (is_property current_tile) then ( 
-    if ((get_owner_id current_tile) >  -1) then tile_rent current_tile
+  let current_tile = get_property current_loc board in
+  if is_property current_tile
+    then if (get_owner_id current_tile)> -1
+      then tile_rent current_tile
     else 0
-  )
   else 0
 
-(** updates the current player's state if its their turn (ex: location and changes to the next player*)
-let update_current_player player current_player_id =
-
-  if player.id = current_player_id then let dice_roll = (dice 0) in let new_loc = player.location + (fst(dice_roll)+snd(dice_roll)) in ({
-      id= player.id;
-      score = if new_loc > 40 then player.score + 200 else if new_loc = 40 then player.score + 400 else player.score;
-      location = modulo new_loc 40;
-      properties = player.properties;
-      money = if new_loc > 40 then player.money + 200 else if new_loc = 40 then player.money + 400 else player.money
-    })
-  else ( {
-      id = player.id;
-      score = player.score;
-      location= player.location;
-      properties = player.properties;
-      money = player.money
-    })
-
+(** gets tile at current location *)
 let get_curr_tile current_loc board =
-  match (Indices.return_tile current_loc board) with 
+  match Indices.return_tile current_loc board with 
   | None -> failwith "no tile at this location"
   | Some v -> v
 
+(** [is_card t] is true if t is of type CardTile, otherwise false *)
 let is_card tile =
   match tile with
   | PropertyTile a -> false
@@ -164,6 +129,7 @@ let is_card tile =
   | TaxTile a -> false
   | CornerTile a -> false
 
+(** [is_tax t] is true if t is of type TaxTile, otherwise false *)
 let is_tax tile =
   match tile with
   | PropertyTile a -> false
@@ -171,14 +137,16 @@ let is_tax tile =
   | TaxTile a -> true
   | CornerTile a -> false
 
+(** gets name of card type of given location *)
 let rec get_card_type_from_index location (tiles:Board.card_tile list) = 
   match tiles with
   | [] -> ""
   | h::t -> if h.location = location then h.card_tile_name
     else get_card_type_from_index location t
 
+(** gets a random card from list of cards *)
 let select_random_card cards = 
-  let rand_ind = (Random.int (List.length cards)) in
+  let rand_ind = Random.int (List.length cards) in
   List.nth cards rand_ind
 
 (** takes in a [property] name and the list of property_tiles and returns the 
@@ -352,6 +320,14 @@ let update_score_pay_main str players board= {
   jail_list = players.jail_list
 }
 
+(**  updates jail_list with new_player in jail and changes their location to jail*)
+let update_jail_list id jail_list=
+  ((id, 0)::jail_list)
+
+let send_to_jail_card players = {
+  players with jail_list = update_jail_list players.current_player players.jail_list
+}
+
 let card_main location board players curr_player score = 
   let chance_or_community = get_card_type_from_index location board.card_tiles in
   let selected_card = select_random_card board.cards in
@@ -360,7 +336,7 @@ let card_main location board players curr_player score =
   print_endline " deck and picked up the following card.";
   print_endline selected_card.description;
   match selected_card.subtype with
-  | AdvanceTo -> (update_location_main selected_card.value players board, score)
+  | AdvanceTo -> if selected_card.value="Jail" then (send_to_jail_card(update_location_main selected_card.value players board), score) else (update_location_main selected_card.value players board, score)
   | Collect -> (update_score_collect_main selected_card.value players board, score + int_of_string selected_card.value)
   | GoBack -> (update_location_goback_main selected_card.value players board, score)
   | Pay -> (update_score_pay_main selected_card.value players board, score - int_of_string selected_card.value)
@@ -387,7 +363,7 @@ let roll_change_score playerscore new_loc board player_names curr_player players
     print_string " is available for purchase! Would you like to buy? ";
     (if new_loc > 40 then (players, playerscore + 200) else if new_loc = 40 then (players, playerscore + 400)
      else (players, playerscore)) )
-  else (if (new_loc=10||new_loc=30) then (players, 0) 
+  else (if (new_loc=10||new_loc=30) then (players, playerscore) 
         else (
           (* TODO: tiles that aren't properties? *)
           if is_card (get_curr_tile new_loc board) then 
@@ -479,9 +455,6 @@ let rec get_gotojail_location (board_tiles:(Board.corner_tile list)) =
   | h::t when h.corner_tile_type = GoToJail -> h.location
   |h::t -> get_gotojail_location t
 
-(**  updates jail_list with new_player in jail and changes their location to jail*)
-let update_jail_list id jail_list=
-  ((id, 0)::jail_list)
 
 (** increases current player's roll count by +1*)
 let update_jail_roll_count id jail_list= let curr_roll_count =get_jail_roll_counter jail_list id in 
@@ -502,7 +475,7 @@ let rec roll_update_current_player players players_list player_names current_pla
         (* check if new_loc is actually go to jail and update the location to be visiting jail *)
         (* check if id and jail count stuff then check if not doubles and print still in jail otherwise *)
         (if ((check_jail_list jail_list current_player_id dice_roll)= false)then
-           let new_loc = player.location + (fst(dice_roll)+snd(dice_roll)) in 
+           let new_loc = modulo (player.location + (fst(dice_roll)+snd(dice_roll))) 40 in 
            let (players, new_score) = (roll_change_score player.score new_loc board player_names current_player_id players) in 
            roll_update_current_player players t player_names current_player_id board ({
                id= player.id;
@@ -572,11 +545,6 @@ let rec make_current_id_list players acc =
   then (acc)
   else (make_current_id_list players ((players.current_player )::acc))
 
-(** updates the players state based on their turn (ex: location, score,
-    potential property changes) and changes to the next player*)
-let update_players players =
-  List.map2 update_current_player (players.player_list)
-    (make_current_id_list players [])
 
 (** updates the players rent based on roll *)
 let roll_update_players players board=
@@ -629,13 +597,15 @@ let roll_new_player players board =
     current_player = more_players.current_player;
     number_of_players = more_players.number_of_players;
     player_names = more_players.player_names;
-    jail_list = (if (check_jail_type (get_current_location_helper new_player_list more_players.current_player) board) 
-                 then (update_jail_list more_players.current_player more_players.jail_list)
-                 else if (check_in_jail (get_current_location_helper new_player_list more_players.current_player) board more_players.current_player more_players.jail_list) 
-                 then (update_jail_roll_count more_players.current_player more_players.jail_list)
-                 else (if (List.mem_assoc more_players.current_player more_players.jail_list)
-                       then (List.remove_assoc more_players.current_player more_players.jail_list) else more_players.jail_list)
-                )
+    jail_list = (
+      if (check_jail_type (get_current_location_helper new_player_list more_players.current_player) board) 
+        then (update_jail_list more_players.current_player more_players.jail_list)
+        else if (check_in_jail (get_current_location_helper new_player_list more_players.current_player) board more_players.current_player more_players.jail_list) 
+          then (update_jail_roll_count more_players.current_player more_players.jail_list)
+          else (if (List.mem_assoc more_players.current_player more_players.jail_list)
+            then (List.remove_assoc more_players.current_player more_players.jail_list)
+            else more_players.jail_list)
+    )
   }
 
 
