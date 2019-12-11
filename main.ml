@@ -350,9 +350,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         match read_line () with
         | exception End_of_file -> exit 0
         | str -> play_game_recursively prev_cmd str player_info board)
-    | Buy -> let unsorted_update_player_buy = (Player.buy_new_player player_info board) 
-      in
-      let update_player_buy = {unsorted_update_player_buy with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_buy.player_list);} in
+    | Buy ->
       let curr_location = get_current_location player_info in
       let property = get_property curr_location board in
       if (not(is_property property)) then (
@@ -372,7 +370,9 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         match read_line () with
         | exception End_of_file -> exit 0
         | str -> play_game_recursively str_command str player_info board)
-      else
+      else let unsorted_update_player_buy = (Player.buy_new_player player_info board) 
+      in
+      let update_player_buy = {unsorted_update_player_buy with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_buy.player_list);} in
         let prop_name = buy_helper player_info board in (
           print_string "Congrats you now own ";
           print_endline (get_property_name (get_property 
