@@ -241,6 +241,7 @@ let rec tax_loop str_command player_info board =
 
 (** [play_game_recursively ]*)
 let rec play_game_recursively prev_cmd str_command player_info board =
+  let player_info = {player_info with player_list=(List.sort (fun x y -> x.id - y.id) player_info.player_list);} in
   if validate_command_order prev_cmd str_command
   then (
     print_string "You cannot enter a(n) ";
@@ -273,7 +274,9 @@ let rec play_game_recursively prev_cmd str_command player_info board =
     match parsed_command with
     | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
     | Roll ->
-      let update_player_roll = (roll_new_player player_info board) in
+      let unsorted_update_player_roll = (roll_new_player player_info board) in
+      let update_player_roll = {unsorted_update_player_roll with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_roll.player_list);} in
+      print_endline (Auction.pp_player_list Auction.pp_int update_player_roll.player_list);
       if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or flat";
                                                                       let new_info = tax_loop str_command update_player_roll board in
                                                                       (print_endline "";print_string  "> ";
@@ -295,6 +298,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
              the forfeited playing changing hands. This needs to be reflected in
              the data structures passed in with each call to play_game_
              recursively *)
+          print_endline (Auction.pp_player_list Auction.pp_int player_info.player_list);
           let auction_info = Auction.auction current_player player_info in
           let post_forfeit_player_info = Player.forfeit_player current_player 
               player_info board auction_info in
@@ -312,7 +316,9 @@ let rec play_game_recursively prev_cmd str_command player_info board =
                      post_forfeit_player_info board
         end
       else
-        let new_player_info = (Player.new_player player_info board) in 
+        let unsorted_new_player_info = (Player.new_player player_info board) in 
+        let new_player_info = {unsorted_new_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_new_player_info.player_list);} in
+        print_endline (Auction.pp_player_list Auction.pp_int new_player_info.player_list);
         let current_name = (get_current_player_name new_player_info) in
         print_string current_name;
         (print_string ", it's your turn now! Your current location is "; 
@@ -344,8 +350,9 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         match read_line () with
         | exception End_of_file -> exit 0
         | str -> play_game_recursively prev_cmd str player_info board)
-    | Buy -> let update_player_buy = (Player.buy_new_player player_info board) 
+    | Buy -> let unsorted_update_player_buy = (Player.buy_new_player player_info board) 
       in
+      let update_player_buy = {unsorted_update_player_buy with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_buy.player_list);} in
       let curr_location = get_current_location player_info in
       let property = get_property curr_location board in
       if (not(is_property property)) then (
@@ -401,8 +408,9 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           | exception End_of_file -> exit 0
           | name -> if List.mem_assoc name upgradeable_properties then
               let index = List.assoc name upgradeable_properties in
-              let update_player_upgrade = (Player.upgrade_new_player player_info
-                                             board index) in
+              let unsorted_update_player_upgrade = (Player.upgrade_new_player player_info
+                                                      board index) in
+              let update_player_upgrade = {unsorted_update_player_upgrade with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_upgrade.player_list);} in
               print_endline name;
               let new_board = {board with property_tiles = 
                                             (Upgrade.update_level
@@ -441,9 +449,10 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           match read_line () with
           | exception End_of_file -> exit 0
           | str -> (
-              let updated_player_info = trade_new_player player_info player1
+              let unsorted_updated_player_info = trade_new_player player_info player1
                   player2 property_to_trade property (board.property_tiles) cash
               in 
+              let updated_player_info = {unsorted_updated_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_updated_player_info.player_list);} in
               play_game_recursively prev_cmd str updated_player_info board)
       )
 
@@ -459,6 +468,7 @@ let start_game board =
   let initial_player_info = ANSITerminal.(print_string [blue]
                                             command_list);
     Player.to_players num_players player_names in
+  print_endline (Auction.pp_player_list Auction.pp_int initial_player_info.player_list);
   print_string (List.nth player_names 0);
   print_string " goes first: ";
   print_string  "> ";

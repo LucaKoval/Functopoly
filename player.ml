@@ -21,15 +21,19 @@ type players = {
 
 (** creates the original player data structure for each player *)
 let rec to_player numplayers acc= 
-  match numplayers with
-  |(0)-> acc
-  |x-> to_player (numplayers-1) ({
-      id = (x-1);
-      score = 0;
-      location = 0;
-      properties = [];
-      money = 0
-    }::acc)
+  let helper = 
+    match numplayers with
+    |(0)-> acc
+    |x-> to_player (numplayers-1) ({
+        id = (x-1);
+        score = 0;
+        location = 0;
+        properties = [];
+        money = 0
+      }::acc)
+  in
+  let player_list = helper in
+  List.sort (fun x y -> x.id - y.id) player_list
 
 (** print list of ints*)
 let rec print_int_list lst =
@@ -155,7 +159,7 @@ let is_card tile =
   | TaxTile a -> false
   | CornerTile a -> false
 
-  let is_tax tile =
+let is_tax tile =
   match tile with
   | PropertyTile a -> false
   | CardTile a -> false
@@ -384,7 +388,7 @@ let roll_change_score playerscore new_loc board player_names curr_player players
           if is_card (get_curr_tile new_loc board) then 
             card_main new_loc board players curr_player playerscore
           else if is_tax (get_curr_tile new_loc board) then
-          if new_loc <>4 then (players, playerscore-75) else (print_string "You have been Luxury-Taxed! Say goodbye to $75"; (players, playerscore))
+            if new_loc <>4 then (players, playerscore-75) else (print_string "You have been Luxury-Taxed! Say goodbye to $75"; (players, playerscore))
           else (players, playerscore)
         )
        )
@@ -839,7 +843,7 @@ let forfeit_player (curr_player:player) (players_init:players) board (p1_id, pro
   }
 
 let rec update_tax_player players_lst tax_amt acc current_player_id=
- match players_lst with
+  match players_lst with
   |[]-> acc
   |player::t ->
     begin
@@ -861,20 +865,20 @@ let rec update_tax_player players_lst tax_amt acc current_player_id=
     end
 
 let rec update_player_percent_each players_lst acc current_player_id=
- match players_lst with
+  match players_lst with
   |[]-> acc
   |player::t ->
     begin
-    let ps = player.money/10 in
-    let pps = player.money in
+      let ps = player.money/10 in
+      let pps = player.money in
       if (player.id = current_player_id) then ( print_int pps; print_int ps;
-        update_player_percent_each t ({
-            id= player.id;
-            score = player.score-(player.money/10);
-            location = player.location;
-            properties = (player.properties);
-            money = player.money-(player.money/10)
-          }::acc) current_player_id)
+                                                update_player_percent_each t ({
+                                                    id= player.id;
+                                                    score = player.score-(player.money/10);
+                                                    location = player.location;
+                                                    properties = (player.properties);
+                                                    money = player.money-(player.money/10)
+                                                  }::acc) current_player_id)
       else update_player_percent_each t ( {
           id = player.id;
           score = player.score;
@@ -884,18 +888,18 @@ let rec update_player_percent_each players_lst acc current_player_id=
         }::acc) current_player_id
     end
 
-  let update_player_percent players board =  {
-    player_list = update_player_percent_each players.player_list [] players.current_player;
-    current_player = players.current_player;
-    number_of_players = players.number_of_players;
-    player_names = players.player_names;
-    jail_list = players.jail_list
-  }
+let update_player_percent players board =  {
+  player_list = update_player_percent_each players.player_list [] players.current_player;
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names;
+  jail_list = players.jail_list
+}
 
-    let update_player_flat_tax players board tax_amt=  {
-    player_list = update_tax_player players.player_list tax_amt [] players.current_player;
-    current_player = players.current_player;
-    number_of_players = players.number_of_players;
-    player_names = players.player_names;
-    jail_list = players.jail_list
-  }
+let update_player_flat_tax players board tax_amt=  {
+  player_list = update_tax_player players.player_list tax_amt [] players.current_player;
+  current_player = players.current_player;
+  number_of_players = players.number_of_players;
+  player_names = players.player_names;
+  jail_list = players.jail_list
+}

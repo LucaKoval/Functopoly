@@ -1,3 +1,20 @@
+(** [pp_string s] pretty-prints string [s]. *)
+let pp_int i = "\"" ^ (string_of_int i) ^ "\""
+
+(** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt]
+    to pretty-print each element of [lst]. *)
+let pp_player_list pp_elt (lst:Player.player list) =
+  let pp_elts (lst:Player.player list) =
+    let rec loop n acc (lst:Player.player list) =
+      match lst with
+      | [] -> acc
+      | [h] -> acc ^ pp_elt (h.id)
+      | h1::(h2::t as t') ->
+        if n=100 then acc ^ "..."  (* stop printing long list *)
+        else loop (n+1) (acc ^ (pp_elt (h1.id)) ^ "; ") t'
+    in loop 0 "" lst
+  in "[" ^ pp_elts lst ^ "]"
+
 let replace lst i v : 'a list =
   let rec helper i v count acc = function
     | [] -> (List.rev acc)
@@ -21,13 +38,18 @@ let player_list_mem_other (player:Player.player) (lst:Player.players) : Player.p
   else List.nth lst.player_list 1
 
 let find_next_valid_bidder (start:int) (out:int list) (lst:Player.players) : Player.player =
+  print_endline (string_of_int start);
+  print_endline (pp_player_list pp_int lst.player_list);
   let rec helper index =
-    if index = (start-1) mod lst.number_of_players then failwith "impossible"
+    print_endline "in helper";
+    if index = ((start-1) mod lst.number_of_players) then failwith "impossible"
     else
     if List.mem (List.nth lst.player_list index).id out then
-      helper ((index+1)mod lst.number_of_players)
-    else
+      helper ((index+1) mod lst.number_of_players)
+    else begin
+      print_endline ("Getting the " ^ (string_of_int start) ^ "nth element of lst.player_list");
       List.nth lst.player_list index
+    end
   in
   helper start
 
@@ -44,7 +66,7 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
       | exception End_of_file -> exit 0
       | s -> if s = "forfeit" then
           if snd (highest) = 0 then
-            let highest_index = (find_next_valid_bidder (player_index+1) out players).id in
+            let highest_index = (find_next_valid_bidder ((forfeit_player.id+1) mod players.number_of_players) out players).id in
             print_endline (string_of_int highest_index);
             loop forfeit_player players (player_index::out) bids (highest_index, 0) ((player_index+1) mod players.number_of_players)
           else
@@ -63,6 +85,7 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
   end
 
 let auction (forfeit_player:Player.player) (players:Player.players) =
+  print_endline (pp_player_list pp_int players.player_list);
   if List.length players.player_list = 2 then begin
     print_endline ("Player " ^ (List.nth players.player_names (player_list_mem_other forfeit_player players).id) ^
                    " wins!");
