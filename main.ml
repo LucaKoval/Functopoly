@@ -234,10 +234,9 @@ let rec tax_loop str_command player_info board =
   (print_endline "";print_string  "> ";
    match read_line () with
    | "percent" -> print_endline "We have taken 10% of your money muahaha"; Player.update_player_percent player_info board
-   | "flat" -> print_endline "We have taken $200 of your money for... tax... purposes... don't ask questions"; Player.update_player_flat_tax player_info board 200
-   | anything_else -> print_string "that is an invalid entry. Please choose percent or flat";
-     tax_loop str_command player_info board
-   |_-> failwith "tax_loop")
+   | "fixed" -> print_endline "We have taken $200 of your money for... tax... purposes... don't ask questions"; Player.update_player_fixed_tax player_info board 200
+   | anything_else -> print_string "that is an invalid entry. Please choose percent or fixed";
+     tax_loop str_command player_info board)
 
 (** [play_game_recursively ]*)
 let rec play_game_recursively prev_cmd str_command player_info board =
@@ -277,7 +276,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
       let unsorted_update_player_roll = (roll_new_player player_info board) in
       let update_player_roll = {unsorted_update_player_roll with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_roll.player_list);} in
       print_endline (Auction.pp_player_list Auction.pp_int update_player_roll.player_list);
-      if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or flat";
+      if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or fixed";
                                                                       let new_info = tax_loop str_command update_player_roll board in
                                                                       (print_endline "";print_string  "> ";
                                                                        match read_line () with

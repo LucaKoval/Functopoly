@@ -163,7 +163,7 @@ let get_new_location board = function
   | "Jail" -> ("Jail", 30)
   | property -> (property, get_property_location property board.property_tiles)
 
-
+(** gets a players_list with the current player at the new location *)
 let rec update_location str players_list current_player_id board acc=
   match players_list with
   | []-> acc
@@ -176,29 +176,19 @@ let rec update_location str players_list current_player_id board acc=
         print_string " tile, which is at the numeric location ";
         print_endline (string_of_int new_loc);
         update_location str t current_player_id board ({
-            id= player.id;
-            score = player.score;
+          player with
             location = new_loc;
-            properties = player.properties;
-            money = player.money
           }::acc) )
-      else update_location str t current_player_id board (  {
-          id = player.id;
-          score = player.score;
-          location= player.location;
-          properties = player.properties;
-          money = player.money
-        }::acc) 
+      else update_location str t current_player_id board (player::acc) 
     end
 
+(** gets players with the current player at the new location *)
 let update_location_main str players board= {
-  player_list = update_location str players.player_list players.current_player board [];
-  current_player = players.current_player;
-  number_of_players = players.number_of_players;
-  player_names = players.player_names;
-  jail_list = players.jail_list
+  players with
+  player_list = update_location str players.player_list players.current_player board []
 }
 
+(** gets players_list with current player's location sent back *)
 let rec update_location_goback str players_list current_player_id board acc=
   match players_list with
   | []-> acc
@@ -208,52 +198,38 @@ let rec update_location_goback str players_list current_player_id board acc=
         print_string "Your new location is ";
         print_endline (string_of_int (modulo (player.location - (int_of_string str)) 40));
         update_location_goback str t current_player_id board ({
-            id= player.id;
-            score = player.score;
+          player with
             location = modulo (player.location - (int_of_string str)) 40;
-            properties = player.properties;
-            money = player.money
           }::acc) )
-      else update_location_goback str t current_player_id board (  {
-          id = player.id;
-          score = player.score;
-          location= player.location;
-          properties = player.properties;
-          money = player.money
-        }::acc) 
+      else update_location_goback str t current_player_id board (player::acc) 
     end
 
+(** gets players with current player's location sent back by card *)
 let update_location_goback_main str players board= {
-  player_list = update_location_goback str players.player_list players.current_player board [];
-  current_player = players.current_player;
-  number_of_players = players.number_of_players;
-  player_names = players.player_names;
-  jail_list = players.jail_list
+  players with
+  player_list = update_location_goback str players.player_list players.current_player board []
 }
 
-
+(** deducts given amount from every player and gives updated player_list *)
 let rec update_collect_from_all_player str players_list acc=
   match players_list with
   | []-> acc
   | player::t ->
     begin
-      update_collect_from_all_player str t ( {
-          id = player.id;
+      update_collect_from_all_player str t ( { 
+        player with
           score = (player.score - (int_of_string str));
-          location= player.location;
-          properties = player.properties;
           money = (player.money - (int_of_string str))
         }::acc)
     end
 
+(** gives players after money is collected from all players *)
 let update_collect_from_all str players= {
+  players with
   player_list = update_collect_from_all_player str players.player_list [];
-  current_player = players.current_player;
-  number_of_players = players.number_of_players;
-  player_names = players.player_names;
-  jail_list = players.jail_list
 }
 
+(** gives players_list after money is GIVEN to current player *)
 let rec update_score_collect str players_list current_player_id board acc=
   match players_list with
   | []-> acc
@@ -265,29 +241,20 @@ let rec update_score_collect str players_list current_player_id board acc=
         print_string " and your money is now ";
         print_endline (string_of_int (player.money + (int_of_string str)));
         update_score_collect str t current_player_id board ({
-            id= player.id;
+          player with
             score = player.score + (int_of_string str);
-            location = player.location;
-            properties = player.properties;
             money = player.money + (int_of_string str)
           }::acc) )
-      else update_score_collect str t current_player_id board (  {
-          id = player.id;
-          score = player.score;
-          location= player.location;
-          properties = player.properties;
-          money = player.money
-        }::acc) 
+      else update_score_collect str t current_player_id board (player::acc) 
     end
 
+(** gets players after adding money to current player *)
 let update_score_collect_main str players board= {
-  player_list = update_score_collect str players.player_list players.current_player board [];
-  current_player = players.current_player;
-  number_of_players = players.number_of_players;
-  player_names = players.player_names;
-  jail_list = players.jail_list
+  players with
+  player_list = update_score_collect str players.player_list players.current_player board []
 }
 
+(** gets players_list after collecting money from current player *)
 let rec update_score_pay str players_list current_player_id board acc=
   match players_list with
   | []-> acc
@@ -299,37 +266,29 @@ let rec update_score_pay str players_list current_player_id board acc=
         print_string " and your money is now ";
         print_endline (string_of_int (player.money - (int_of_string str)));
         update_score_pay str t current_player_id board ({
-            id= player.id;
+          player with
             score = player.score - (int_of_string str);
-            location = player.location;
-            properties = player.properties;
             money = player.money - (int_of_string str)
           }::acc) )
-      else update_score_pay str t current_player_id board (  {
-          id = player.id;
-          score = player.score;
-          location= player.location;
-          properties = player.properties;
-          money = player.money
-        }::acc) 
+      else update_score_pay str t current_player_id board (player::acc) 
     end
 
+(** gets players after collecting money from current player *)
 let update_score_pay_main str players board= {
+  players with
   player_list = update_score_pay str players.player_list players.current_player board [];
-  current_player = players.current_player;
-  number_of_players = players.number_of_players;
-  player_names = players.player_names;
-  jail_list = players.jail_list
 }
 
-(**  updates jail_list with new_player in jail and changes their location to jail*)
+(** updates jail_list with new_player in jail after their location changes to jail *)
 let update_jail_list id jail_list=
   ((id, 0)::jail_list)
 
+(**  updates players after current player is draws go to jail card *)
 let send_to_jail_card players = {
   players with jail_list = update_jail_list players.current_player players.jail_list
 }
 
+(** gets a tuple with the updated players information and current player score based on the card drawn *)
 let card_main location board players curr_player score = 
   let chance_or_community = get_card_type_from_index location board.card_tiles in
   let selected_card = select_random_card board.cards in
@@ -383,22 +342,12 @@ let rec roll_update_owner players_list player_names current_player_id board rent
   |player::t -> 
     begin
       if (player.id = (List.nth owner_id 0)) then roll_update_owner t player_names current_player_id board rent owner_id ({
-          id= player.id;
+        player with
           score = player.score + (List.nth rent 0);
-          location = player.location;
-          properties = player.properties;
           money = player.money + (List.nth rent 0);
         }::new_acc) 
-      else roll_update_owner t player_names current_player_id board rent owner_id ( {
-          id = player.id;
-          score = player.score;
-          location= player.location;
-          properties = player.properties;
-          money = player.money
-        }::new_acc)
+      else roll_update_owner t player_names current_player_id board rent owner_id (player::new_acc)
     end
-
-
 
 (** check if current_location is of type gotojail *)
 let check_jail_type curr_loc board=
@@ -438,10 +387,6 @@ let check_jail_list jail_list curr_id dice_tuple =
         then (if (fst(dice_tuple))<>(snd(dice_tuple)) then (print_endline "You did not roll doubles, you are stuck in jail still"; true) else (print_endline "You rolled doubles! You are free from jail!"; false)) 
         else (print_endline "This is your third roll in jail. You are free now!"; false))
   else false
-
-
-
-(** jail_roll_counter called if current property jail roll counter passes jail conditons otherwise regular roll *)
 
 (** gets location of jail*)
 let rec get_jail_location (board_tiles:(Board.corner_tile list)) =
@@ -518,13 +463,9 @@ let rec make_current_id_list players acc =
   then (acc)
   else (make_current_id_list players ((players.current_player )::acc))
 
-
 (** updates the players rent based on roll *)
 let roll_update_players players board=
   roll_update_current_player players players.player_list players.player_names players.current_player board [] [] [] players.jail_list
-
-let buy_update_players players board =
-  buy_update_current_player players.player_list players.player_names players.current_player board []
 
 (** helper for called at the beginning of roll, if player's location is gotojail, then it changes the current player's location to actual jail*)
 let rec update_location_to_jail players_list current_player_id board acc=
@@ -565,12 +506,6 @@ let roll_new_player players board =
     )
   }
 
-
-let rec list_printer lst =
-  match lst with
-  |[]-> ()
-  |h::t -> print_endline h; list_printer t
-
 (** takes in an accumulator just for shits*)
 let rec inventory_helper players_list acc current_player_id =
   match players_list with
@@ -589,9 +524,10 @@ let rec inventory_money_helper players_list acc current_player_id =
     potential property changes) and changes to the next player*)
 let buy_new_player players board = {
   players with
-  player_list = buy_update_players players board;
+  player_list = buy_update_current_player players.player_list players.player_names players.current_player board [];
 }
 
+(** removes the given element from the list *)
 let rec remove_helper lst el acc=
   match lst with
   |[]-> List.rev acc
@@ -665,19 +601,12 @@ let rec upgrade_update_current_player players_list player_names current_player_i
       else upgrade_update_current_player t player_names current_player_id board (player::acc) prop_loc
     end
 
-let upgrade_update_players players board prop_loc=
-  upgrade_update_current_player players.player_list players.player_names players.current_player board [] prop_loc
 
 (**updates the players state based on upgrade (ex: the money changes*)
 let upgrade_new_player players board prop_loc= {
   players with
-  player_list = upgrade_update_players players board prop_loc
+  player_list = upgrade_update_current_player players.player_list players.player_names players.current_player board [] prop_loc
   }
-
-let rec remove_helper_2 el acc = function
-  | []-> List.rev acc
-  | h::t when h = el -> remove_helper_2 el acc t
-  | h::t -> remove_helper_2 el (h::acc) t
 
 (** updates the players state based on their turn (ex: location, score,
     potential property changes) and changes to the next player*)
@@ -722,14 +651,16 @@ let auction_new_player players board (p1_id:int) (fp_id:int) (prop_lst:string li
   player_list = auction_update_current_player players.player_list board [] p1_id fp_id prop_lst amt;
 }    
 
+(** updates players with properties, money, and score after forfeit auction and the player is REMOVED*)
 let forfeit_player (curr_player:player) (players_init:players) board (p1_id, prop_lst, amt) =
   let players = auction_new_player players_init board.property_tiles p1_id curr_player.id prop_lst amt in
   { players with 
-    player_list=(remove_helper_2 curr_player [] players.player_list);
+    player_list=(remove_helper players.player_list curr_player []);
     number_of_players=players.number_of_players-1;
-    player_names=(remove_helper_2 (List.nth players.player_names curr_player.id) [] players.player_names);
+    player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) []);
   }
 
+(** updates players_list with a fixed tax fee deduction from the current player *)
 let rec update_tax_player players_lst tax_amt acc current_player_id=
   match players_lst with
   |[]-> acc
@@ -744,6 +675,7 @@ let rec update_tax_player players_lst tax_amt acc current_player_id=
       else update_tax_player t tax_amt (player::acc) current_player_id
     end
 
+(** updates the players_list with deducting 10% tax from the currennt player *)
 let rec update_player_percent_each players_lst acc current_player_id=
   match players_lst with
   |[]-> acc
@@ -758,12 +690,20 @@ let rec update_player_percent_each players_lst acc current_player_id=
       else update_player_percent_each t (player::acc) current_player_id
     end
 
+(** updates players with 10% tax from the current player *)
 let update_player_percent players board =  { 
   players with
   player_list = update_player_percent_each players.player_list [] players.current_player
 }
 
-let update_player_flat_tax players board tax_amt=  { 
+(** updates player with a fixed tax deduction from the current player *)
+let update_player_fixed_tax players board tax_amt=  { 
   players with
   player_list = update_tax_player players.player_list tax_amt [] players.current_player
 }
+
+(** prints out the elements of a list with each element on a new line *)
+let rec list_printer lst =
+  match lst with
+  |[]-> ()
+  |h::t -> print_endline h; list_printer t
