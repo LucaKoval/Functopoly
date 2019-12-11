@@ -102,9 +102,9 @@ let parse_price str property_to_trade =
                                     ) else (try ((int_of_string (String.trim 
                                                                    str)), "", 
                                                  property_to_trade)
-                                            with Failure e -> (0, (String.trim 
-                                                                     str), 
-                                                               property_to_trade) 
+                                            with Failure e -> 
+                                              (0, (String.trim str), 
+                                               property_to_trade) 
                                            )
 
 let print_price cash property trader2 = 
@@ -237,11 +237,12 @@ let rec tax_loop str_command player_info board =
 let rec play_game_recursively prev_cmd str_command player_info board =
   if validate_command_order prev_cmd str_command
   then (
-    print_string "You cannot enter a ";
+    print_string "You cannot enter a(n) ";
     print_string str_command;
     print_string " after ";
     print_string prev_cmd;
-    print_endline ". Please re-enter your next command.";
+    print_endline ". Please re-enter your next command (Hint: If you entered \
+                   consecutive endturns, you may have forgotten to roll).";
     print_string  "> ";
     match read_line () with
     | exception End_of_file -> exit 0
@@ -325,9 +326,11 @@ let rec play_game_recursively prev_cmd str_command player_info board =
     | Inventory player_name -> (
         print_string player_name; print_endline "'s inventory:";
         let money = (Player.inventory_money_helper player_info.player_list 0 
-                       (get_player_id_from_name player_info.player_names player_name 0)) in
+                       (get_player_id_from_name player_info.player_names 
+                          player_name 0)) in
         let list = (Player.inventory_helper player_info.player_list [] 
-                      (get_player_id_from_name player_info.player_names player_name 0)) in 
+                      (get_player_id_from_name player_info.player_names 
+                         player_name 0)) in 
         (Player.list_printer list);
         print_string player_name; print_string "'s money: "; print_int money;
         print_endline "";
@@ -359,20 +362,16 @@ let rec play_game_recursively prev_cmd str_command player_info board =
       else
         let prop_name = buy_helper player_info board in (
           print_string "Congrats you now own ";
-          print_endline (get_property_name (get_property (get_current_location 
-                                                            player_info) board));
+          print_endline (get_property_name (get_property 
+                                              (get_current_location 
+                                                 player_info) board));
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
           | str -> play_game_recursively str_command str update_player_buy 
-                     (Board.buy_update_board board update_player_buy.current_player 
+                     (Board.buy_update_board board 
+                        update_player_buy.current_player 
                         prop_name))
-    (* Player enters 'upgrade'
-       Displays list of upgradeable properties (will need to somehow check what
-       groups of properties the players owns completely)
-       Then chooses property and upgrade "amount"
-       Finish
-    *)
     | Upgrade -> let current_player_id = (player_info.current_player) in
       let color_groups = Upgrade.get_color_groups current_player_id board in
       let upgradeable_properties = Upgrade.get_upgradeable_properties 
@@ -399,8 +398,10 @@ let rec play_game_recursively prev_cmd str_command player_info board =
               let update_player_upgrade = (Player.upgrade_new_player player_info
                                              board index) in
               print_endline name;
-              let new_board = {board with property_tiles = (Upgrade.update_level
-                                                              index board.property_tiles)} in
+              let new_board = {board with property_tiles = 
+                                            (Upgrade.update_level
+                                               index 
+                                               board.property_tiles)} in
               print_endline ("You have upgraded " ^ name);
               print_string  "> ";
               match read_line () with
@@ -416,16 +417,6 @@ let rec play_game_recursively prev_cmd str_command player_info board =
                 | str -> play_game_recursively prev_cmd str player_info board
               end
         end
-
-  (*
-   display player-property menu
-   who do you wanna trade with?
-   player x
-   which property do you wanna trade?
-   property y
-   what price do you want to sell for? (syntax: <cash>, <property>)
-   player x, do you accept that price? (<accept>/<reject>)
-  *)
     | Trade -> (
         print_endline "print player property menu here";
         (* Get property tile and then owner from *)
@@ -445,13 +436,16 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           | exception End_of_file -> exit 0
           | str -> (
               let updated_player_info = trade_new_player player_info player1
-                  player2 property_to_trade property (board.property_tiles) cash in
+                  player2 property_to_trade property (board.property_tiles) cash
+              in 
               play_game_recursively prev_cmd str updated_player_info board)
       )
 
 
 
-(** *)
+(** [start_game board] begins the game by taking the first player's input
+    and then kicking off the recursive workflow by calling 
+    [play_game_recursively] *)
 let start_game board = 
   let num_players = get_num_players in
   let player_names = get_player_names num_players in
@@ -459,14 +453,14 @@ let start_game board =
   let initial_player_info = ANSITerminal.(print_string [blue]
                                             command_list);
     Player.to_players num_players player_names in
-  print_string "Player 1 goes first: ";
+  print_string (List.nth player_names 0);
+  print_string " goes first: ";
   print_string  "> ";
   match read_line () with
   | exception End_of_file -> exit 0
   | str -> play_game_recursively "" str initial_player_info board
 
-(* print_string_list player_names; print_string (string_of_int num_players) *)
-
+(**  [main_helper file_name] parses the board json *)
 let rec main_helper file_name =
   try from_json (Basic.from_file file_name)
   with _ -> print_endline "Looks like something is \
@@ -477,7 +471,8 @@ let rec main_helper file_name =
     | exception End_of_file -> exit 0
     | file_name -> main_helper file_name
 
-
+(** [main] is the entrypoint to the code. It asks for the board file name and 
+    then calls [start_game] *)
 let rec main () =
   Random.self_init ();
   print_endline "Please enter the name of the game file you want to load.\n";
