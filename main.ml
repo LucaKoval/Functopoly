@@ -224,6 +224,15 @@ let is_property tile =
   | PropertyTile a -> true
   | _ -> false 
 
+let rec tax_loop str_command player_info board =
+(print_endline "";print_string  "> ";
+       match read_line () with
+       | "percent" -> print_endline "We have taken 10% of your money muahaha"; Player.update_player_percent player_info board
+       | "flat" -> print_endline "We have taken $200 of your money for... tax... purposes... don't ask questions"; Player.update_player_flat_tax player_info board 200
+       | anything_else -> print_string "that is an invalid entry. Please choose percent or flat";
+       tax_loop str_command player_info board
+       |_-> failwith "tax_loop")
+
 (** [play_game_recursively ]*)
 let rec play_game_recursively prev_cmd str_command player_info board =
   if validate_command_order prev_cmd str_command
@@ -256,7 +265,16 @@ let rec play_game_recursively prev_cmd str_command player_info board =
                                board)) in
     match parsed_command with
     | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
-    | Roll -> let update_player_roll = (roll_new_player player_info board) in 
+    | Roll ->
+ let update_player_roll = (roll_new_player player_info board) in
+     if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or flat";
+     let new_info = tax_loop str_command update_player_roll board in
+     (print_endline "";print_string  "> ";
+       match read_line () with
+       | exception End_of_file -> exit 0;
+       | str -> play_game_recursively str_command str new_info board)
+    (**if current location of update player roll is 4 then readline for tax otherwise continue regularly*) 
+      ) else 
       (print_endline "";print_string  "> ";
        match read_line () with
        | exception End_of_file -> exit 0;
@@ -328,6 +346,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         match read_line () with
         | exception End_of_file -> exit 0
         | str -> play_game_recursively str_command str player_info board)
+      
 
       else if ((get_owner_id property) <> -1) then (
         print_endline "You cannot buy a property that is already owned by 
