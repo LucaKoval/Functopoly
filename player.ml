@@ -157,10 +157,12 @@ let rec get_property_location property = function
     then h.location
     else get_property_location property t
 
+(** takes a card title and gives a tuple with the tile name and its location *)
 let get_new_location board = function
   | "Go" -> ("Go", 0)
-  | "Jail" -> ("Jail", 30) (* TODO: send current player to jail  *)
+  | "Jail" -> ("Jail", 30)
   | property -> (property, get_property_location property board.property_tiles)
+
 
 let rec update_location str players_list current_player_id board acc=
   match players_list with
@@ -470,34 +472,16 @@ let rec roll_update_current_player players players_list player_names current_pla
   |player::t -> 
     begin
       if (player.id = current_player_id) then let dice_roll = (dice 0) in 
-        (*   let new_loc = player.location + (fst(dice_roll)+snd(dice_roll)) in 
-             let new_score = (roll_change_score player.score new_loc board player_names) in *)
-        (* check if new_loc is actually go to jail and update the location to be visiting jail *)
-        (* check if id and jail count stuff then check if not doubles and print still in jail otherwise *)
         (if ((check_jail_list jail_list current_player_id dice_roll)= false)then
            let new_loc = modulo (player.location + (fst(dice_roll)+snd(dice_roll))) 40 in 
            let (players, new_score) = (roll_change_score player.score new_loc board player_names current_player_id players) in 
-           roll_update_current_player players t player_names current_player_id board ({
-               id= player.id;
+           roll_update_current_player players t player_names current_player_id board ({ player with
                score = new_score;
                location = modulo new_loc 40;
-               properties = player.properties;
                money = new_score
              }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
-         else (roll_update_current_player players t player_names current_player_id board ( {
-             id = player.id;
-             score = player.score;
-             location= player.location;
-             properties = player.properties;
-             money = player.money
-           }::acc) rent_acc owner_id_acc jail_list))      
-      else roll_update_current_player players t player_names current_player_id board ( {
-          id = player.id;
-          score = player.score;
-          location= player.location;
-          properties = player.properties;
-          money = player.money
-        }::acc) rent_acc owner_id_acc jail_list
+         else (roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list))      
+      else roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list
     end
 
 (** gets price of property to buy or 0 if not a property*)
