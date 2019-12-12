@@ -91,10 +91,15 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
           else
             loop forfeit_player players (player_index::out) bids highest ((player_index+1) mod players.number_of_players)
         else if is_int s then
-          let new_highest = if int_of_string s > snd highest then (player_index, int_of_string s)
-            else highest
-          in
-          loop forfeit_player players out (replace bids player_index (int_of_string s)) new_highest ((player_index+1) mod players.number_of_players)
+          if (int_of_string s) <= snd highest then begin
+            print_endline ("Please enter a bid that is higher than the
+            current-highest bid");
+            print_string  "> ";
+            loop forfeit_player players out bids highest player_index
+          end
+          else 
+            let new_highest = (player_index, int_of_string s) in
+            loop forfeit_player players out (replace bids player_index (int_of_string s)) new_highest ((player_index+1) mod players.number_of_players)
         else begin
           print_endline "Please enter either a number for your bid or \"forfeit\" to stop bidding.";
           print_string  "> ";
