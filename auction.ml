@@ -108,19 +108,16 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
     end
   end
 
-let auction (forfeit_player:Player.player) (players:Player.players) (removing_player:bool) =
-  if removing_player && List.length players.player_list = 2 then begin
+let auction (forfeit_player:Player.player) (players:Player.players) (quitting_player:bool) =
+  if List.length players.player_list = 2 then begin
     print_endline ("Player " ^ (List.nth players.player_names (player_list_mem_other forfeit_player players.player_list).id) ^
                    " wins!");
     exit 0;
   end
-  else if not removing_player && List.length players.player_list = 2 then begin
-    let winner_id = (player_list_mem_other forfeit_player players.player_list).id in
-    (winner_id, forfeit_player.properties, 0)
-  end
   else begin
+    let saying = (if quitting_player then "quit" else "gone bankrupt") in
     print_endline ("Player " ^ (List.nth players.player_names forfeit_player.id) ^
-                   " has gone bankrupt. All of their properties will be auctioned
+                   " has " ^ saying ^ ". All of their properties will be auctioned
                  as one group of properties. The bidding will begin at 0.");
     if forfeit_player.id = 0 then begin
       print_endline ("Player " ^ (List.nth players.player_names 1) ^ " will bid first.");
@@ -132,7 +129,6 @@ let auction (forfeit_player:Player.player) (players:Player.players) (removing_pl
   end
 
 let rec loop_prop (forfeit_player:Player.player) (players:Player.players) (out:int list) (bids:int list) (highest:int*int) (player_index:int) (prop:Board.property_tile) =
-  (* (player that wins the bid, the properties they get, and the amount they pay) *)
   if List.length out = players.number_of_players-1 then begin
     print_endline ("Player " ^ (List.nth players.player_names (fst highest)) ^ " has won the auction!");
     (fst highest, [prop.name], snd highest)
@@ -175,6 +171,8 @@ let auction_prop (forfeit_player:Player.player) (players:Player.players) (tile:I
   | PropertyTile prop -> begin
       if List.length players.player_list = 2 then begin
         let winner_id = (player_list_mem_other forfeit_player players.player_list).id in
+        print_endline ("Player " ^ (List.nth players.player_names winner_id) ^
+                       " has won the auction!");
         (winner_id, [prop.name], 0)
       end
       else begin

@@ -242,294 +242,275 @@ let rec tax_loop str_command player_info board =
      tax_loop str_command player_info board)
 
 let malformed_helper prev_cmd str_command player_info board = 
-(print_endline "The command you entered was Malformed :(\
-                                       Please try again.";
-                        print_string  "> ";
-                        match read_line () with
-                        | exception End_of_file -> exit 0
-                        | str -> (prev_cmd, str,
-                                   player_info, board))
+  (print_endline "The command you entered was Malformed :(\
+                  Please try again.";
+   print_string  "> ";
+   match read_line () with
+   | exception End_of_file -> exit 0
+   | str -> (prev_cmd, str,
+             player_info, board))
 
 let empty_helper prev_cmd str_command player_info board = 
-(print_endline "The command you entered was Empty.\
-                                   Please try again."; 
-                    print_string  "> ";
-                    match read_line () with
-                    | exception End_of_file -> exit 0;
-                    | str -> (prev_cmd, str, player_info,
-                               board)
-)
+  (print_endline "The command you entered was Empty.\
+                  Please try again."; 
+   print_string  "> ";
+   match read_line () with
+   | exception End_of_file -> exit 0;
+   | str -> (prev_cmd, str, player_info,
+             board)
+  )
 let quit_helper prev_cmd str_command player_info board = 
-let current_player = Player.get_current_player player_info in
-        print_endline "Sad to see you go. Your properties will now be
+  let current_player = Player.get_current_player player_info in
+  print_endline "Sad to see you go. Your properties will now be
     auctioned off.";
-        let auction_info = Auction.auction current_player player_info true in
-        let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
-            player_info board auction_info in
-        let post_forfeit_player_info = {
-          unsorted_post_forfeit_player_info with
-          player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
-          current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
-        } in
-        let current_name = (get_current_player_name post_forfeit_player_info) 
-        in
-        print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
+  let auction_info = Auction.auction current_player player_info true in
+  let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
+      player_info board auction_info in
+  let post_forfeit_player_info = {
+    unsorted_post_forfeit_player_info with
+    player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
+    current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
+  } in
+  let current_name = (get_current_player_name post_forfeit_player_info) 
+  in
+  print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
           current location is "
-                       ^ string_of_int (Player.get_current_location 
-                                          post_forfeit_player_info));
-        print_endline "";
-        print_string  "> ";
-        match read_line () with
-        | exception End_of_file -> exit 0;
-        | str -> (str_command, str ,
-                   post_forfeit_player_info, board)
-      
-let roll_helper prev_cmd str_command player_info board = 
-      let unsorted_update_player_roll = (roll_new_player player_info board) in
-      let update_player_roll = {unsorted_update_player_roll with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_roll.player_list);} in
-      print_endline (Auction.pp_player_list_ids Auction.pp_int update_player_roll.player_list);
-      if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or fixed";
-      let new_info = tax_loop str_command update_player_roll board in
-        (print_endline "";print_string  "> ";
-         match read_line () with
-         | exception End_of_file -> exit 0;
-         | str -> (str_command, str, new_info, board))
-          ) else 
-        (print_endline "";print_string  "> ";
-         match read_line () with
-         | exception End_of_file -> exit 0;
-         | str -> (str_command, str, update_player_roll, board))
+                 ^ string_of_int (Player.get_current_location 
+                                    post_forfeit_player_info));
+  print_endline "";
+  print_string  "> ";
+  match read_line () with
+  | exception End_of_file -> exit 0;
+  | str -> (str_command, str ,
+            post_forfeit_player_info, board)
 
-let endturn_auction_helper prev_cmd str_command player_info board current_player=
-let auction_info = Auction.auction current_player player_info true in
-          let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
-              player_info board auction_info in
-          let post_forfeit_player_info = {
-            unsorted_post_forfeit_player_info with
-            player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
-            current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
-          } in
-          let current_name = (get_current_player_name post_forfeit_player_info) 
-          in
-          print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
+let roll_helper prev_cmd str_command player_info board = 
+  let unsorted_update_player_roll = (roll_new_player player_info board) in
+  let update_player_roll = {unsorted_update_player_roll with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_roll.player_list);} in
+  print_endline (Auction.pp_player_list_ids Auction.pp_int update_player_roll.player_list);
+  if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or fixed";
+  let new_info = tax_loop str_command update_player_roll board in
+  (print_endline "";print_string  "> ";
+  match read_line () with
+  | exception End_of_file -> exit 0;
+  | str -> (str_command, str, new_info, board))
+) else 
+    (print_endline "";print_string  "> ";
+     match read_line () with
+     | exception End_of_file -> exit 0;
+     | str -> (str_command, str, update_player_roll, board))
+
+   let endturn_auction_helper prev_cmd str_command player_info board current_player= (
+      let auction_info = Auction.auction current_player player_info true in
+      let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
+          player_info board auction_info in
+      let post_forfeit_player_info = {
+        unsorted_post_forfeit_player_info with
+        player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
+        current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
+      } in
+      let current_name = (get_current_player_name post_forfeit_player_info) 
+      in
+      print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
           current location is "
-                         ^ string_of_int (Player.get_current_location 
-                                            post_forfeit_player_info));
-          print_endline "";
-          print_string  "> ";
-          match read_line () with
-          | exception End_of_file -> exit 0;
-          | str -> (str_command, str, post_forfeit_player_info, board)
+                     ^ string_of_int (Player.get_current_location 
+                                        post_forfeit_player_info));
+      print_endline "";
+      print_string  "> ";
+      match read_line () with
+      | exception End_of_file -> exit 0;
+      | str -> (str_command, str, post_forfeit_player_info, board))
 
 let endturn_helper prev_cmd str_command player_info board =
-      let current_player = Player.get_current_player player_info in
-      if current_player.money < 0 then
-        begin
-          endturn_auction_helper prev_cmd str_command player_info board current_player
-        end
-      else
-        let unsorted_new_player_info = (Player.new_player player_info board) in 
-        let new_player_info = {unsorted_new_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_new_player_info.player_list);} in
-        print_endline (Auction.pp_player_list_ids Auction.pp_int new_player_info.player_list);
-        let current_name = (get_current_player_name new_player_info) in
-        print_string current_name;
-        (print_string ", it's your turn now! Your current location is "; 
-         print_int (Player.get_current_location new_player_info);
-         print_string  "> ";
-         match read_line () with
-         | exception End_of_file -> exit 0;
-         | str -> (str_command, str, new_player_info, board)
-        )
+  let current_player = Player.get_current_player player_info in
+  if current_player.money < 0 then
+    endturn_auction_helper prev_cmd str_command player_info board current_player
+  else
+    let unsorted_new_player_info = (Player.new_player player_info board) in 
+    let new_player_info = {unsorted_new_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_new_player_info.player_list);} in
+    print_endline (Auction.pp_player_list_ids Auction.pp_int new_player_info.player_list);
+    let current_name = (get_current_player_name new_player_info) in
+    print_string current_name;
+    (print_string ", it's your turn now! Your current location is "; 
+     print_int (Player.get_current_location new_player_info);
+     print_string  "> ";
+     match read_line () with
+     | exception End_of_file -> exit 0;
+     | str -> (str_command, str, new_player_info, board)
+    )
 
 let help_helper prev_cmd str_command player_info board =
-        print_endline command_list;
-        print_string  "> ";
-        match read_line () with
-        | exception End_of_file -> exit 0
-        | str -> (prev_cmd, str, player_info, board)
+  print_endline command_list;
+  print_string  "> ";
+  match read_line () with
+  | exception End_of_file -> exit 0
+  | str -> (prev_cmd, str, player_info, board)
 
 let inventory_helper prev_cmd str_command player_info board player_name=
-(print_string player_name; print_endline "'s inventory:";
-        let money = (Player.inventory_money_helper player_info.player_list 0 
-                       (get_player_id_from_name player_info.player_names 
-                          player_name 0)) in
-        let list = (Player.inventory_helper player_info.player_list [] 
-                      (get_player_id_from_name player_info.player_names 
-                         player_name 0)) in 
-        (Player.list_printer list);
-        print_string player_name; print_string "'s money: "; print_int money;
-        print_endline "";
-        print_string  "> ";
-        match read_line () with
-        | exception End_of_file -> exit 0
-        | str -> (prev_cmd, str, player_info, board))
+  (print_string player_name; print_endline "'s inventory:";
+   let money = (Player.inventory_money_helper player_info.player_list 0 
+                  (get_player_id_from_name player_info.player_names 
+                     player_name 0)) in
+   let list = (Player.inventory_helper player_info.player_list [] 
+                 (get_player_id_from_name player_info.player_names 
+                    player_name 0)) in 
+   (Player.list_printer list);
+   print_string player_name; print_string "'s money: "; print_int money;
+   print_endline "";
+   print_string  "> ";
+   match read_line () with
+   | exception End_of_file -> exit 0
+   | str -> (prev_cmd, str, player_info, board))
 
-let cannot_buy_helper prev_cmd str_command player_info board curr_location property = print_endline "You cannot buy on a tile that isn't a property! Please 
-        enter a valid command.";
-        print_string  "> ";
-        match read_line () with
-        | exception End_of_file -> exit 0
-        | str -> (str_command, str, player_info, board)
-
-let already_owned_buy_helper prev_cmd str_command player_info board curr_location property = (
-        print_endline "You cannot buy a property that is already owned by 
-        someone! 
-        However, you can trade if you'd like. Please enter a valid command.";
-        print_string  "> ";
-        match read_line () with
-        | exception End_of_file -> exit 0
-        | str -> (str_command, str, player_info, board))
+let property_buy_helper prev_cmd str_command player_info board=
+let unsorted_update_player_buy = (Player.buy_new_player player_info board) 
+    in
+    let update_player_buy = {unsorted_update_player_buy with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_buy.player_list);} in
+    let prop_name = buy_helper player_info board in (
+      print_string "Congrats you now own ";
+      print_endline (get_property_name (get_property 
+                                          (get_current_location 
+                                             player_info) board));
+      print_string  "> ";
+      match read_line () with
+      | exception End_of_file -> exit 0
+      | str ->  (str_command, str, update_player_buy, 
+                 (Board.buy_update_board board 
+                    update_player_buy.current_player 
+                    prop_name)))
 
 let buy_helper prev_cmd str_command player_info board =
-        let curr_location = get_current_location player_info in
-      let property = get_property curr_location board in
-      if (not(is_property property)) then (cannot_buy_helper prev_cmd str_command player_info board curr_location property)
-      else if ((get_owner_id property) <> -1) then (
-        already_owned_buy_helper prev_cmd str_command player_info board curr_location property)
-      else let unsorted_update_player_buy = (Player.buy_new_player player_info board) in
-        let update_player_buy = {unsorted_update_player_buy with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_buy.player_list);} in
-        let prop_name = buy_helper player_info board in (
-          print_string "Congrats you now own ";
-          print_endline (get_property_name (get_property (get_current_location player_info) board));
-          print_string  "> ";
-          match read_line () with
-          | exception End_of_file -> exit 0
-          | str ->  (str_command, str, update_player_buy, (Board.buy_update_board board update_player_buy.current_player prop_name)))
+  let curr_location = get_current_location player_info in
+  let property = get_property curr_location board in
+  if (not(is_property property)) then (
+    print_endline "You cannot buy on a tile that isn't a property! Please 
+        enter a valid command.";
+    print_string  "> ";
+    match read_line () with
+    | exception End_of_file -> exit 0
+    | str -> (str_command, str, player_info, board))
+  else if ((get_owner_id property) <> -1) then (
+    print_endline "You cannot buy a property that is already owned by 
+        someone! 
+        However, you can trade if you'd like. Please enter a valid command.";
+    print_string  "> ";
+    match read_line () with
+    | exception End_of_file -> exit 0
+    | str -> (str_command, str, player_info, board))
+  else property_buy_helper prev_cmd str_command player_info board
 
-let property_no_helper prev_cmd str_command player_info board unsorted_post_forfeit_player_info=
-          let post_forfeit_player_info = {
-            unsorted_post_forfeit_player_info with
-            player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
-            current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
-          } in
-          let current_name = (get_current_player_name post_forfeit_player_info) 
-          in
-          print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
-          current location is "
-                         ^ string_of_int (Player.get_current_location 
-                                            post_forfeit_player_info));
-          print_endline "";
-          print_string  "> ";
-          match read_line () with
-          | exception End_of_file -> exit 0;
-          | str -> (str_command, str, 
-                     post_forfeit_player_info, board)
+let property_no_helper prev_cmd str_command player_info board current_location=
+let current_player = Player.get_current_player player_info in
+    let prop = get_property current_location board in
+    let prop_name = get_property_name prop in
+    print_endline (prop_name ^ " will now be auctioned off.");
+    let auction_info = Auction.auction_prop current_player player_info prop in
+    let unsorted_post_forfeit_player_info = Player.auction_property_player current_player player_info board auction_info in
+    let post_forfeit_player_info = {
+      unsorted_post_forfeit_player_info with
+      player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
+      current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
+    } in let current_name = (get_current_player_name post_forfeit_player_info) in print_endline ("Player " ^ current_name ^ ", it's your turn now! Your current location is " ^ (string_of_int (Player.get_current_location 
+    post_forfeit_player_info)));
+    print_endline "";
+    print_string  "> ";
+    match read_line () with
+    | exception End_of_file -> exit 0;
+    | str -> (str_command, str, 
+              post_forfeit_player_info, board)
 
 let no_helper prev_cmd str_command player_info board =
-        let current_location = get_current_location player_info in
-        if (is_property (get_property current_location board)) then
-          let current_player = Player.get_current_player player_info in
-          let prop = get_property current_location board in
-          let prop_name = get_property_name prop in
-          print_endline (prop_name ^ " will now be auctioned off.");
-          let auction_info = Auction.auction_prop current_player player_info prop in
-          let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
-              player_info board auction_info in
-          let post_forfeit_player_info = {
-            unsorted_post_forfeit_player_info with
-            player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
-            current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
-          } in
-          let current_name = (get_current_player_name post_forfeit_player_info) 
-          in
-          print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
-          current location is "
-                         ^ string_of_int (Player.get_current_location 
-                                            post_forfeit_player_info));
-          print_endline "";
+  let current_location = get_current_location player_info in
+  if (is_property (get_property current_location board)) then
+    property_no_helper prev_cmd str_command player_info board current_location
+  else begin
+    print_string "> ";
+    match read_line () with
+    | exception End_of_file -> exit 0
+    | str -> 
+      (str_command, str, player_info, board)
+  end
+
+let property_upgrade_helper prev_cmd str_command player_info board name upgradeable_properties=
+let index = List.assoc name upgradeable_properties in
+          let unsorted_update_player_upgrade = (Player.upgrade_new_player player_info
+                                                  board index) in
+          let update_player_upgrade = {unsorted_update_player_upgrade with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_upgrade.player_list);} in
+          print_endline name;
+          let new_board = {board with property_tiles = 
+                                        (Upgrade.update_level
+                                           index 
+                                           board.property_tiles)} in
+          print_endline ("You have upgraded " ^ name);
           print_string  "> ";
           match read_line () with
-          | exception End_of_file -> exit 0;
-          | str -> (str_command, str, 
-                     post_forfeit_player_info, board)
-        else begin
-          print_string "> ";
-          match read_line () with
           | exception End_of_file -> exit 0
-          | str -> 
-            (str_command, str, player_info, board)
-        end
+          | str -> (prev_cmd, str, update_player_upgrade, new_board)
+
+let unupgradeable_helper prev_cmd str_command player_info board=
+          begin
+            print_endline "That is not a property you can upgrade.";
+            print_string  "> ";
+            match read_line () with
+            | exception End_of_file -> exit 0
+            | str -> (prev_cmd, str, player_info, board)
+          end
 
 let upgrade_helper prev_cmd str_command player_info board =
- let current_player_id = (player_info.current_player) in
-      let color_groups = Upgrade.get_color_groups current_player_id board in
-      let upgradeable_properties = Upgrade.get_upgradeable_properties 
-          current_player_id board color_groups in
-      let prop_string = properties_to_string upgradeable_properties in
-      if (List.length upgradeable_properties = 0) then
-        begin
-          print_endline "You do not have any upgradeable properties at this 
+  let current_player_id = (player_info.current_player) in
+  let color_groups = Upgrade.get_color_groups current_player_id board in
+  let upgradeable_properties = Upgrade.get_upgradeable_properties 
+      current_player_id board color_groups in
+  let prop_string = properties_to_string upgradeable_properties in
+  if (List.length upgradeable_properties = 0) then (
+      print_endline "You do not have any upgradeable properties at this 
           moment.";
-          print_string  "> ";
-          match read_line () with
-          | exception End_of_file -> exit 0
-          | str -> (prev_cmd, str, player_info, board)
-        end
-      else
-        begin
-          print_endline ("You can upgrade the following properties: " ^ 
-                         prop_string);
-          print_string  "> ";
-          match read_line () with
-          | exception End_of_file -> exit 0
-          | name -> if List.mem_assoc name upgradeable_properties then
-              let index = List.assoc name upgradeable_properties in
-              let unsorted_update_player_upgrade = (Player.upgrade_new_player player_info
-                                                      board index) in
-              let update_player_upgrade = {unsorted_update_player_upgrade with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_upgrade.player_list);} in
-              print_endline name;
-              let new_board = {board with property_tiles = 
-                                            (Upgrade.update_level
-                                               index 
-                                               board.property_tiles)} in
-              print_endline ("You have upgraded " ^ name);
-              print_string  "> ";
-              match read_line () with
-              | exception End_of_file -> exit 0
-              | str -> (prev_cmd, str, update_player_upgrade, new_board)
-            else
-              begin
-                print_endline "That is not a property you can upgrade.";
-                print_string  "> ";
-                match read_line () with
-                | exception End_of_file -> exit 0
-                | str -> (prev_cmd, str, player_info, board)
-              end
-        end
+      print_string  "> ";
+      match read_line () with
+      | exception End_of_file -> exit 0
+      | str -> (prev_cmd, str, player_info, board))
+  else (print_endline ("You can upgrade the following properties: " ^ 
+        prop_string);
+      print_string  "> ";
+      match read_line () with
+      | exception End_of_file -> exit 0
+      | name -> if List.mem_assoc name upgradeable_properties then
+          property_upgrade_helper prev_cmd str_command player_info board name upgradeable_properties
+        else unupgradeable_helper prev_cmd str_command player_info board)
 
 let trade_helper prev_cmd str_command player_info board =
-(print_endline "print player property menu here";
-        print_endline "Who do you want to trade with?";
-        print_string  "> ";
-        match read_line () with
-        | exception End_of_file -> exit 0
-        | trader2 -> let (cash, property, property_to_trade) = execute_trade 
-                         player_info trader2 in
-          let player1 = (get_player_id_from_name player_info.player_names 
-                           (get_current_player_name player_info) 0) in
-          let player2 = (get_player_id_from_name player_info.player_names 
-                           trader2 0) in
-          print_endline "Trade complete.";
-          print_string  "> ";
-          match read_line () with
-          | exception End_of_file -> exit 0
-          | str -> (
-              let unsorted_updated_player_info = trade_new_player player_info player1
-                  player2 property_to_trade property (board.property_tiles) cash
-              in let updated_player_info = {unsorted_updated_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_updated_player_info.player_list);} in
-              (prev_cmd, str, updated_player_info, board)))
+  (print_endline "print player property menu here";
+   print_endline "Who do you want to trade with?";
+   print_string  "> ";
+   match read_line () with
+   | exception End_of_file -> exit 0
+   | trader2 -> let (cash, property, property_to_trade) = execute_trade 
+                    player_info trader2 in
+     let player1 = (get_player_id_from_name player_info.player_names 
+                      (get_current_player_name player_info) 0) in
+     let player2 = (get_player_id_from_name player_info.player_names 
+                      trader2 0) in
+     print_endline "Trade complete.";
+     print_string  "> ";
+     match read_line () with
+     | exception End_of_file -> exit 0
+     | str -> (
+         let unsorted_updated_player_info = trade_new_player player_info player1
+             player2 property_to_trade property (board.property_tiles) cash in 
+         let updated_player_info = {unsorted_updated_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_updated_player_info.player_list);} in
+         (prev_cmd, str, updated_player_info, board)))
 
 let parse_command prev_cmd str_command player_info board parsed_command=
-    match parsed_command with
-    | Quit -> quit_helper prev_cmd str_command player_info board
-    | Roll -> roll_helper prev_cmd str_command player_info board
-     | EndTurn -> endturn_helper prev_cmd str_command player_info board
-| Help -> help_helper prev_cmd str_command player_info board
-| Inventory player_name -> inventory_helper prev_cmd str_command player_info board player_name
-| Buy -> buy_helper prev_cmd str_command player_info board
-| No -> no_helper prev_cmd str_command player_info board
-| Upgrade -> upgrade_helper prev_cmd str_command player_info board
-| Trade -> trade_helper prev_cmd str_command player_info board
+  match parsed_command with
+  | Quit -> quit_helper prev_cmd str_command player_info board
+  | Roll -> roll_helper prev_cmd str_command player_info board
+  | EndTurn -> endturn_helper prev_cmd str_command player_info board
+  | Help -> help_helper prev_cmd str_command player_info board
+  | Inventory player_name -> inventory_helper prev_cmd str_command player_info board player_name
+  | Buy -> buy_helper prev_cmd str_command player_info board
+  | No -> no_helper prev_cmd str_command player_info board
+  | Upgrade -> upgrade_helper prev_cmd str_command player_info board
+  | Trade -> trade_helper prev_cmd str_command player_info board
 
 (** [play_game_recursively ]*)
 let rec play_game_recursively (prev_cmd, str_command, player_info, board) =
@@ -550,7 +531,7 @@ let rec play_game_recursively (prev_cmd, str_command, player_info, board) =
     let parsed_command = (try Command.parse str_command with
         | Malformed -> (play_game_recursively (malformed_helper prev_cmd str_command player_info board))
         | Empty -> ((play_game_recursively (empty_helper prev_cmd str_command player_info board)))) in
-play_game_recursively (parse_command prev_cmd str_command player_info board parsed_command)
+    play_game_recursively (parse_command prev_cmd str_command player_info board parsed_command)
 
 
 (** [start_game board] begins the game by taking the first player's input

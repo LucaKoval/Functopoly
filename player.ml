@@ -699,6 +699,25 @@ let rec auction_update_current_player players_list board acc p1_id (fp_id:int) p
                                                     }::acc) p1_id fp_id prop_lst amt
     end
 
+(** updates the given player's propeties, money, and score based on the auctioned property *)
+let rec auction_property_update_current_player players_list board acc p1_id (fp_id:int) prop_lst amt=
+  match players_list with
+  |[]-> acc
+  |player::t -> let prop_value= (get_prop_value prop_lst board 0) in
+    begin
+      if (player.id = p1_id) then (
+        auction_property_update_current_player t board ({ 
+            player with
+            id= player.id;
+            score = (player.score + prop_value -amt);
+            properties = prop_lst@(player.properties);
+            money = player.money-amt
+          }::acc) p1_id fp_id prop_lst amt)
+      else auction_property_update_current_player t board (  { player with
+                                                               id = player.id
+                                                             }::acc) p1_id fp_id prop_lst amt
+    end
+
 let string_color = function
   | Brown -> "brown"
   | LightBlue -> "light blue"
@@ -730,6 +749,13 @@ let auction_new_player players board (p1_id:int) (fp_id:int) (prop_lst:string li
     player_list = auction_update_current_player players.player_list board [] p1_id fp_id prop_lst amt;
   }    
 
+(** updates players with propeties, money, and score based on the auctioned property *)
+let auction_property_new_player players board (p1_id:int) (fp_id:int) (prop_lst:string list) (amt:int)= 
+  { 
+    players with
+    player_list = auction_property_update_current_player players.player_list board [] p1_id fp_id prop_lst amt;
+  } 
+
 (** updates players with properties, money, and score after forfeit auction and the player is REMOVED*)
 let forfeit_player (curr_player:player) (players_init:players) board (p1_id, prop_lst, amt) =
   let players = auction_new_player players_init board.property_tiles p1_id curr_player.id prop_lst amt in
@@ -739,6 +765,10 @@ let forfeit_player (curr_player:player) (players_init:players) board (p1_id, pro
     number_of_players=players.number_of_players-1;
     player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) [] 0);
   }
+
+(** updates players with properties, money, and score based on the auctioned property *)
+let auction_property_player (curr_player:player) (players_init:players) board (p1_id, prop_lst, amt) = 
+  auction_property_new_player players_init board.property_tiles p1_id curr_player.id prop_lst amt
 
 (** updates players_list with a fixed tax fee deduction from the current player *)
 let rec update_tax_player players_lst tax_amt acc current_player_id=
