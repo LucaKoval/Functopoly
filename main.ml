@@ -15,10 +15,7 @@ let get_num_players =
   | exception End_of_file -> 0
   | no_players -> int_of_string no_players
 
-(** takes in a 0 just for shits and returns a number rolled by 2 dice*)
-let dice zero =
-  (Random.int 6) + (Random.int 6) + 2 + zero
-
+(** gets current player name from players *)
 let get_current_player_name players =
   List.nth players.player_names (players.current_player)
 
@@ -45,6 +42,7 @@ let rec print_string_list lst =
   | [] -> ()
   | h::t -> print_string h; print_string_list lst
 
+(** list of commands to print in response to help input *)
 let command_list =
   "\nHere's the list of commands you can \
    run:\n\
@@ -62,41 +60,38 @@ let command_list =
 
 (* ====== START TRADE HELPERS ======= *)
 
+(** [valid_property all_p p] is true if the current player owns that property otherwise false *)
 let valid_property (all_players:Player.players) property = 
   let curr_player = List.nth all_players.player_list all_players.current_player 
   in List.mem property curr_player.properties 
 
-(* trader2 is a string but trader1 is a player *)
-
-(*let strip str = 
-  let str = Str.replace_first (Str.regexp "^ +") "" str in
-  Str.replace_first (Str.regexp " +$") "" str;; *)
-
+(** [valid_player p1 p2] is true if p2 is a valid player otherwise false *)
 let valid_player trader1 trader2 = 
-  List.mem (String.trim trader2) trader1.player_names
+  List.mem trader2 trader1.player_names
 
+(** takes in a list of strings and gets the integer sum of the elements *)
 let rec parse_cash = function
   | [] -> []
   | h::t -> try (int_of_string h)::(parse_cash t) 
     with Failure e -> (0)::(parse_cash t)
 
+(** gives a list with the spaces, if any, removed *)
 let rec remove_spaces = function
   | [] -> []
   | h::t -> (String.trim h)::(remove_spaces t)
 
+(** gives a list with the zeros, if any, removed *)
 let rec remove_zeroes = function
   | [] -> 0
   | h::t -> if h <> 0 then h else (remove_zeroes t)
 
+(** gets a non-empty string if a string list otherwise gets empty string *)
 let rec parse_property = function
   | [] -> ""
   | h::t -> if (is_int h) then (parse_property t) 
     else h
 
-let rec remove_empties = function
-  | [] -> ""
-  | h::t -> if h <> "" then h else (remove_empties t)
-
+(** gets price value of property_to_trade *)
 let parse_price str property_to_trade =
   if (String.contains str ',') then (let comma_split = String.split_on_char ',' 
                                          str in
@@ -116,6 +111,7 @@ let parse_price str property_to_trade =
                                                property_to_trade) 
                                            )
 
+(** prints trade values cash, property, and trader2*)
 let print_price cash property trader2 = 
   print_string "Cash: ";
   print_endline (string_of_int cash);
@@ -135,8 +131,7 @@ let rec bargaining trader1_price trader1 trader2 property_to_trade =
   | exception End_of_file -> exit 0
   | accept_or_reject -> 
     if (String.trim accept_or_reject) = "accept" then 
-      (cash, property, property_to_trade) (** TODO: update the player and 
-                                              property info *)
+      (cash, property, property_to_trade)
     else if ((String.trim accept_or_reject) = "reject") then (
       print_string (get_current_player_name trader1);
       print_endline ", your price was rejected. Please propose a better price
@@ -171,7 +166,7 @@ let rec property_trade (trader1:Player.players) =
     else property_to_trade
 
 let rec execute_trade trader1 trader2 =
-  if (not(valid_player trader1 trader2)) 
+  if (not(valid_player trader1 trader2))
   then (print_endline "Invalid player name. Please re-enter the name of the 
   player you want to trade with.";
         print_string  "> ";
@@ -344,21 +339,28 @@ let help_helper prev_cmd str_command player_info board =
   | exception End_of_file -> exit 0
   | str -> (prev_cmd, str, player_info, board)
 
-let inventory_helper prev_cmd str_command player_info board player_name=
-  (print_string player_name; print_endline "'s inventory:";
-   let money = (Player.inventory_money_helper player_info.player_list 0 
-                  (get_player_id_from_name player_info.player_names 
-                     player_name 0)) in
-   let list = (Player.inventory_helper player_info.player_list [] 
-                 (get_player_id_from_name player_info.player_names 
-                    player_name 0)) in 
-   (Player.list_printer list);
-   print_string player_name; print_string "'s money: "; print_int money;
-   print_endline "";
-   print_string  "> ";
-   match read_line () with
-   | exception End_of_file -> exit 0
-   | str -> (prev_cmd, str, player_info, board))
+let rec inventory_helper prev_cmd str_command player_info board player_name=
+  if (not(valid_player player_info player_name)) then (
+    print_endline "Invalid player name. Please try again.";
+    print_string  "> ";
+    match read_line () with
+    | exception End_of_file -> exit 0
+    | str -> inventory_helper prev_cmd str_command player_info board str)
+  else
+    (print_string player_name; print_endline "'s inventory:";
+     let money = (Player.inventory_money_helper player_info.player_list 0 
+                    (get_player_id_from_name player_info.player_names 
+                       player_name 0)) in
+     let list = (Player.inventory_helper player_info.player_list [] 
+                   (get_player_id_from_name player_info.player_names 
+                      player_name 0)) in 
+     (Player.list_printer list);
+     print_string player_name; print_string "'s money: "; print_int money;
+     print_endline "";
+     print_string  "> ";
+     match read_line () with
+     | exception End_of_file -> exit 0
+     | str -> (prev_cmd, str, player_info, board))
 
 let property_buy_helper prev_cmd str_command player_info board=
   let unsorted_update_player_buy = (Player.buy_new_player player_info board) 
@@ -542,6 +544,7 @@ let start_game board =
   let initial_player_info = ANSITerminal.(print_string [blue]
                                             command_list);
     Player.to_players num_players player_names in
+  print_string (List.nth player_names 0);
   print_string " goes first: ";
   print_string  "> ";
   match read_line () with
