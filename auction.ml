@@ -108,14 +108,18 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
     end
   end
 
-let auction (forfeit_player:Player.player) (players:Player.players) =
+let auction (forfeit_player:Player.player) (players:Player.players) (removing_player:bool) =
   (* print_endline (pp_player_list_ids pp_int players.player_list); *)
   (* print_endline (pp_player_list_names pp_string players.player_names); *)
   (* print_endline (string_of_int forfeit_player.id); *)
-  if List.length players.player_list = 2 then begin
+  if removing_player && List.length players.player_list = 2 then begin
     print_endline ("Player " ^ (List.nth players.player_names (player_list_mem_other forfeit_player players.player_list).id) ^
                    " wins!");
     exit 0;
+  end
+  else if not removing_player && List.length players.player_list = 2 then begin
+    let winner_id = (player_list_mem_other forfeit_player players.player_list).id in
+    (winner_id, forfeit_player.properties, 0)
   end
   else begin
     print_endline ("Player " ^ (List.nth players.player_names forfeit_player.id) ^

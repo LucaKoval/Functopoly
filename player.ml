@@ -31,10 +31,10 @@ let rec to_player numplayers acc=
     |(0)-> acc
     |x-> to_player (numplayers-1) ({
         id = (x-1);
-        score = 1500;
+        score = 0;
         location = 0;
         properties = [];
-        money = 1500
+        money = 0
       }::acc) in
   let player_list = helper in
   List.sort (fun x y -> x.id - y.id) player_list
@@ -543,11 +543,11 @@ let buy_new_player players board = {
 }
 
 (** removes the given element from the list *)
-let rec remove_helper lst el acc=
+let rec remove_helper lst el acc count=
   match lst with
   |[]-> List.rev acc
-  |h::t when h = el -> remove_helper t el acc
-  |h::t -> remove_helper t el (h::acc)
+  |h::t when h = el && count = 0 -> remove_helper t el acc (count+1)
+  |h::t -> remove_helper t el (h::acc) count
 
 (** updates the player two 2 stuff and then passes that new players list into trade_update_player for the final updates*)
 let rec trade_update_player2 players_list p1 p2 px_prop py_prop board cash acc=
@@ -559,7 +559,7 @@ let rec trade_update_player2 players_list p1 p2 px_prop py_prop board cash acc=
         trade_update_player2 t p1 p2 px_prop py_prop board cash ({ 
             player with 
             score = player.score - cash -(get_property_price py_prop board)+ (get_property_price px_prop board);
-            properties =  px_prop::(remove_helper player.properties py_prop []);
+            properties =  px_prop::(remove_helper player.properties py_prop [] 0);
             money = player.money-cash
           }::acc))
       else trade_update_player2 t p1 p2 px_prop py_prop board cash (player::acc)
@@ -575,7 +575,7 @@ let rec trade_update_player players_list p1 p2 px_prop py_prop board cash acc=
         trade_update_player t p1 p2 px_prop py_prop board cash ({ 
             player with
             score = player.score + cash+ (get_property_price py_prop board)- (get_property_price px_prop board) ;
-            properties =  py_prop::(remove_helper player.properties px_prop []);
+            properties =  py_prop::(remove_helper player.properties px_prop [] 0);
             money = player.money+cash
           }::acc))
       else trade_update_player t p1 p2 px_prop py_prop board cash (player::acc)
@@ -647,6 +647,7 @@ let rec auction_update_current_player players_list board acc p1_id (fp_id:int) p
   |[]-> acc
   |player::t -> let prop_value= (get_prop_value prop_lst board 0) in
     begin
+      print_endline ((string_of_int (player.id)) ^ " + " ^ (string_of_int (if player.id > fp_id then -1 else 0)));
       if (player.id = p1_id) then (
         auction_update_current_player t board ({ 
             player with
@@ -660,19 +661,93 @@ let rec auction_update_current_player players_list board acc p1_id (fp_id:int) p
                                                     }::acc) p1_id fp_id prop_lst amt
     end
 
+let string_color = function
+  | Brown -> "brown"
+  | LightBlue -> "light blue"
+  | Magenta -> "magenta"
+  | Red -> "red"
+  | Orange -> "orange"
+  | Yellow -> "yellow"
+  | Green -> "green"
+  | Blue -> "blue"
+  | _ -> "no_color"
+
+let rec property_list_to_string lst acc = 
+  match lst with
+  | [] -> acc
+  | prop::t -> property_list_to_string t (acc^"{\n" ^ 
+                                          "name : " ^ prop.name ^ "\n" ^
+                                          "location : " ^ (string_of_int prop.location) ^ "\n" ^
+                                          "price : " ^ (string_of_int prop.price) ^ "\n" ^
+                                          "rent : " ^ (string_of_int prop.rent) ^ "\n" ^
+                                          "color : " ^ (string_color prop.color) ^ "\n" ^
+                                          "level : " ^ (string_of_int prop.level) ^ "\n" ^
+                                          "type : property" ^ 
+                                          "\n}\n")
+
+(** [pp_string s] pretty-prints string [s]. *)
+let pp_string s = "\"" ^ s ^ "\""
+
+(** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt]
+    to pretty-print each element of [lst]. *)
+let pp_list pp_elt lst =
+  let pp_elts lst =
+    let rec loop n acc = function
+      | [] -> acc
+      | [h] -> acc ^ pp_elt h
+      | h1::(h2::t as t') ->
+        if n=100 then acc ^ "..."  (* stop printing long list *)
+        else loop (n+1) (acc ^ (pp_elt h1) ^ "; ") t'
+    in loop 0 "" lst
+  in "[" ^ pp_elts lst ^ "]"
+
+let string_of_player (player:player) = 
+  "{\n" ^ 
+  "id : " ^ (string_of_int player.id) ^ "\n" ^
+  "score : " ^ (string_of_int player.score) ^ "\n" ^
+  "location : " ^ (string_of_int player.location) ^ "\n" ^
+  "properties : " ^ (pp_list pp_string player.properties) ^ "\n" ^
+  "money : " ^ (string_of_int player.money) ^
+  "\n}"
+
+
+(** [pp_int i] pretty-prints int [i]. *)
+let pp_int i = "\"" ^ (string_of_int i) ^ "\""
+
+(** [pp_player_list_ids pp_elt lst] pretty-prints list [lst], using [pp_elt]
+    to pretty-print each element of [lst]. *)
+let pp_player_list_ids pp_elt (lst:player list) =
+  let pp_elts (lst:player list) =
+    let rec loop n acc (lst:player list) =
+      match lst with
+      | [] -> acc
+      | [h] -> acc ^ pp_elt (h.id)
+      | h1::(h2::t as t') ->
+        if n=100 then acc ^ "..."  (* stop printing long list *)
+        else loop (n+1) (acc ^ (pp_elt (h1.id)) ^ "; ") t'
+    in loop 0 "" lst
+  in "[" ^ pp_elts lst ^ "]"
+
 (** updates players with propeties, money, and score based on forfeit auction BEFORE forfeit player is removed*)
-let auction_new_player players board (p1_id:int) (fp_id:int) (prop_lst:string list) (amt:int)= { 
-  players with
-  player_list = auction_update_current_player players.player_list board [] p1_id fp_id prop_lst amt;
-}    
+let auction_new_player players board (p1_id:int) (fp_id:int) (prop_lst:string list) (amt:int)= 
+  print_endline (pp_player_list_ids pp_int players.player_list);
+  { 
+    players with
+    player_list = auction_update_current_player players.player_list board [] p1_id fp_id prop_lst amt;
+  }    
 
 (** updates players with properties, money, and score after forfeit auction and the player is REMOVED*)
 let forfeit_player (curr_player:player) (players_init:players) board (p1_id, prop_lst, amt) =
   let players = auction_new_player players_init board.property_tiles p1_id curr_player.id prop_lst amt in
+  (* print_endline (string_of_int (List.length players.player_list)); *)
+  print_endline (pp_player_list_ids pp_int players.player_list);
+  let new_player_lst = remove_helper players.player_list curr_player [] 0 in
+  print_endline (string_of_player curr_player);
+  print_endline (string_of_int (List.length new_player_lst));
   { players with 
-    player_list=(remove_helper players.player_list curr_player []);
+    player_list=new_player_lst;
     number_of_players=players.number_of_players-1;
-    player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) []);
+    player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) [] 0);
   }
 
 (** updates players_list with a fixed tax fee deduction from the current player *)
