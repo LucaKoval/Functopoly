@@ -238,65 +238,45 @@ let rec tax_loop str_command player_info board =
    | anything_else -> print_string "that is an invalid entry. Please choose percent or fixed";
      tax_loop str_command player_info board)
 
-(** [play_game_recursively ]*)
-let rec play_game_recursively prev_cmd str_command player_info board =
-  let player_info = {player_info with player_list=(List.sort (fun x y -> x.id - y.id) player_info.player_list);} in
-  if validate_command_order prev_cmd str_command
-  then (
-    print_string "You cannot enter a(n) ";
-    print_string str_command;
-    print_string " after ";
-    print_string prev_cmd;
-    print_endline ". Please re-enter your next command (Hint: If you entered \
-                   consecutive endturns, you may have forgotten to roll).";
-    print_string  "> ";
-    match read_line () with
-    | exception End_of_file -> exit 0
-    | str -> play_game_recursively prev_cmd str player_info board
-  )
-  else
-    let parsed_command = (try Command.parse str_command with
-        | Malformed -> (print_endline "The command you entered was Malformed :(\
+let malformed_helper prev_cmd str_command player_info board = 
+(print_endline "The command you entered was Malformed :(\
                                        Please try again.";
                         print_string  "> ";
                         match read_line () with
                         | exception End_of_file -> exit 0
-                        | str -> play_game_recursively prev_cmd str
-                                   player_info board)
-        | Empty -> (print_endline "The command you entered was Empty.\
+                        | str -> (prev_cmd, str,
+                                   player_info, board))
+
+let empty_helper prev_cmd str_command player_info board = 
+(print_endline "The command you entered was Empty.\
                                    Please try again."; 
                     print_string  "> ";
                     match read_line () with
                     | exception End_of_file -> exit 0;
-                    | str -> play_game_recursively prev_cmd str player_info
-                               board)) in
-    match parsed_command with
-    | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
-    | Roll ->
-      let unsorted_update_player_roll = (roll_new_player player_info board) in
+                    | str -> (prev_cmd, str, player_info,
+                               board))                                   
+
+let roll_helper prev_cmd str_command player_info board =
+let unsorted_update_player_roll = (roll_new_player player_info board) in
       let update_player_roll = {unsorted_update_player_roll with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_roll.player_list);} in
       print_endline (Auction.pp_player_list_ids Auction.pp_int update_player_roll.player_list);
       if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or fixed";
-                                                                      let new_info = tax_loop str_command update_player_roll board in
-                                                                      (print_endline "";print_string  "> ";
-                                                                       match read_line () with
-                                                                       | exception End_of_file -> exit 0;
-                                                                       | str -> play_game_recursively str_command str new_info board)
-                                                                      (**if current location of update player roll is 4 then readline for tax otherwise continue regularly*) 
-                                                                     ) else 
+      let new_info = tax_loop str_command update_player_roll board in
         (print_endline "";print_string  "> ";
          match read_line () with
          | exception End_of_file -> exit 0;
-         | str -> play_game_recursively str_command str update_player_roll board)
-    | EndTurn ->
+         | str -> (str_command, str, new_info, board))
+          (**if current location of update player roll is 4 then readline for tax otherwise continue regularly*) 
+          ) else 
+        (print_endline "";print_string  "> ";
+         match read_line () with
+         | exception End_of_file -> exit 0;
+         | str -> (str_command, str, update_player_roll, board))
+
+let endturn_helper prev_cmd str_command player_info board =
       let current_player = Player.get_current_player player_info in
-      (* print_endline (string_of_int current_player.money); *)
       if current_player.money < 0 then
         begin
-          (* TODO: This returns information pertaining to the properties of
-             the forfeited playing changing hands. This needs to be reflected in
-             the data structures passed in with each call to play_game_
-             recursively *)
           print_endline (Auction.pp_player_list_ids Auction.pp_int player_info.player_list);
           let auction_info = Auction.auction current_player player_info in
           let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
@@ -316,8 +296,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0;
-          | str -> play_game_recursively str_command str 
-                     post_forfeit_player_info board
+          | str -> (str_command, str, post_forfeit_player_info, board)
         end
       else
         let unsorted_new_player_info = (Player.new_player player_info board) in 
@@ -330,17 +309,18 @@ let rec play_game_recursively prev_cmd str_command player_info board =
          print_string  "> ";
          match read_line () with
          | exception End_of_file -> exit 0;
-         | str -> play_game_recursively str_command str new_player_info board
+         | str -> (str_command, str, new_player_info, board)
         )
-    | Help -> (
+
+let help_helper prev_cmd str_command player_info board =
         print_endline command_list;
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> play_game_recursively prev_cmd str player_info board
-      )
-    | Inventory player_name -> (
-        print_string player_name; print_endline "'s inventory:";
+        | str -> (prev_cmd, str, player_info, board)
+
+let inventory_helper prev_cmd str_command player_info board player_name=
+(print_string player_name; print_endline "'s inventory:";
         let money = (Player.inventory_money_helper player_info.player_list 0 
                        (get_player_id_from_name player_info.player_names 
                           player_name 0)) in
@@ -353,9 +333,10 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> play_game_recursively prev_cmd str player_info board)
-    | Buy ->
-      let curr_location = get_current_location player_info in
+        | str -> (prev_cmd, str, player_info, board))
+
+let buy_helper prev_cmd str_command player_info board =
+        let curr_location = get_current_location player_info in
       let property = get_property curr_location board in
       if (not(is_property property)) then (
         print_endline "You cannot buy on a tile that isn't a property! Please 
@@ -363,9 +344,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> play_game_recursively str_command str player_info board)
-
-
+        | str -> (str_command, str, player_info, board))
       else if ((get_owner_id property) <> -1) then (
         print_endline "You cannot buy a property that is already owned by 
         someone! 
@@ -373,7 +352,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> play_game_recursively str_command str player_info board)
+        | str -> (str_command, str, player_info, board))
       else let unsorted_update_player_buy = (Player.buy_new_player player_info board) 
         in
         let update_player_buy = {unsorted_update_player_buy with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_buy.player_list);} in
@@ -385,16 +364,20 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
-          | str -> play_game_recursively str_command str update_player_buy 
+          | str ->  (str_command, str, update_player_buy, 
                      (Board.buy_update_board board 
                         update_player_buy.current_player 
-                        prop_name))
-    | No -> (print_string "> ";
+                        prop_name)))
+
+let no_helper prev_cmd str_command player_info board =
+(print_string "> ";
              match read_line () with
              | exception End_of_file -> exit 0
-             | str -> play_game_recursively str_command str player_info board
+             | str -> (str_command, str, player_info, board)
             )
-    | Upgrade -> let current_player_id = (player_info.current_player) in
+
+let upgrade_helper prev_cmd str_command player_info board =
+let current_player_id = (player_info.current_player) in
       let color_groups = Upgrade.get_color_groups current_player_id board in
       let upgradeable_properties = Upgrade.get_upgradeable_properties 
           current_player_id board color_groups in
@@ -406,7 +389,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
-          | str -> play_game_recursively prev_cmd str player_info board
+          | str -> (prev_cmd, str, player_info, board)
         end
       else
         begin
@@ -429,19 +412,19 @@ let rec play_game_recursively prev_cmd str_command player_info board =
               print_string  "> ";
               match read_line () with
               | exception End_of_file -> exit 0
-              | str -> play_game_recursively prev_cmd str update_player_upgrade 
-                         new_board
+              | str -> (prev_cmd, str, update_player_upgrade, new_board)
             else
               begin
                 print_endline "That is not a property you can upgrade.";
                 print_string  "> ";
                 match read_line () with
                 | exception End_of_file -> exit 0
-                | str -> play_game_recursively prev_cmd str player_info board
+                | str -> (prev_cmd, str, player_info, board)
               end
         end
-    | Trade -> (
-        print_endline "print player property menu here";
+
+let trade_helper prev_cmd str_command player_info board =
+(print_endline "print player property menu here";
         (* Get property tile and then owner from *)
         print_endline "Who do you want to trade with?";
         print_string  "> ";
@@ -462,8 +445,41 @@ let rec play_game_recursively prev_cmd str_command player_info board =
                   player2 property_to_trade property (board.property_tiles) cash
               in 
               let updated_player_info = {unsorted_updated_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_updated_player_info.player_list);} in
-              play_game_recursively prev_cmd str updated_player_info board)
+              (prev_cmd, str, updated_player_info, board))
       )
+
+let parse_command prev_cmd str_command player_info board parsed_command=
+    match parsed_command with
+    | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
+    | Roll -> roll_helper prev_cmd str_command player_info board
+     | EndTurn -> endturn_helper prev_cmd str_command player_info board
+| Help -> help_helper prev_cmd str_command player_info board
+| Inventory player_name -> inventory_helper prev_cmd str_command player_info board player_name
+| Buy -> buy_helper prev_cmd str_command player_info board
+| No -> no_helper prev_cmd str_command player_info board
+| Upgrade -> upgrade_helper prev_cmd str_command player_info board
+| Trade -> trade_helper prev_cmd str_command player_info board
+
+(** [play_game_recursively ]*)
+let rec play_game_recursively (prev_cmd, str_command, player_info, board) =
+  let player_info = {player_info with player_list=(List.sort (fun x y -> x.id - y.id) player_info.player_list);} in
+  if validate_command_order prev_cmd str_command
+  then (
+    print_string "You cannot enter a(n) ";
+    print_string str_command;
+    print_string " after ";
+    print_string prev_cmd;
+    print_endline ". Please re-enter your next command (Hint: If you entered \
+                   consecutive endturns, you may have forgotten to roll).";
+    print_string  "> ";
+    match read_line () with
+    | exception End_of_file -> exit 0
+    | str -> play_game_recursively (prev_cmd, str, player_info, board))
+  else
+    let parsed_command = (try Command.parse str_command with
+        | Malformed -> (play_game_recursively (malformed_helper prev_cmd str_command player_info board))
+        | Empty -> ((play_game_recursively (empty_helper prev_cmd str_command player_info board)))) in
+play_game_recursively (parse_command prev_cmd str_command player_info board parsed_command)
 
 
 
@@ -483,7 +499,7 @@ let start_game board =
   print_string  "> ";
   match read_line () with
   | exception End_of_file -> exit 0
-  | str -> play_game_recursively "" str initial_player_info board
+  | str -> play_game_recursively ("", str, initial_player_info, board)
 
 (**  [main_helper file_name] parses the board json *)
 let rec main_helper file_name =
