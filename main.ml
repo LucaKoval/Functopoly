@@ -287,7 +287,6 @@ let quit_helper prev_cmd str_command player_info board =
 let roll_helper prev_cmd str_command player_info board = 
   let unsorted_update_player_roll = (roll_new_player player_info board) in
   let update_player_roll = {unsorted_update_player_roll with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_roll.player_list);} in
-  print_endline (Auction.pp_player_list_ids Auction.pp_int update_player_roll.player_list);
   if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or fixed";
                                                                   let new_info = tax_loop str_command update_player_roll board in
                                                                   (print_endline "";print_string  "> ";
@@ -332,7 +331,6 @@ let endturn_helper prev_cmd str_command player_info board =
   else
     let unsorted_new_player_info = (Player.new_player player_info board) in 
     let new_player_info = {unsorted_new_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_new_player_info.player_list);} in
-    print_endline (Auction.pp_player_list_ids Auction.pp_int new_player_info.player_list);
     let current_name = (get_current_player_name new_player_info) in
     print_string current_name;
     (print_string ", it's your turn now! Your current location is "; 
@@ -550,8 +548,6 @@ let start_game board =
   let initial_player_info = ANSITerminal.(print_string [blue]
                                             command_list);
     Player.to_players num_players player_names in
-  print_endline (Auction.pp_player_list_ids Auction.pp_int initial_player_info.player_list);
-  print_string (List.nth player_names 0);
   print_string " goes first: ";
   print_string  "> ";
   match read_line () with
