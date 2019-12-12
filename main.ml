@@ -153,6 +153,7 @@ let rec bargaining trader1_price trader1 trader2 property_to_trade =
     else (print_endline "Invalid response. Please re-enter your decision";
           bargaining trader1_price trader1 trader2 property_to_trade)
 
+(** gets the valid property name from the player entry *)
 let rec property_trade (trader1:Player.players) =
   print_endline "Which property do you want to trade?";
   print_string  "> ";
@@ -165,6 +166,7 @@ let rec property_trade (trader1:Player.players) =
        property_trade trader1)
     else property_to_trade
 
+(** gets the executed trade information in the form (monney transferred, p1, p2) *)
 let rec execute_trade trader1 trader2 =
   if (not(valid_player trader1 trader2))
   then (print_endline "Invalid player name. Please re-enter the name of the 
@@ -195,13 +197,14 @@ let buy_helper player_info board=
   Player.get_property_name (get_property (Player.get_current_location 
                                             player_info) board)
 
-
+(** [get_player_id_from_name pn n acc] gets the player id of the given player name *)
 let rec get_player_id_from_name player_names name acc=
   match player_names with
   |[]-> acc
   |h::t when h = name -> acc
   |h::t -> get_player_id_from_name t name (acc+1)
 
+(** gets a list of the properties *)
 let rec properties_to_string lst =
   let rec helper acc = function
     | [] -> acc
@@ -214,7 +217,7 @@ let rec properties_to_string lst =
   in
   helper "" lst
 
-
+(** returns true if the given commands are in valid order otherwise false *)
 let validate_command_order cmd1 cmd2 =
   ((String.trim cmd1 = "roll" && String.trim cmd2 = "roll")
    || (String.trim cmd1 = "endturn" && String.trim cmd2 = "endturn")
@@ -223,11 +226,13 @@ let validate_command_order cmd1 cmd2 =
    || (String.trim cmd1 = "endturn" && String.trim cmd2 = "buy")
   )
 
+(** [is_property tile] is true if tile is a property otherwise false*)
 let is_property tile = 
   match tile with
   | PropertyTile a -> true
   | _ -> false 
 
+(** executes inncome tax card commands *)
 let rec tax_loop str_command player_info board =
   (print_endline "";print_string  "> ";
    match read_line () with
@@ -236,6 +241,7 @@ let rec tax_loop str_command player_info board =
    | anything_else -> print_string "that is an invalid entry. Please choose percent or fixed";
      tax_loop str_command player_info board)
 
+(** executes recursive game call for a malformed command entry *)
 let malformed_helper prev_cmd str_command player_info board = 
   (print_endline "The command you entered was Malformed :(\
                   Please try again.";
@@ -245,6 +251,7 @@ let malformed_helper prev_cmd str_command player_info board =
    | str -> (prev_cmd, str,
              player_info, board))
 
+(** executes recursive game call for an empty command entry *)
 let empty_helper prev_cmd str_command player_info board = 
   (print_endline "The command you entered was Empty.\
                   Please try again."; 
@@ -254,6 +261,8 @@ let empty_helper prev_cmd str_command player_info board =
    | str -> (prev_cmd, str, player_info,
              board)
   )
+
+(** executes recursive game call for quit command entry *)
 let quit_helper prev_cmd str_command player_info board = 
   let current_player = Player.get_current_player player_info in
   print_endline "Sad to see you go. Your properties will now be
@@ -279,6 +288,7 @@ let quit_helper prev_cmd str_command player_info board =
   | str -> (str_command, str ,
             post_forfeit_player_info, board)
 
+(** executes recursive game call for roll command entry *)
 let roll_helper prev_cmd str_command player_info board = 
   let unsorted_update_player_roll = (roll_new_player player_info board) in
   let update_player_roll = {unsorted_update_player_roll with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_roll.player_list);} in
@@ -294,6 +304,7 @@ let roll_helper prev_cmd str_command player_info board =
      | exception End_of_file -> exit 0;
      | str -> (str_command, str, update_player_roll, board))
 
+(** executes auction process during endturnn command process *)
 let endturn_auction_helper prev_cmd str_command player_info board current_player= (
   let auction_info = Auction.auction current_player player_info true in
   let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
@@ -315,6 +326,7 @@ let endturn_auction_helper prev_cmd str_command player_info board current_player
   | exception End_of_file -> exit 0;
   | str -> (str_command, str, post_forfeit_player_info, board))
 
+(** executes recursive game call for endturn command entry *)
 let endturn_helper prev_cmd str_command player_info board =
   let current_player = Player.get_current_player player_info in
   if current_player.money < 0 then
@@ -332,6 +344,7 @@ let endturn_helper prev_cmd str_command player_info board =
      | str -> (str_command, str, new_player_info, board)
     )
 
+(** executes recursive game call for help command entry *)
 let help_helper prev_cmd str_command player_info board =
   print_endline command_list;
   print_string  "> ";
@@ -339,6 +352,7 @@ let help_helper prev_cmd str_command player_info board =
   | exception End_of_file -> exit 0
   | str -> (prev_cmd, str, player_info, board)
 
+(** executes recursive game call for inventory command entry *)
 let rec inventory_helper prev_cmd str_command player_info board player_name=
   if (not(valid_player player_info player_name)) then (
     print_endline "Invalid player name. Please try again.";
@@ -362,6 +376,7 @@ let rec inventory_helper prev_cmd str_command player_info board player_name=
      | exception End_of_file -> exit 0
      | str -> (prev_cmd, str, player_info, board))
 
+(** executes buying property process for buy command entry *)
 let property_buy_helper prev_cmd str_command player_info board=
   let unsorted_update_player_buy = (Player.buy_new_player player_info board) 
   in
@@ -379,6 +394,7 @@ let property_buy_helper prev_cmd str_command player_info board=
                   update_player_buy.current_player 
                   prop_name)))
 
+(** executes recursive game call for buy command entry *)
 let buy_helper prev_cmd str_command player_info board =
   let curr_location = get_current_location player_info in
   let property = get_property curr_location board in
@@ -399,6 +415,7 @@ let buy_helper prev_cmd str_command player_info board =
     | str -> (str_command, str, player_info, board))
   else property_buy_helper prev_cmd str_command player_info board
 
+(** executes recursive game call for no command entry when landed on a property *)
 let property_no_helper prev_cmd str_command player_info board current_location=
   let current_player = Player.get_current_player player_info in
   let prop = get_property current_location board in
@@ -419,6 +436,7 @@ let property_no_helper prev_cmd str_command player_info board current_location=
   | str -> (str_command, str, 
             post_forfeit_player_info, board)
 
+(** executes recursive game call for no command entry *)
 let no_helper prev_cmd str_command player_info board =
   let current_location = get_current_location player_info in
   if (is_property (get_property current_location board)) then
@@ -431,6 +449,7 @@ let no_helper prev_cmd str_command player_info board =
       (str_command, str, player_info, board)
   end
 
+(** executes recursive game call for upgrade command entry when on a property *)
 let property_upgrade_helper prev_cmd str_command player_info board name upgradeable_properties=
   let index = List.assoc name upgradeable_properties in
   let unsorted_update_player_upgrade = (Player.upgrade_new_player player_info
@@ -447,6 +466,7 @@ let property_upgrade_helper prev_cmd str_command player_info board name upgradea
   | exception End_of_file -> exit 0
   | str -> (prev_cmd, str, update_player_upgrade, new_board)
 
+(** executes recursive game call for upgrade command entry when property is not able to upgrade *)
 let unupgradeable_helper prev_cmd str_command player_info board=
   begin
     print_endline "That is not a property you can upgrade.";
@@ -456,6 +476,7 @@ let unupgradeable_helper prev_cmd str_command player_info board=
     | str -> (prev_cmd, str, player_info, board)
   end
 
+(** executes recursive game call for upgrade command entry *)
 let upgrade_helper prev_cmd str_command player_info board =
   let current_player_id = (player_info.current_player) in
   let color_groups = Upgrade.get_color_groups current_player_id board in
@@ -478,6 +499,7 @@ let upgrade_helper prev_cmd str_command player_info board =
             property_upgrade_helper prev_cmd str_command player_info board name upgradeable_properties
           else unupgradeable_helper prev_cmd str_command player_info board)
 
+(** executes recursive game call for trade command entry *)
 let trade_helper prev_cmd str_command player_info board =
   (print_endline "print player property menu here";
    print_endline "Who do you want to trade with?";
@@ -500,6 +522,7 @@ let trade_helper prev_cmd str_command player_info board =
          let updated_player_info = {unsorted_updated_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_updated_player_info.player_list);} in
          (prev_cmd, str, updated_player_info, board)))
 
+(** gets play game recursive information based on parsed command entry *)
 let parse_command prev_cmd str_command player_info board parsed_command=
   match parsed_command with
   | Quit -> quit_helper prev_cmd str_command player_info board
@@ -512,7 +535,7 @@ let parse_command prev_cmd str_command player_info board parsed_command=
   | Upgrade -> upgrade_helper prev_cmd str_command player_info board
   | Trade -> trade_helper prev_cmd str_command player_info board
 
-(** [play_game_recursively ]*)
+(** [play_game_recursively] runs game processes every time player enters a nenw command *)
 let rec play_game_recursively (prev_cmd, str_command, player_info, board) =
   let player_info = {player_info with player_list=(List.sort (fun x y -> x.id - y.id) player_info.player_list);} in
   if validate_command_order prev_cmd str_command
