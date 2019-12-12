@@ -438,7 +438,7 @@ let rec roll_update_current_player players players_list player_names current_pla
            roll_update_current_player players t player_names current_player_id board ({ player with
                                                                                         score = new_score;
                                                                                         location = modulo new_loc 40;
-                                                                                        money = new_score
+                                                                                        money = player.money - (player.score-new_score)
                                                                                       }::acc) ((string_of_int (player.score-new_score))::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
          else (roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list))      
       else roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list
