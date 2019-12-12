@@ -336,7 +336,7 @@ let roll_change_score_helper3 playerscore new_loc board player_names curr_player
     if is_card (get_curr_tile new_loc board) then 
       card_main new_loc board players curr_player playerscore
     else if is_tax (get_curr_tile new_loc board) then
-      if new_loc <>4 then (players, playerscore-75) else (print_string "You have been Luxury-Taxed! Say goodbye to $75"; (players, playerscore))
+      if new_loc <>4 then (print_string "You have been Luxury-Taxed! Say goodbye to $75"; (players, playerscore-75)) else ( (players, playerscore))
     else (players, playerscore)
   )
 
