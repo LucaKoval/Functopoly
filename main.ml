@@ -3,6 +3,7 @@ open Command
 open Board
 open Yojson
 open Indices
+open Auction
 
 (** [get_num_players] is the number of players  *)
 let get_num_players = 
@@ -89,8 +90,8 @@ let rec remove_zeroes = function
 
 let rec parse_property = function
   | [] -> ""
-  | h::t -> try (int_of_string h); (parse_property t) 
-    with Failure e -> h
+  | h::t -> if (is_int h) then (parse_property t) 
+    else h
 
 let rec remove_empties = function
   | [] -> ""
