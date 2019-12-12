@@ -303,19 +303,6 @@
       ]
     },
     {
-      "description": "Get out of Jail Free. (Mr. Monopoly, in close-fitting one-piece prison stripes, is literally kicked out)",
-      "subtype": "Get out of jail",
-      "value": "",
-      "types": [
-        {
-          "type": "chance"
-        },
-        {
-          "type": "community_chest"
-        }
-      ]
-    },
-    {
       "description": "Go Back Three 3 Spaces. (Mr. Monopoly is hauled back by a cane hooked around his neck)",
       "subtype": "Go back",
       "value": "3",
