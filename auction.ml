@@ -66,30 +66,10 @@ let rec loop (forfeit_player:Player.player) (players:Player.players)
       match read_line () with
       | exception End_of_file -> exit 0
       | s -> if s = "forfeit" then
-          if snd (highest) = 0 then
-            let highest_index = (
-              find_next_valid_bidder
-                ((player_index+1) mod players.number_of_players) out players).id
-            in
-            print_endline (string_of_int highest_index);
-            loop forfeit_player players (player_index::out) bids
-              (highest_index, 0)
-              ((player_index+1) mod players.number_of_players)
-          else
-            loop forfeit_player players (player_index::out) bids highest
-              ((player_index+1) mod players.number_of_players)
+          loop_forfeit_helper forfeit_player players out bids highest
+            player_index
         else if is_int s then
-          if (int_of_string s) <= snd highest then begin
-            print_endline ("Please enter a bid that is higher than the
-            current-highest bid");
-            print_string  "> ";
-            loop forfeit_player players out bids highest player_index
-          end
-          else 
-            let new_highest = (player_index, int_of_string s) in
-            loop forfeit_player players out (replace bids player_index
-                                               (int_of_string s)) new_highest
-              ((player_index+1) mod players.number_of_players)
+          loop_bid_helper forfeit_player players out bids highest player_index s
         else begin
           print_endline ("Please enter either a number for your bid or
           \"forfeit\" to stop bidding.");
@@ -99,6 +79,43 @@ let rec loop (forfeit_player:Player.player) (players:Player.players)
     end
   end
 
+(** [loop_forfeit_helper players out bids highest player_index] is the logic
+    that handles when a player types "forfeit" during an auction. *)
+and loop_forfeit_helper (forfeit_player:Player.player) (players:Player.players)
+    (out:int list) (bids:int list) (highest:int*int) (player_index:int) =
+  if snd (highest) = 0 then
+    let highest_index = (
+      find_next_valid_bidder
+        ((player_index+1) mod players.number_of_players) out players).id
+    in
+    print_endline (string_of_int highest_index);
+    loop forfeit_player players (player_index::out) bids
+      (highest_index, 0)
+      ((player_index+1) mod players.number_of_players)
+  else
+    loop forfeit_player players (player_index::out) bids highest
+      ((player_index+1) mod players.number_of_players)
+
+(** [loop_bid_helper players out bids highest player_index s] is the logic that
+    handles when a player types a bid [s] during an auction. *)
+and loop_bid_helper (forfeit_player:Player.player) (players:Player.players)
+    (out:int list) (bids:int list) (highest:int*int) (player_index:int)
+    (s:string) =
+  if (int_of_string s) <= snd highest then begin
+    print_endline ("Please enter a bid that is higher than the
+            current-highest bid");
+    print_string  "> ";
+    loop forfeit_player players out bids highest player_index
+  end
+  else 
+    let new_highest = (player_index, int_of_string s) in
+    loop forfeit_player players out (replace bids player_index
+                                       (int_of_string s)) new_highest
+      ((player_index+1) mod players.number_of_players)
+
+(** [auction forfeit_player players] is an auction resulting from a player 
+    [forfeit_player] forfeiting the game. This either happens when a player ends
+    their turn with a negative amount of money or if they quit the game. *)
 let auction (forfeit_player:Player.player) (players:Player.players)
     (quitting_player:bool) =
   if List.length players.player_list = 2 then begin
@@ -184,6 +201,9 @@ let rec loop_prop (forfeit_player:Player.player) (players:Player.players)
     end
   end
 
+(** [auction_prop forfeit_player players] is an auction resulting
+    from a player [forfeit_player] choosing not to buy a property they have
+    landed on. This property is represented by the tile object [tile]. *)
 let auction_prop (forfeit_player:Player.player) (players:Player.players)
     (tile:Indices.tile_object) : (int*string list*int) =
   match tile with
