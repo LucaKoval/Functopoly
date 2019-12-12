@@ -592,12 +592,139 @@ let auction_tests = [
     };
 ]
 
+let make_player1 = {
+  id = 0;
+  score = 1500;
+  location = 3;
+  properties = [];
+  money = 1500;
+}
+let make_player2 = {
+  id = 1;
+  score = 1500;
+  location = 9;
+  properties = [];
+  money = 1500;
+}
+let make_player3 = {
+  id = 0;
+  score = 1500;
+  location = 3;
+  properties = ["Baltic Avenue"];
+  money = 1440;
+}
+
+let make_player4 = {
+  id = 1;
+  score = 1500;
+  location = 9;
+  properties = ["Connecticut Avenue"];
+  money = 1380;
+}
+
+let make_player5 = {
+  id = 1;
+  score = 1380;
+  location = 11;
+  properties = ["Connecticut Avenue"];
+  money = 1380;
+}
+
+let make_player6 = {
+  id = 1;
+  score = 1380;
+  location = 11;
+  properties = [ "St. Charles Place"; "Connecticut Avenue"];
+  money = 1240;
+}
+
+let make_buy_test
+    (name : string)
+    (player_info : Player.players)
+    (board : Board.t) 
+    (expected_output : Player.players) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output 
+        (Player.buy_new_player player_info board)
+    )
+
+let make_players20 =
+  {
+    player_list = [make_player1; make_player2];
+    current_player = 0;
+    number_of_players = 2;
+    player_names = ["p1"; "p2"];
+    jail_list = []
+  }
+
+let make_players21 =
+  {
+    player_list = [make_player2];
+    current_player = 1;
+    number_of_players = 1;
+    player_names = ["p1"];
+    jail_list = []
+  }
+
+let make_players22 =
+  {
+    player_list = [make_player1; make_player2];
+    current_player = 1;
+    number_of_players = 2;
+    player_names = ["p0"; "p1"];
+    jail_list = []
+  }
+
+let make_players23 =
+  {
+    player_list = [make_player1; make_player5];
+    current_player = 1;
+    number_of_players = 2;
+    player_names = ["p0"; "p1"];
+    jail_list = []
+  }
+
+let buy_tests = [
+  make_buy_test "first property curr_player 0" make_players20 board1 {
+    player_list = [make_player2; make_player3];
+    current_player = 0;
+    number_of_players = 2;
+    player_names = ["p1"; "p2"];
+    jail_list = []
+  };
+  make_buy_test "first property curr_player 1 single player" make_players21 
+    board1 {
+    player_list = [make_player4];
+    current_player = 1;
+    number_of_players = 1;
+    player_names = ["p1"];
+    jail_list = []
+  };
+  make_buy_test "first property curr_player 1 two players" make_players22 
+    board1 {
+    player_list = [make_player4; make_player1];
+    current_player = 1;
+    number_of_players = 2;
+    player_names = ["p0"; "p1"];
+    jail_list = []
+  };
+  make_buy_test "nth property curr_player 1 two players" make_players23 
+    board1 {
+    player_list = [make_player6; make_player1];
+    current_player = 1;
+    number_of_players = 2;
+    player_names = ["p0"; "p1"];
+    jail_list = []
+  };
+]
+
 let suite =
   "test suite for final project"  >::: List.flatten [
     indices_tests;
     upgrade_tests;
     trade_tests;
     auction_tests;
+    buy_tests
   ]
 
 let _ = run_test_tt_main suite
