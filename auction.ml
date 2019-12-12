@@ -1,9 +1,12 @@
-(** [pp_string s] pretty-prints string [s]. *)
+(** [pp_int i] pretty-prints int [i]. *)
 let pp_int i = "\"" ^ (string_of_int i) ^ "\""
 
-(** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt]
+(** [pp_string s] pretty-prints string [s]. *)
+let pp_string s = "\"" ^ s ^ "\""
+
+(** [pp_player_list_ids pp_elt lst] pretty-prints list [lst], using [pp_elt]
     to pretty-print each element of [lst]. *)
-let pp_player_list pp_elt (lst:Player.player list) =
+let pp_player_list_ids pp_elt (lst:Player.player list) =
   let pp_elts (lst:Player.player list) =
     let rec loop n acc (lst:Player.player list) =
       match lst with
@@ -12,6 +15,20 @@ let pp_player_list pp_elt (lst:Player.player list) =
       | h1::(h2::t as t') ->
         if n=100 then acc ^ "..."  (* stop printing long list *)
         else loop (n+1) (acc ^ (pp_elt (h1.id)) ^ "; ") t'
+    in loop 0 "" lst
+  in "[" ^ pp_elts lst ^ "]"
+
+(** [pp_player_list_names pp_elt lst] pretty-prints list [lst], using [pp_elt]
+    to pretty-print each element of [lst]. *)
+let pp_player_list_names pp_elt (lst:string list) =
+  let pp_elts (lst:string list) =
+    let rec loop n acc (lst:string list) =
+      match lst with
+      | [] -> acc
+      | [h] -> acc ^ pp_elt h
+      | h1::(h2::t as t') ->
+        if n=100 then acc ^ "..."  (* stop printing long list *)
+        else loop (n+1) (acc ^ (pp_elt h1) ^ "; ") t'
     in loop 0 "" lst
   in "[" ^ pp_elts lst ^ "]"
 
@@ -33,15 +50,14 @@ let rec remove_person_helper el acc = function
   | h::t when h = el -> remove_person_helper el acc t
   | h::t -> remove_person_helper el (h::acc) t
 
-let player_list_mem_other (player:Player.player) (lst:Player.players) : Player.player =
-  if (List.nth lst.player_list 0).id = player.id then List.nth lst.player_list 1
-  else List.nth lst.player_list 1
+let player_list_mem_other (player:Player.player) (lst:Player.player list) : Player.player =
+  if (List.nth lst 0).id = player.id then List.nth lst 1
+  else List.nth lst 0
 
 let find_next_valid_bidder (start:int) (out:int list) (lst:Player.players) : Player.player =
   print_endline (string_of_int start);
-  print_endline (pp_player_list pp_int lst.player_list);
+  print_endline (pp_player_list_ids pp_int lst.player_list);
   let rec helper index =
-    print_endline "in helper";
     if index = ((start-1) mod lst.number_of_players) then failwith "impossible"
     else
     if List.mem (List.nth lst.player_list index).id out then
@@ -55,7 +71,10 @@ let find_next_valid_bidder (start:int) (out:int list) (lst:Player.players) : Pla
 
 let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int list) (bids:int list) (highest:int*int) (player_index:int) =
   (* (player that wins the bid, the properties they get, and the amount they pay) *)
-  if List.length out = players.number_of_players-1 then (fst highest, forfeit_player.properties, snd highest)
+  if List.length out = players.number_of_players-1 then begin
+    print_endline ("Player " ^ (List.nth players.player_names (fst highest)) ^ " has won the auction!");
+    (fst highest, forfeit_player.properties, snd highest)
+  end
   else begin
     if List.mem player_index out then loop forfeit_player players out bids highest ((player_index+1) mod players.number_of_players)
     else begin
@@ -66,7 +85,7 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
       | exception End_of_file -> exit 0
       | s -> if s = "forfeit" then
           if snd (highest) = 0 then
-            let highest_index = (find_next_valid_bidder ((forfeit_player.id+1) mod players.number_of_players) out players).id in
+            let highest_index = (find_next_valid_bidder ((player_index+1) mod players.number_of_players) out players).id in
             print_endline (string_of_int highest_index);
             loop forfeit_player players (player_index::out) bids (highest_index, 0) ((player_index+1) mod players.number_of_players)
           else
@@ -85,9 +104,11 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
   end
 
 let auction (forfeit_player:Player.player) (players:Player.players) =
-  print_endline (pp_player_list pp_int players.player_list);
+  (* print_endline (pp_player_list_ids pp_int players.player_list); *)
+  (* print_endline (pp_player_list_names pp_string players.player_names); *)
+  (* print_endline (string_of_int forfeit_player.id); *)
   if List.length players.player_list = 2 then begin
-    print_endline ("Player " ^ (List.nth players.player_names (player_list_mem_other forfeit_player players).id) ^
+    print_endline ("Player " ^ (List.nth players.player_names (player_list_mem_other forfeit_player players.player_list).id) ^
                    " wins!");
     exit 0;
   end

@@ -4,6 +4,7 @@ type command =
   | Roll
   | Inventory of string
   | Buy
+  | No
   | Upgrade
   | Quit
   | Trade
@@ -45,6 +46,12 @@ let map_buy = function
   | [] -> Buy
   | _ -> raise Malformed
 
+(** [map_no] is the No command if there are no words after "no" and 
+    raises Malformed otherwise *)
+let map_no = function
+  | [] -> No
+  | _ -> raise Malformed
+
 (** [map_trade] is the Trade command if there are no words after "trade" and 
     raises Malformed otherwise *)
 let map_trade = function
@@ -82,6 +89,7 @@ let loop_over_list = function
   |"help"::t -> map_help t
   |"inventory"::t -> map_inventory (String.concat "" t)
   |"buy"::t -> map_buy t
+  |"no"::t -> map_no t
   | "quit"::t -> map_quit t
   | "roll"::t -> map_roll t
   | "trade"::t -> map_trade t
