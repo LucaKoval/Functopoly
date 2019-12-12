@@ -3,6 +3,7 @@ open Command
 open Board
 open Yojson
 open Indices
+open Auction
 
 (** [get_num_players] is the number of players  *)
 let get_num_players = 
@@ -61,7 +62,9 @@ let command_list =
 
 (* ====== START TRADE HELPERS ======= *)
 
-let valid_property player property = true (* TODO *)
+let valid_property (all_players:Player.players) property = 
+  let curr_player = List.nth all_players.player_list all_players.current_player 
+  in List.mem property curr_player.properties 
 
 (* trader2 is a string but trader1 is a player *)
 
@@ -87,8 +90,8 @@ let rec remove_zeroes = function
 
 let rec parse_property = function
   | [] -> ""
-  | h::t -> try (int_of_string h); (parse_property t) 
-    with Failure e -> h
+  | h::t -> if (is_int h) then (parse_property t) 
+    else h
 
 let rec remove_empties = function
   | [] -> ""
@@ -155,7 +158,7 @@ let rec bargaining trader1_price trader1 trader2 property_to_trade =
     else (print_endline "Invalid response. Please re-enter your decision";
           bargaining trader1_price trader1 trader2 property_to_trade)
 
-let rec property_trade trader1 =
+let rec property_trade (trader1:Player.players) =
   print_endline "Which property do you want to trade?";
   print_string  "> ";
   match read_line () with
@@ -254,10 +257,35 @@ let empty_helper prev_cmd str_command player_info board =
                     match read_line () with
                     | exception End_of_file -> exit 0;
                     | str -> (prev_cmd, str, player_info,
-                               board))                                   
-
-let roll_helper prev_cmd str_command player_info board =
-let unsorted_update_player_roll = (roll_new_player player_info board) in
+                               board)
+)
+let quit_helper prev_cmd str_command player_info board = 
+let current_player = Player.get_current_player player_info in
+        print_endline "Sad to see you go. Your properties will now be
+    auctioned off.";
+        let auction_info = Auction.auction current_player player_info true in
+        let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
+            player_info board auction_info in
+        let post_forfeit_player_info = {
+          unsorted_post_forfeit_player_info with
+          player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
+          current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
+        } in
+        let current_name = (get_current_player_name post_forfeit_player_info) 
+        in
+        print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
+          current location is "
+                       ^ string_of_int (Player.get_current_location 
+                                          post_forfeit_player_info));
+        print_endline "";
+        print_string  "> ";
+        match read_line () with
+        | exception End_of_file -> exit 0;
+        | str -> (str_command, str ,
+                   post_forfeit_player_info, board)
+      
+let roll_helper prev_cmd str_command player_info board = 
+      let unsorted_update_player_roll = (roll_new_player player_info board) in
       let update_player_roll = {unsorted_update_player_roll with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_roll.player_list);} in
       print_endline (Auction.pp_player_list_ids Auction.pp_int update_player_roll.player_list);
       if ((Player.get_current_location update_player_roll) = 4) then (print_endline "You have landed on income tax! Please choose percent or fixed";
@@ -277,8 +305,11 @@ let endturn_helper prev_cmd str_command player_info board =
       let current_player = Player.get_current_player player_info in
       if current_player.money < 0 then
         begin
-          print_endline (Auction.pp_player_list_ids Auction.pp_int player_info.player_list);
-          let auction_info = Auction.auction current_player player_info in
+          (* TODO: This returns information pertaining to the properties of
+             the forfeited playing changing hands. This needs to be reflected in
+             the data structures passed in with each call to play_game_
+             recursively *)
+          let auction_info = Auction.auction current_player player_info true in
           let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
               player_info board auction_info in
           let post_forfeit_player_info = {
@@ -450,7 +481,7 @@ let trade_helper prev_cmd str_command player_info board =
 
 let parse_command prev_cmd str_command player_info board parsed_command=
     match parsed_command with
-    | Quit -> print_endline "Sad to see you go. Exiting game now."; exit 0;
+    | Quit -> quit_helper prev_cmd str_command player_info board
     | Roll -> roll_helper prev_cmd str_command player_info board
      | EndTurn -> endturn_helper prev_cmd str_command player_info board
 | Help -> help_helper prev_cmd str_command player_info board
@@ -480,7 +511,6 @@ let rec play_game_recursively (prev_cmd, str_command, player_info, board) =
         | Malformed -> (play_game_recursively (malformed_helper prev_cmd str_command player_info board))
         | Empty -> ((play_game_recursively (empty_helper prev_cmd str_command player_info board)))) in
 play_game_recursively (parse_command prev_cmd str_command player_info board parsed_command)
-
 
 
 (** [start_game board] begins the game by taking the first player's input

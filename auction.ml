@@ -91,10 +91,15 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
           else
             loop forfeit_player players (player_index::out) bids highest ((player_index+1) mod players.number_of_players)
         else if is_int s then
-          let new_highest = if int_of_string s > snd highest then (player_index, int_of_string s)
-            else highest
-          in
-          loop forfeit_player players out (replace bids player_index (int_of_string s)) new_highest ((player_index+1) mod players.number_of_players)
+          if (int_of_string s) <= snd highest then begin
+            print_endline ("Please enter a bid that is higher than the
+            current-highest bid");
+            print_string  "> ";
+            loop forfeit_player players out bids highest player_index
+          end
+          else 
+            let new_highest = (player_index, int_of_string s) in
+            loop forfeit_player players out (replace bids player_index (int_of_string s)) new_highest ((player_index+1) mod players.number_of_players)
         else begin
           print_endline "Please enter either a number for your bid or \"forfeit\" to stop bidding.";
           print_string  "> ";
@@ -103,14 +108,18 @@ let rec loop (forfeit_player:Player.player) (players:Player.players) (out:int li
     end
   end
 
-let auction (forfeit_player:Player.player) (players:Player.players) =
+let auction (forfeit_player:Player.player) (players:Player.players) (removing_player:bool) =
   (* print_endline (pp_player_list_ids pp_int players.player_list); *)
   (* print_endline (pp_player_list_names pp_string players.player_names); *)
   (* print_endline (string_of_int forfeit_player.id); *)
-  if List.length players.player_list = 2 then begin
+  if removing_player && List.length players.player_list = 2 then begin
     print_endline ("Player " ^ (List.nth players.player_names (player_list_mem_other forfeit_player players.player_list).id) ^
                    " wins!");
     exit 0;
+  end
+  else if not removing_player && List.length players.player_list = 2 then begin
+    let winner_id = (player_list_mem_other forfeit_player players.player_list).id in
+    (winner_id, forfeit_player.properties, 0)
   end
   else begin
     print_endline ("Player " ^ (List.nth players.player_names forfeit_player.id) ^

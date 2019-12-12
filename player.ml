@@ -31,10 +31,10 @@ let rec to_player numplayers acc=
     |(0)-> acc
     |x-> to_player (numplayers-1) ({
         id = (x-1);
-        score = 0;
+        score = 1500;
         location = 0;
         properties = [];
-        money = 0
+        money = 1500
       }::acc) in
   let player_list = helper in
   List.sort (fun x y -> x.id - y.id) player_list
@@ -302,48 +302,48 @@ let card_main location board players curr_player score =
   | GoBack -> print_endline "goback matched in card_main";(update_location_goback_main selected_card.value players board, score)
   | Pay -> print_endline "pay matched in card_main";(update_score_pay_main selected_card.value players board, score - int_of_string selected_card.value)
   | CollectFromAll -> print_endline "collectfromall matched in card_main";
-(update_collect_from_all selected_card.value players, score)
+    (update_collect_from_all selected_card.value players, score)
   | _ -> print_endline "no match in card_main";(players, score)
 
 (** tuple of players and new player score after rent deduction and gains from passing/landing on go are added *)
 let roll_change_score_helper1 playerscore new_loc board player_names players =
-print_endline "roll_change_score_helper1";
-let prop= get_property_name (get_property (modulo new_loc 40) board) in
-    let owner= get_owner_name (get_property (modulo new_loc 40) board) player_names in 
-    let rent = get_rent board (modulo new_loc 40) in
-    print_string prop; print_string " is owned by "; print_string owner; 
-    print_string " Rent paid: "; print_int rent;
-    print_endline "";
-    (if new_loc > 40 then (players, (playerscore + 200-(get_rent board (modulo new_loc 40))))
-     else if new_loc = 40 then (players, (playerscore + 400-(get_rent board (modulo new_loc 40))))
-     else (players, playerscore- (get_rent board (modulo new_loc 40))))
+  print_endline "roll_change_score_helper1";
+  let prop= get_property_name (get_property (modulo new_loc 40) board) in
+  let owner= get_owner_name (get_property (modulo new_loc 40) board) player_names in 
+  let rent = get_rent board (modulo new_loc 40) in
+  print_string prop; print_string " is owned by "; print_string owner; 
+  print_string " Rent paid: "; print_int rent;
+  print_endline "";
+  (if new_loc > 40 then (players, (playerscore + 200-(get_rent board (modulo new_loc 40))))
+   else if new_loc = 40 then (players, (playerscore + 400-(get_rent board (modulo new_loc 40))))
+   else (players, playerscore- (get_rent board (modulo new_loc 40))))
 
 (** called when the new location is a unowned property, returns tuple with players and the player score based on whether passing go or not *)
 let roll_change_score_helper2 playerscore new_loc board player_names players =
-print_endline "roll_change_score_helper2";
-let prop= get_property_name (get_property (modulo new_loc 40) board) in
-    print_string prop;
-    print_string " is available for purchase! Would you like to buy? ";
-    (if new_loc > 40 then (players, playerscore + 200) else if new_loc = 40 then (players, playerscore + 400)
-     else (players, playerscore)) 
+  print_endline "roll_change_score_helper2";
+  let prop= get_property_name (get_property (modulo new_loc 40) board) in
+  print_string prop;
+  print_string " is available for purchase! Would you like to buy? ";
+  (if new_loc > 40 then (players, playerscore + 200) else if new_loc = 40 then (players, playerscore + 400)
+   else (players, playerscore)) 
 
 (** gets a tuple of the players and the new playerscore based on the card characteristics *)
 let roll_change_score_helper3 playerscore new_loc board player_names curr_player players =
-print_endline "roll_change_score_helper3";
-if (new_loc=10||new_loc=30) then (players, playerscore) 
-        else (
-          (* TODO: tiles that aren't properties? *)
-          if is_card (get_curr_tile new_loc board) then 
-            card_main new_loc board players curr_player playerscore
-          else if is_tax (get_curr_tile new_loc board) then
-            if new_loc <>4 then (print_string "You have been Luxury-Taxed! Say goodbye to $75"; (players, playerscore-75)) else (players, playerscore)
-          else (players, playerscore)
-        )
+  print_endline "roll_change_score_helper3";
+  if (new_loc=10||new_loc=30) then (players, playerscore) 
+  else (
+    (* TODO: tiles that aren't properties? *)
+    if is_card (get_curr_tile new_loc board) then 
+      card_main new_loc board players curr_player playerscore
+    else if is_tax (get_curr_tile new_loc board) then
+      if new_loc <>4 then (print_string "You have been Luxury-Taxed! Say goodbye to $75"; (players, playerscore-75)) else ( (players, playerscore))
+    else (players, playerscore)
+  )
 
 (** if the new location is a unowned property, the price of the new property is returned, 
     else if the property is owned, the property price is returned 
     else if the location is not a property at all, 0 is returned*)
-  let roll_change_score playerscore new_loc board player_names curr_player players =
+let roll_change_score playerscore new_loc board player_names curr_player players =
   if (get_rent board (modulo new_loc 40))<>0 then
     roll_change_score_helper1 playerscore new_loc board player_names players
   else if (is_property (get_property (modulo new_loc 40) board)) then (roll_change_score_helper2 playerscore new_loc board player_names players)
@@ -358,9 +358,9 @@ let rec roll_update_owner players_list player_names current_player_id board rent
     begin
       if (player.id = (List.nth owner_id 0)) then roll_update_owner t player_names current_player_id board rent owner_id ({
           player with
-          score = player.score + (List.nth rent 0);
-          money = player.money + (List.nth rent 0);
-        }::new_acc) 
+          score = player.score + (int_of_string (List.nth rent 0));
+          money = player.money + (int_of_string (List.nth rent 0));
+        }::new_acc)
       else roll_update_owner t player_names current_player_id board rent owner_id (player::new_acc)
     end
 
@@ -439,7 +439,7 @@ let rec roll_update_current_player players players_list player_names current_pla
                                                                                         score = new_score;
                                                                                         location = modulo new_loc 40;
                                                                                         money = player.money - (player.score-new_score)
-                                                                                      }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
+                                                                                      }::acc) ((string_of_int (player.score-new_score))::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
          else (roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list))      
       else roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list
     end
@@ -543,11 +543,11 @@ let buy_new_player players board = {
 }
 
 (** removes the given element from the list *)
-let rec remove_helper lst el acc=
+let rec remove_helper lst el acc count=
   match lst with
   |[]-> List.rev acc
-  |h::t when h = el -> remove_helper t el acc
-  |h::t -> remove_helper t el (h::acc)
+  |h::t when h = el && count = 0 -> remove_helper t el acc (count+1)
+  |h::t -> remove_helper t el (h::acc) count
 
 (** updates the player two 2 stuff and then passes that new players list into trade_update_player for the final updates*)
 let rec trade_update_player2 players_list p1 p2 px_prop py_prop board cash acc=
@@ -559,7 +559,7 @@ let rec trade_update_player2 players_list p1 p2 px_prop py_prop board cash acc=
         trade_update_player2 t p1 p2 px_prop py_prop board cash ({ 
             player with 
             score = player.score - cash -(get_property_price py_prop board)+ (get_property_price px_prop board);
-            properties =  px_prop::(remove_helper player.properties py_prop []);
+            properties =  px_prop::(remove_helper player.properties py_prop [] 0);
             money = player.money-cash
           }::acc))
       else trade_update_player2 t p1 p2 px_prop py_prop board cash (player::acc)
@@ -575,10 +575,44 @@ let rec trade_update_player players_list p1 p2 px_prop py_prop board cash acc=
         trade_update_player t p1 p2 px_prop py_prop board cash ({ 
             player with
             score = player.score + cash+ (get_property_price py_prop board)- (get_property_price px_prop board) ;
-            properties =  py_prop::(remove_helper player.properties px_prop []);
+            properties =  py_prop::(remove_helper player.properties px_prop [] 0);
             money = player.money+cash
           }::acc))
       else trade_update_player t p1 p2 px_prop py_prop board cash (player::acc)
+    end
+
+
+(** updates the player two 2 stuff and then passes that new players list into trade_update_player for the final updates*)
+let rec trade_update_player2_empty players_list p1 p2 px_prop board cash acc=
+  match players_list with
+  |[]-> acc
+  |player::t->
+    begin
+      if (player.id = p2) then (
+        trade_update_player2_empty t p1 p2 px_prop board cash ({ 
+            player with 
+            score = player.score - cash + (get_property_price px_prop board);
+            properties =  px_prop::player.properties;
+            money = player.money-cash
+          }::acc))
+      else trade_update_player2_empty t p1 p2 px_prop board cash (player::acc)
+    end
+
+(** updates the player one 1 stuff and then passes that new players 
+    list into trade_update_player2 for the final updates*)
+let rec trade_update_player_empty players_list p1 p2 px_prop board cash acc=
+  match players_list with
+  |[]-> trade_update_player2_empty acc p1 p2 px_prop board cash []
+  |player::t->
+    begin
+      if (player.id = p1) then (
+        trade_update_player_empty t p1 p2 px_prop board cash ({ 
+            player with
+            score = player.score + cash- (get_property_price px_prop board) ;
+            properties =  remove_helper player.properties px_prop [] 0;
+            money = player.money+cash
+          }::acc))
+      else trade_update_player_empty t p1 p2 px_prop board cash (player::acc)
     end
 
 
@@ -596,10 +630,15 @@ let rec trade_update_player players_list p1 p2 px_prop py_prop board cash acc=
                  5. Add property_y to p1's properties
                  6. Remove property_y from p2's properties *)
 let trade_new_player players p1 p2 px_prop py_prop board cash=
-  { players with
-    player_list = trade_update_player players.player_list p1 p2 px_prop py_prop 
-        board cash []
-  }
+  if py_prop = "" then   { players with
+                           player_list = trade_update_player_empty 
+                               players.player_list p1 p2 px_prop board cash []
+                         }
+  else
+    { players with
+      player_list = trade_update_player players.player_list p1 p2 px_prop py_prop 
+          board cash []
+    }
 
 (** updates the current player's state if its their turn based on buy*)
 let rec upgrade_update_current_player players_list player_names current_player_id board acc prop_loc=
@@ -660,19 +699,45 @@ let rec auction_update_current_player players_list board acc p1_id (fp_id:int) p
                                                     }::acc) p1_id fp_id prop_lst amt
     end
 
+let string_color = function
+  | Brown -> "brown"
+  | LightBlue -> "light blue"
+  | Magenta -> "magenta"
+  | Red -> "red"
+  | Orange -> "orange"
+  | Yellow -> "yellow"
+  | Green -> "green"
+  | Blue -> "blue"
+  | _ -> "no_color"
+
+let rec property_list_to_string lst acc = 
+  match lst with
+  | [] -> acc
+  | prop::t -> property_list_to_string t (acc^"{\n" ^ 
+                                          "name : " ^ prop.name ^ "\n" ^
+                                          "location : " ^ (string_of_int prop.location) ^ "\n" ^
+                                          "price : " ^ (string_of_int prop.price) ^ "\n" ^
+                                          "rent : " ^ (string_of_int prop.rent) ^ "\n" ^
+                                          "color : " ^ (string_color prop.color) ^ "\n" ^
+                                          "level : " ^ (string_of_int prop.level) ^ "\n" ^
+                                          "type : property" ^ 
+                                          "\n}\n")
+
 (** updates players with propeties, money, and score based on forfeit auction BEFORE forfeit player is removed*)
-let auction_new_player players board (p1_id:int) (fp_id:int) (prop_lst:string list) (amt:int)= { 
-  players with
-  player_list = auction_update_current_player players.player_list board [] p1_id fp_id prop_lst amt;
-}    
+let auction_new_player players board (p1_id:int) (fp_id:int) (prop_lst:string list) (amt:int)= 
+  { 
+    players with
+    player_list = auction_update_current_player players.player_list board [] p1_id fp_id prop_lst amt;
+  }    
 
 (** updates players with properties, money, and score after forfeit auction and the player is REMOVED*)
 let forfeit_player (curr_player:player) (players_init:players) board (p1_id, prop_lst, amt) =
   let players = auction_new_player players_init board.property_tiles p1_id curr_player.id prop_lst amt in
+  let new_player_lst = remove_helper players.player_list curr_player [] 0 in
   { players with 
-    player_list=(remove_helper players.player_list curr_player []);
+    player_list=new_player_lst;
     number_of_players=players.number_of_players-1;
-    player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) []);
+    player_names=(remove_helper players.player_names (List.nth players.player_names curr_player.id) [] 0);
   }
 
 (** updates players_list with a fixed tax fee deduction from the current player *)

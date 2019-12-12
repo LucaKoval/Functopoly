@@ -168,7 +168,7 @@ let indices_tests = [
         name = "Water Works";
         location = 28;
         price = 150;
-        rent = -1;
+        rent = 15;
         color = Board.NoColor;
         level = -1;
         tile_type = Board.Utility;
@@ -372,6 +372,37 @@ let make_player4 = {
   money = 1450;
 }
 
+
+let make_player5 = {
+  id = 0;
+  score = 1550;
+  location = 0;
+  properties = [];
+  money = 1550;
+}
+let make_player6 = {
+  id = 1;
+  score = 1650;
+  location = 0;
+  properties = ["Oriental Avenue"; "Vermont Avenue"];
+  money = 1450;
+}
+
+let make_player7 = {
+  id = 0;
+  score = 1600;
+  location = 0;
+  properties = ["Vermont Avenue"];
+  money = 1500;
+}
+let make_player8 = {
+  id = 1;
+  score = 1600;
+  location = 0;
+  properties = ["Oriental Avenue"];
+  money = 1500;
+}
+
 let make_trade_test
     (name : string)
     (p_info : Player.players) 
@@ -388,10 +419,27 @@ let make_trade_test
            score)
     )
 
+
 let trade_tests = [
-  make_trade_test "" make_players1 0 1 "Oriental Avenue" "Vermont Avenue"
-    board1 50 {
+  make_trade_test "trade for cash and property" make_players1 0 1 
+    "Oriental Avenue" "Vermont Avenue"  board1 50 {
     player_list = [make_player3; make_player4];
+    current_player = 0;
+    number_of_players = 2;
+    player_names = ["p1"; "p2"];
+    jail_list = []
+  };
+  make_trade_test "trade for only cash" make_players1 0 1 "Oriental Avenue" ""
+    board1 50 {
+    player_list = [make_player5; make_player6];
+    current_player = 0;
+    number_of_players = 2;
+    player_names = ["p1"; "p2"];
+    jail_list = []
+  };
+  make_trade_test "trade for only property" make_players1 0 1 "Oriental Avenue"
+    "Vermont Avenue" board1 0 {
+    player_list = [make_player7; make_player8];
     current_player = 0;
     number_of_players = 2;
     player_names = ["p1"; "p2"];
