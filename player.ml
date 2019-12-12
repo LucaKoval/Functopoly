@@ -582,6 +582,40 @@ let rec trade_update_player players_list p1 p2 px_prop py_prop board cash acc=
     end
 
 
+(** updates the player two 2 stuff and then passes that new players list into trade_update_player for the final updates*)
+let rec trade_update_player2_empty players_list p1 p2 px_prop board cash acc=
+  match players_list with
+  |[]-> acc
+  |player::t->
+    begin
+      if (player.id = p2) then (
+        trade_update_player2_empty t p1 p2 px_prop board cash ({ 
+            player with 
+            score = player.score - cash + (get_property_price px_prop board);
+            properties =  px_prop::player.properties;
+            money = player.money-cash
+          }::acc))
+      else trade_update_player2_empty t p1 p2 px_prop board cash (player::acc)
+    end
+
+(** updates the player one 1 stuff and then passes that new players 
+    list into trade_update_player2 for the final updates*)
+let rec trade_update_player_empty players_list p1 p2 px_prop board cash acc=
+  match players_list with
+  |[]-> trade_update_player2_empty acc p1 p2 px_prop board cash []
+  |player::t->
+    begin
+      if (player.id = p1) then (
+        trade_update_player_empty t p1 p2 px_prop board cash ({ 
+            player with
+            score = player.score + cash- (get_property_price px_prop board) ;
+            properties =  remove_helper player.properties px_prop [];
+            money = player.money+cash
+          }::acc))
+      else trade_update_player_empty t p1 p2 px_prop board cash (player::acc)
+    end
+
+
 (** takes in players: players p1: int, p2: int, p1_prop: string, p2_prop: 
     string, cash: int *)
 (**  A player can trade a property for either cash or a property or 
@@ -596,10 +630,15 @@ let rec trade_update_player players_list p1 p2 px_prop py_prop board cash acc=
                  5. Add property_y to p1's properties
                  6. Remove property_y from p2's properties *)
 let trade_new_player players p1 p2 px_prop py_prop board cash=
-  { players with
-    player_list = trade_update_player players.player_list p1 p2 px_prop py_prop 
-        board cash []
-  }
+  if py_prop = "" then   { players with
+                           player_list = trade_update_player_empty 
+                               players.player_list p1 p2 px_prop board cash []
+                         }
+  else
+    { players with
+      player_list = trade_update_player players.player_list p1 p2 px_prop py_prop 
+          board cash []
+    }
 
 (** updates the current player's state if its their turn based on buy*)
 let rec upgrade_update_current_player players_list player_names current_player_id board acc prop_loc=
