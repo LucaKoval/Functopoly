@@ -304,12 +304,9 @@ let card_main location board players curr_player score =
   | CollectFromAll -> (update_collect_from_all selected_card.value players, score)
   | _ -> (players, score)
 
-(** if the new location is a unowned property, the price of the new property is returned, 
-    else if the property is owned, the property price is returned 
-    else if the location is not a property at all, 0 is returned*)
-let roll_change_score playerscore new_loc board player_names curr_player players =
-  if (get_rent board (modulo new_loc 40))<>0 then
-    let prop= get_property_name (get_property (modulo new_loc 40) board) in
+(** tuple of players and new player score after rent deduction and gains from passing/landing on go are added *)
+let roll_change_score_helper1 playerscore new_loc board player_names players =
+let prop= get_property_name (get_property (modulo new_loc 40) board) in
     let owner= get_owner_name (get_property (modulo new_loc 40) board) player_names in 
     let rent = get_rent board (modulo new_loc 40) in
     print_string prop; print_string " is owned by "; print_string owner; 
@@ -318,13 +315,18 @@ let roll_change_score playerscore new_loc board player_names curr_player players
     (if new_loc > 40 then (players, (playerscore + 200-(get_rent board (modulo new_loc 40))))
      else if new_loc = 40 then (players, (playerscore + 400-(get_rent board (modulo new_loc 40))))
      else (players, playerscore- (get_rent board (modulo new_loc 40))))
-  else if (is_property (get_property (modulo new_loc 40) board)) then (
-    let prop= get_property_name (get_property (modulo new_loc 40) board) in
+
+(** called when the new location is a unowned property, returns tuple with players and the player score based on whether passing go or not *)
+let roll_change_score_helper2 playerscore new_loc board player_names players =
+let prop= get_property_name (get_property (modulo new_loc 40) board) in
     print_string prop;
     print_string " is available for purchase! Would you like to buy? ";
     (if new_loc > 40 then (players, playerscore + 200) else if new_loc = 40 then (players, playerscore + 400)
-     else (players, playerscore)) )
-  else (if (new_loc=10||new_loc=30) then (players, playerscore) 
+     else (players, playerscore)) 
+
+(** gets a tuple of the players and the new playerscore based on the card characteristics *)
+let roll_change_score_helper3 playerscore new_loc board player_names curr_player players =
+if (new_loc=10||new_loc=30) then (players, playerscore) 
         else (
           (* TODO: tiles that aren't properties? *)
           if is_card (get_curr_tile new_loc board) then 
@@ -333,6 +335,15 @@ let roll_change_score playerscore new_loc board player_names curr_player players
             if new_loc <>4 then (players, playerscore-75) else (print_string "You have been Luxury-Taxed! Say goodbye to $75"; (players, playerscore))
           else (players, playerscore)
         )
+
+(** if the new location is a unowned property, the price of the new property is returned, 
+    else if the property is owned, the property price is returned 
+    else if the location is not a property at all, 0 is returned*)
+  let roll_change_score playerscore new_loc board player_names curr_player players =
+  if (get_rent board (modulo new_loc 40))<>0 then
+    roll_change_score_helper1 playerscore new_loc board player_names players
+  else if (is_property (get_property (modulo new_loc 40) board)) then (roll_change_score_helper2 playerscore new_loc board player_names players)
+  else (roll_change_score_helper3 playerscore new_loc board player_names curr_player players
        )
 
 (** updates the current player's state if its their turn based on roll*)
