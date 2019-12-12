@@ -35,8 +35,6 @@ let find_next_valid_bidder (start:int) (out:int list) (lst:Player.players) :
     if List.mem (List.nth lst.player_list index).id out then
       helper ((index+1) mod lst.number_of_players)
     else begin
-      print_endline ("Getting the " ^ (string_of_int start) ^ "nth element of
-      lst.player_list");
       List.nth lst.player_list index
     end
   in
@@ -88,7 +86,6 @@ and loop_forfeit_helper (forfeit_player:Player.player) (players:Player.players)
       find_next_valid_bidder
         ((player_index+1) mod players.number_of_players) out players).id
     in
-    print_endline (string_of_int highest_index);
     loop forfeit_player players (player_index::out) bids
       (highest_index, 0)
       ((player_index+1) mod players.number_of_players)

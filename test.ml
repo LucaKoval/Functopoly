@@ -468,6 +468,15 @@ let make_player_list_mem_other_test
         (Auction.player_list_mem_other player lst)
     )
 
+let make_is_int_test
+    (name : string)
+    (s : string)
+    (expected_output : bool) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output 
+        (Auction.is_int s)
+    )
+
 let auction_tests = [
   make_find_next_valid_bidder_test "should be Player 3" 2 [0] {
     player_list=[
@@ -541,6 +550,42 @@ let auction_tests = [
     money=0;
   };
 
+  make_find_next_valid_bidder_test "should be Player 1" 0 [1] {
+    player_list=[
+      {
+        id=0;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      };
+      {
+        id=1;
+        score=(~-60);
+        location=3;
+        properties=["Baltic Avenue"];
+        money=(~-60);
+      };
+      {
+        id=2;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      }
+    ];
+    current_player=2;
+    number_of_players=3;
+    player_names=["1"; "2"; "3"];
+    jail_list=[];
+  } {
+    id=0;
+    score=0;
+    location=0;
+    properties=[];
+    money=0;
+  };
+
   make_find_next_valid_bidder_test "should be Player 1" 0 [2] {
     player_list=[
       {
@@ -571,6 +616,78 @@ let auction_tests = [
     jail_list=[];
   } {
     id=0;
+    score=0;
+    location=0;
+    properties=[];
+    money=0;
+  };
+
+  make_find_next_valid_bidder_test "should be Player 2" 1 [0] {
+    player_list=[
+      {
+        id=0;
+        score=(~-60);
+        location=3;
+        properties=["Baltic Avenue"];
+        money=(~-60);
+      };
+      {
+        id=1;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      };
+      {
+        id=2;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      }
+    ];
+    current_player=2;
+    number_of_players=3;
+    player_names=["1"; "2"; "3"];
+    jail_list=[];
+  } {
+    id=1;
+    score=0;
+    location=0;
+    properties=[];
+    money=0;
+  };
+
+  make_find_next_valid_bidder_test "should be Player 2" 1 [3] {
+    player_list=[
+      {
+        id=0;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      };
+      {
+        id=1;
+        score=0;
+        location=0;
+        properties=[];
+        money=0;
+      };
+      {
+        id=2;
+        score=(~-60);
+        location=3;
+        properties=["Baltic Avenue"];
+        money=(~-60);
+      }
+    ];
+    current_player=2;
+    number_of_players=3;
+    player_names=["1"; "2"; "3"];
+    jail_list=[];
+  } {
+    id=1;
     score=0;
     location=0;
     properties=[];
@@ -638,6 +755,16 @@ let auction_tests = [
       properties=[];
       money=0;
     };
+
+  make_is_int_test "should be an int" "1" true;
+  make_is_int_test "should be an int" "0" true;
+  make_is_int_test "should be an int" "-1" true;
+  make_is_int_test "should be an int" "10219034" true;
+  make_is_int_test "should be an int" "-1903995" true;
+  make_is_int_test "should be an int" "1234.49" false;
+  make_is_int_test "should be an int" "-.1" false;
+  make_is_int_test "should be an int" "hello there" false;
+  make_is_int_test "should be an int" "" false;
 ]
 
 let make_player1 = {
