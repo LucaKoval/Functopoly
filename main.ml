@@ -61,7 +61,9 @@ let command_list =
 
 (* ====== START TRADE HELPERS ======= *)
 
-let valid_property player property = true (* TODO *)
+let valid_property (all_players:Player.players) property = 
+  let curr_player = List.nth all_players.player_list all_players.current_player 
+  in List.mem property curr_player.properties 
 
 (* trader2 is a string but trader1 is a player *)
 
@@ -155,7 +157,7 @@ let rec bargaining trader1_price trader1 trader2 property_to_trade =
     else (print_endline "Invalid response. Please re-enter your decision";
           bargaining trader1_price trader1 trader2 property_to_trade)
 
-let rec property_trade trader1 =
+let rec property_trade (trader1:Player.players) =
   print_endline "Which property do you want to trade?";
   print_string  "> ";
   match read_line () with
