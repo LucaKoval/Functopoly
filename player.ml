@@ -31,10 +31,10 @@ let rec to_player numplayers acc=
     |(0)-> acc
     |x-> to_player (numplayers-1) ({
         id = (x-1);
-        score = 0;
+        score = 1500;
         location = 0;
         properties = [];
-        money = 0
+        money = 1500
       }::acc) in
   let player_list = helper in
   List.sort (fun x y -> x.id - y.id) player_list
