@@ -125,7 +125,7 @@ let get_curr_tile current_loc board =
 let is_card tile =
   match tile with
   | PropertyTile a -> false
-  | CardTile a -> print_endline "is_card is true"; true
+  | CardTile a -> true
   | TaxTile a -> false
   | CornerTile a -> false
 
@@ -134,7 +134,7 @@ let is_tax tile =
   match tile with
   | PropertyTile a -> false
   | CardTile a -> false
-  | TaxTile a -> print_endline "is_tax is true"; true
+  | TaxTile a -> true
   | CornerTile a -> false
 
 (** gets name of card type of given location *)
@@ -297,17 +297,15 @@ let card_main location board players curr_player score =
   print_endline " deck and picked up the following card.";
   print_endline selected_card.description;
   match selected_card.subtype with
-  | AdvanceTo -> print_endline "advanceto matched in card_main";if selected_card.value="Jail" then (send_to_jail_card(update_location_main selected_card.value players board), score) else (update_location_main selected_card.value players board, score)
-  | Collect -> print_endline "collect matched in card_main";(update_score_collect_main selected_card.value players board, score + int_of_string selected_card.value)
-  | GoBack -> print_endline "goback matched in card_main";(update_location_goback_main selected_card.value players board, score)
-  | Pay -> print_endline "pay matched in card_main";(update_score_pay_main selected_card.value players board, score - int_of_string selected_card.value)
-  | CollectFromAll -> print_endline "collectfromall matched in card_main";
-    (update_collect_from_all selected_card.value players, score)
-  | _ -> print_endline "no match in card_main";(players, score)
+  | AdvanceTo -> if selected_card.value="Jail" then (send_to_jail_card(update_location_main selected_card.value players board), score) else (update_location_main selected_card.value players board, score)
+  | Collect -> (update_score_collect_main selected_card.value players board, score + int_of_string selected_card.value)
+  | GoBack -> (update_location_goback_main selected_card.value players board, score)
+  | Pay -> (update_score_pay_main selected_card.value players board, score - int_of_string selected_card.value)
+  | CollectFromAll -> (update_collect_from_all selected_card.value players, score)
+  | _ -> (players, score)
 
 (** tuple of players and new player score after rent deduction and gains from passing/landing on go are added *)
 let roll_change_score_helper1 playerscore new_loc board player_names players =
-  print_endline "roll_change_score_helper1";
   let prop= get_property_name (get_property (modulo new_loc 40) board) in
   let owner= get_owner_name (get_property (modulo new_loc 40) board) player_names in 
   let rent = get_rent board (modulo new_loc 40) in
@@ -320,7 +318,6 @@ let roll_change_score_helper1 playerscore new_loc board player_names players =
 
 (** called when the new location is a unowned property, returns tuple with players and the player score based on whether passing go or not *)
 let roll_change_score_helper2 playerscore new_loc board player_names players =
-  print_endline "roll_change_score_helper2";
   let prop= get_property_name (get_property (modulo new_loc 40) board) in
   print_string prop;
   print_string " is available for purchase! Would you like to buy? ";
@@ -329,10 +326,8 @@ let roll_change_score_helper2 playerscore new_loc board player_names players =
 
 (** gets a tuple of the players and the new playerscore based on the card characteristics *)
 let roll_change_score_helper3 playerscore new_loc board player_names curr_player players =
-  print_endline "roll_change_score_helper3";
   if (new_loc=10||new_loc=30) then (players, playerscore) 
   else (
-    (* TODO: tiles that aren't properties? *)
     if is_card (get_curr_tile new_loc board) then 
       card_main new_loc board players curr_player playerscore
     else if is_tax (get_curr_tile new_loc board) then
@@ -436,12 +431,10 @@ let rec roll_update_current_player players players_list player_names current_pla
            let new_loc = modulo (player.location + (fst(dice_roll)+snd(dice_roll))) 40 in 
            let (players, new_score) = (roll_change_score player.score new_loc board player_names current_player_id players) in 
            roll_update_current_player players t player_names current_player_id board ({ player with
-                                                                                        score = new_score;
-                                                                                        location = modulo new_loc 40;
-                                                                                        money = player.money - (player.score-new_score)
-                                                                                      }::acc) ((string_of_int (player.score-new_score))::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
-         else (roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list))      
-      else roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list
+           score = new_score;
+           location = modulo new_loc 40;
+           money = player.money - (player.score-new_score)}::acc) ((string_of_int (player.score-new_score))::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
+         else (roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list))else roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list
     end
 
 (** gets price of property to buy or 0 if not a property*)
@@ -458,9 +451,8 @@ let rec buy_update_current_player players_list player_names current_player_id bo
     begin
       if (player.id = current_player_id) then ( 
         buy_update_current_player t player_names current_player_id board ({ player with
-                                                                            properties = ((get_property_name (get_property player.location board))::(player.properties));
-                                                                            money = player.money-(get_price player.location board)
-                                                                          }::acc))
+        properties = ((get_property_name (get_property player.location board))::(player.properties));
+        money = player.money-(get_price player.location board)}::acc))
       else buy_update_current_player t player_names current_player_id board (player::acc)
     end
 
@@ -490,8 +482,7 @@ let rec update_location_to_jail players_list current_player_id board acc=
     begin
       if (player.id = current_player_id) then (
         update_location_to_jail t current_player_id board ({player with
-                                                            location = get_jail_location board.corner_tiles
-                                                           }::acc) )
+        location = get_jail_location board.corner_tiles }::acc) )
       else update_location_to_jail t current_player_id board (player::acc) 
     end
 
@@ -695,8 +686,8 @@ let rec auction_update_current_player players_list board acc p1_id (fp_id:int) p
             money = player.money-amt
           }::acc) p1_id fp_id prop_lst amt)
       else auction_update_current_player t board (  { player with
-                                                      id = player.id + (if player.id > fp_id then -1 else 0)
-                                                    }::acc) p1_id fp_id prop_lst amt
+id = player.id + (if player.id > fp_id then -1 else 0)
+ }::acc) p1_id fp_id prop_lst amt
     end
 
 (** updates the given player's propeties, money, and score based on the auctioned property *)
