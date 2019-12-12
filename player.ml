@@ -78,7 +78,7 @@ let get_property current_loc board =
 (** [is_property t] is true if current tile is a property tile, otherwise false*)
 let is_property tile =
   match tile with
-  | PropertyTile a -> print_endline "is_property is true"; true
+  | PropertyTile a -> true
   | CardTile a -> false
   | TaxTile a -> false
   | CornerTile a -> false
