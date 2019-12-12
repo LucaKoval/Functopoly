@@ -343,9 +343,9 @@ let rec roll_update_owner players_list player_names current_player_id board rent
     begin
       if (player.id = (List.nth owner_id 0)) then roll_update_owner t player_names current_player_id board rent owner_id ({
           player with
-          score = player.score + (List.nth rent 0);
-          money = player.money + (List.nth rent 0);
-        }::new_acc) 
+          score = player.score + (int_of_string (List.nth rent 0));
+          money = player.money + (int_of_string (List.nth rent 0));
+        }::new_acc)
       else roll_update_owner t player_names current_player_id board rent owner_id (player::new_acc)
     end
 
@@ -424,7 +424,7 @@ let rec roll_update_current_player players players_list player_names current_pla
                                                                                         score = new_score;
                                                                                         location = modulo new_loc 40;
                                                                                         money = new_score
-                                                                                      }::acc) ((player.score-new_score)::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
+                                                                                      }::acc) ((string_of_int (player.score-new_score))::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
          else (roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list))      
       else roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list
     end
