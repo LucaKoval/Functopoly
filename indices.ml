@@ -5,30 +5,35 @@ type tile_object = PropertyTile of Board.property_tile
                  | TaxTile of Board.tax_tile 
                  | CornerTile of Board.corner_tile
 
+(** [find_property_tile i lst] is a property tile option at the given location *)
 let rec find_property_tile i (lst:Board.property_tile list) =
   match lst with
   | [] -> None
   | h::t -> if h.location = i then Some (PropertyTile h)
     else find_property_tile i t
 
+(** [find_card_tile i lst] is a card tile option at the given location *)
 let rec find_card_tile i (lst:Board.card_tile list) =
   match lst with
   | [] -> None
   | h::t -> if h.location = i then Some (CardTile h)
     else find_card_tile i t
 
+(** [find_tax_tile i lst] is a tax tile option at the given location *)
 let rec find_tax_tile i (lst:Board.tax_tile list) =
   match lst with
   | [] -> None
   | h::t -> if h.location = i then Some (TaxTile h)
     else find_tax_tile i t
 
+(** [find_corner_tile i lst] is a corner tile option at the given location *)
 let rec find_corner_tile i (lst:Board.corner_tile list) =
   match lst with
   | [] -> None
   | h::t -> if h.location = i then Some (CornerTile h)
     else find_corner_tile i t
 
+(** [return_tile i board] is a tile option at the given location *)
 let return_tile i (board:Board.t) =
   let props = board.property_tiles in
   let prop_found = find_property_tile i props in
