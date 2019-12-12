@@ -294,22 +294,14 @@ let roll_helper prev_cmd str_command player_info board =
          match read_line () with
          | exception End_of_file -> exit 0;
          | str -> (str_command, str, new_info, board))
-          (**if current location of update player roll is 4 then readline for tax otherwise continue regularly*) 
           ) else 
         (print_endline "";print_string  "> ";
          match read_line () with
          | exception End_of_file -> exit 0;
          | str -> (str_command, str, update_player_roll, board))
 
-let endturn_helper prev_cmd str_command player_info board =
-      let current_player = Player.get_current_player player_info in
-      if current_player.money < 0 then
-        begin
-          (* TODO: This returns information pertaining to the properties of
-             the forfeited playing changing hands. This needs to be reflected in
-             the data structures passed in with each call to play_game_
-             recursively *)
-          let auction_info = Auction.auction current_player player_info true in
+let endturn_auction_helper prev_cmd str_command player_info board current_player=
+let auction_info = Auction.auction current_player player_info true in
           let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
               player_info board auction_info in
           let post_forfeit_player_info = {
@@ -328,6 +320,12 @@ let endturn_helper prev_cmd str_command player_info board =
           match read_line () with
           | exception End_of_file -> exit 0;
           | str -> (str_command, str, post_forfeit_player_info, board)
+
+let endturn_helper prev_cmd str_command player_info board =
+      let current_player = Player.get_current_player player_info in
+      if current_player.money < 0 then
+        begin
+          endturn_auction_helper prev_cmd str_command player_info board current_player
         end
       else
         let unsorted_new_player_info = (Player.new_player player_info board) in 
@@ -366,17 +364,14 @@ let inventory_helper prev_cmd str_command player_info board player_name=
         | exception End_of_file -> exit 0
         | str -> (prev_cmd, str, player_info, board))
 
-let buy_helper prev_cmd str_command player_info board =
-        let curr_location = get_current_location player_info in
-      let property = get_property curr_location board in
-      if (not(is_property property)) then (
-        print_endline "You cannot buy on a tile that isn't a property! Please 
+let cannot_buy_helper prev_cmd str_command player_info board curr_location property = print_endline "You cannot buy on a tile that isn't a property! Please 
         enter a valid command.";
         print_string  "> ";
         match read_line () with
         | exception End_of_file -> exit 0
-        | str -> (str_command, str, player_info, board))
-      else if ((get_owner_id property) <> -1) then (
+        | str -> (str_command, str, player_info, board)
+
+let already_owned_buy_helper prev_cmd str_command player_info board curr_location property = (
         print_endline "You cannot buy a property that is already owned by 
         someone! 
         However, you can trade if you'd like. Please enter a valid command.";
@@ -384,22 +379,42 @@ let buy_helper prev_cmd str_command player_info board =
         match read_line () with
         | exception End_of_file -> exit 0
         | str -> (str_command, str, player_info, board))
-      else let unsorted_update_player_buy = (Player.buy_new_player player_info board) 
-        in
+
+let buy_helper prev_cmd str_command player_info board =
+        let curr_location = get_current_location player_info in
+      let property = get_property curr_location board in
+      if (not(is_property property)) then (cannot_buy_helper prev_cmd str_command player_info board curr_location property)
+      else if ((get_owner_id property) <> -1) then (
+        already_owned_buy_helper prev_cmd str_command player_info board curr_location property)
+      else let unsorted_update_player_buy = (Player.buy_new_player player_info board) in
         let update_player_buy = {unsorted_update_player_buy with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_update_player_buy.player_list);} in
         let prop_name = buy_helper player_info board in (
           print_string "Congrats you now own ";
-          print_endline (get_property_name (get_property 
-                                              (get_current_location 
-                                                 player_info) board));
+          print_endline (get_property_name (get_property (get_current_location player_info) board));
           print_string  "> ";
           match read_line () with
           | exception End_of_file -> exit 0
-          | str ->  (str_command, str, update_player_buy, 
-                     (Board.buy_update_board board 
-                        update_player_buy.current_player 
-                        prop_name))
-        )
+          | str ->  (str_command, str, update_player_buy, (Board.buy_update_board board update_player_buy.current_player prop_name)))
+
+let property_no_helper prev_cmd str_command player_info board unsorted_post_forfeit_player_info=
+          let post_forfeit_player_info = {
+            unsorted_post_forfeit_player_info with
+            player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
+            current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
+          } in
+          let current_name = (get_current_player_name post_forfeit_player_info) 
+          in
+          print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
+          current location is "
+                         ^ string_of_int (Player.get_current_location 
+                                            post_forfeit_player_info));
+          print_endline "";
+          print_string  "> ";
+          match read_line () with
+          | exception End_of_file -> exit 0;
+          | str -> (str_command, str, 
+                     post_forfeit_player_info, board)
+
 let no_helper prev_cmd str_command player_info board =
         let current_location = get_current_location player_info in
         if (is_property (get_property current_location board)) then
@@ -434,6 +449,7 @@ let no_helper prev_cmd str_command player_info board =
           | str -> 
             (str_command, str, player_info, board)
         end
+
 let upgrade_helper prev_cmd str_command player_info board =
  let current_player_id = (player_info.current_player) in
       let color_groups = Upgrade.get_color_groups current_player_id board in
@@ -483,7 +499,6 @@ let upgrade_helper prev_cmd str_command player_info board =
 
 let trade_helper prev_cmd str_command player_info board =
 (print_endline "print player property menu here";
-        (* Get property tile and then owner from *)
         print_endline "Who do you want to trade with?";
         print_string  "> ";
         match read_line () with
@@ -501,10 +516,8 @@ let trade_helper prev_cmd str_command player_info board =
           | str -> (
               let unsorted_updated_player_info = trade_new_player player_info player1
                   player2 property_to_trade property (board.property_tiles) cash
-              in 
-              let updated_player_info = {unsorted_updated_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_updated_player_info.player_list);} in
-              (prev_cmd, str, updated_player_info, board))
-      )
+              in let updated_player_info = {unsorted_updated_player_info with player_list=(List.sort (fun x y -> x.id - y.id) unsorted_updated_player_info.player_list);} in
+              (prev_cmd, str, updated_player_info, board)))
 
 let parse_command prev_cmd str_command player_info board parsed_command=
     match parsed_command with
