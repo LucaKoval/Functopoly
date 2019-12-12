@@ -31,10 +31,10 @@ let rec to_player numplayers acc=
     |(0)-> acc
     |x-> to_player (numplayers-1) ({
         id = (x-1);
-        score = 1500;
+        score = 0;
         location = 0;
         properties = [];
-        money = 1500
+        money = 0
       }::acc) in
   let player_list = helper in
   List.sort (fun x y -> x.id - y.id) player_list
@@ -438,7 +438,7 @@ let rec roll_update_current_player players players_list player_names current_pla
            roll_update_current_player players t player_names current_player_id board ({ player with
                                                                                         score = new_score;
                                                                                         location = modulo new_loc 40;
-                                                                                        money = new_score
+                                                                                        money = player.money - (player.score-new_score)
                                                                                       }::acc) ((string_of_int (player.score-new_score))::rent_acc) ((get_owner_id( get_property (modulo new_loc 40) board) )::owner_id_acc ) jail_list
          else (roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list))      
       else roll_update_current_player players t player_names current_player_id board (player::acc) rent_acc owner_id_acc jail_list
