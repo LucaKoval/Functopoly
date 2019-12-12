@@ -286,10 +286,6 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
           current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
         } in
-        (* print_endline (string_of_int (unsorted_post_forfeit_player_info.current_player));
-           print_endline (string_of_int (unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players)); *)
-        print_endline (Auction.pp_player_list_ids Auction.pp_int post_forfeit_player_info.player_list);
-        (* print_endline (string_of_int post_forfeit_player_info.current_player); *)
         let current_name = (get_current_player_name post_forfeit_player_info) 
         in
         print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
@@ -321,14 +317,12 @@ let rec play_game_recursively prev_cmd str_command player_info board =
          | str -> play_game_recursively str_command str update_player_roll board)
     | EndTurn ->
       let current_player = Player.get_current_player player_info in
-      (* print_endline (string_of_int current_player.money); *)
       if current_player.money < 0 then
         begin
           (* TODO: This returns information pertaining to the properties of
              the forfeited playing changing hands. This needs to be reflected in
              the data structures passed in with each call to play_game_
              recursively *)
-          print_endline (Auction.pp_player_list_ids Auction.pp_int player_info.player_list);
           let auction_info = Auction.auction current_player player_info true in
           let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
               player_info board auction_info in
@@ -337,7 +331,6 @@ let rec play_game_recursively prev_cmd str_command player_info board =
             player_list=(List.sort (fun x y -> x.id - y.id) unsorted_post_forfeit_player_info.player_list);
             current_player=unsorted_post_forfeit_player_info.current_player mod unsorted_post_forfeit_player_info.number_of_players;
           } in
-          print_endline (Auction.pp_player_list_ids Auction.pp_int post_forfeit_player_info.player_list);
           let current_name = (get_current_player_name post_forfeit_player_info) 
           in
           print_endline ("Player " ^ current_name ^ ", it's your turn now! Your 
