@@ -477,6 +477,17 @@ let make_is_int_test
         (Auction.is_int s)
     )
 
+let make_replace_test
+    (name : string)
+    (lst : 'a list)
+    (i : int)
+    (v : 'a)
+    (expected_output : 'a list) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output 
+        (Auction.replace lst i v)
+    )
+
 let auction_tests = [
   make_find_next_valid_bidder_test "should be Player 3" 2 [0] {
     player_list=[
@@ -762,9 +773,23 @@ let auction_tests = [
   make_is_int_test "should be an int" "10219034" true;
   make_is_int_test "should be an int" "-1903995" true;
   make_is_int_test "should be an int" "1234.49" false;
-  make_is_int_test "should be an int" "-.1" false;
-  make_is_int_test "should be an int" "hello there" false;
-  make_is_int_test "should be an int" "" false;
+  make_is_int_test "should not be an int" "-.1" false;
+  make_is_int_test "should not be an int" "hello there" false;
+  make_is_int_test "should not be an int" "" false;
+
+  make_replace_test "should replace successfully" [1] 0 2 [2];
+  make_replace_test "should replace successfully" [1; 2] 0 2 [2; 2];
+  make_replace_test "should replace successfully" [10000; 2] 0 2 [2; 2];
+  make_replace_test "should replace successfully" [5; 2] 0 ~-2 [~-2; 2];
+  make_replace_test "should replace successfully" [1; 2; 3] 2 5 [1; 2; 5];
+  make_replace_test "should replace successfully" ["a"; "b"] 0 "c" ["c"; "b"];
+  make_replace_test "should replace successfully" ["a"] 0 "c" ["c"];
+  make_replace_test "should replace successfully" ["hello"] 0 "world" ["world"];
+  make_replace_test "should replace successfully" ["hello"; "wordl"] 1
+    "world" ["hello"; "world"];
+  make_replace_test "should replace successfully" [true] 0 false [false];
+  make_replace_test "should replace successfully" [true;true] 1 false
+    [true; false];
 ]
 
 let make_player1 = {
