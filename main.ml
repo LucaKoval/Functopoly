@@ -422,7 +422,7 @@ let rec play_game_recursively prev_cmd str_command player_info board =
           let prop_name = get_property_name prop in
           print_endline (prop_name ^ " will now be auctioned off.");
           let auction_info = Auction.auction_prop current_player player_info prop in
-          let unsorted_post_forfeit_player_info = Player.forfeit_player current_player 
+          let unsorted_post_forfeit_player_info = Player.auction_property_player current_player 
               player_info board auction_info in
           let post_forfeit_player_info = {
             unsorted_post_forfeit_player_info with
